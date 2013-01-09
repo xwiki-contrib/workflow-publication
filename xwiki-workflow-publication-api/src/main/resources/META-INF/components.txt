@@ -1,0 +1,5 @@
+org.xwiki.workflowpublication.internal.PublicationWorkflowService
+org.xwiki.workflowpublication.internal.DefaultPublicationWorkflow
+org.xwiki.workflowpublication.internal.PublicationRolesService
+org.xwiki.workflowpublication.internal.DefaultPublicationRoles
+org.xwiki.workflowpublication.internal.DefaultWorkflowConfigManager
