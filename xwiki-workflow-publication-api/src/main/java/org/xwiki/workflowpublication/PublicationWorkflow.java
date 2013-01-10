@@ -104,7 +104,17 @@ public interface PublicationWorkflow
     public boolean refuseValidation(DocumentReference documnet, String reason) throws XWikiException;
 
     /**
-     * validating -> published. + document gets copied in its final place where it will be readonly anyway
+     * validating -> validated. Rights stay the same as in validating state. This extra state is needed in order to be
+     * able to delay the effective publishing of the document (making it available to users as a published document).
+     * 
+     * @param document
+     * @return
+     * @throws XWikiException
+     */
+    public boolean validate(DocumentReference document) throws XWikiException;
+
+    /**
+     * validated or validating -> published + document gets copied in its final place where it will be readonly anyway
      * 
      * @param document
      * @return

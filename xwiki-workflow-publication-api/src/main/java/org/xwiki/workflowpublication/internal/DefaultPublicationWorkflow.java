@@ -26,7 +26,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
@@ -66,6 +65,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public final static String STATUS_MODERATING = "moderating";
 
     public final static String STATUS_VALIDATING = "validating";
+
+    public final static String STATUS_VALID = "valid";
 
     public final static String STATUS_DRAFT = "draft";
 
@@ -182,14 +183,14 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
-        //TODO: implement me
+        // TODO: implement me
         return null;
 
     }
 
     @Override
-    public boolean startWorkflow(DocumentReference docName, String workflowConfig, DocumentReference target, XWikiContext xcontext)
-        throws XWikiException
+    public boolean startWorkflow(DocumentReference docName, String workflowConfig, DocumentReference target,
+        XWikiContext xcontext) throws XWikiException
     {
         XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
 
@@ -350,13 +351,36 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     @Override
+    public boolean validate(DocumentReference document) throws XWikiException
+    {
+        XWikiContext xcontext = getXContext();
+        XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
+
+        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_VALIDATING), DRAFT, xcontext);
+        if (workflow == null) {
+            return false;
+        }
+
+        // put the status to valid
+        workflow.set(WF_STATUS_FIELDNAME, STATUS_VALID, xcontext);
+        // rights stay the same, only validator has the right to edit the document in the valid state, all other
+        // participants to workflow can view it.
+
+        // save the document prepared like this
+        xcontext.getWiki().saveDocument(doc, "Marked document " + stringSerializer.serialize(document) + " as valid. ",
+            true, xcontext);
+
+        return true;
+    }
+
+    @Override
     public DocumentReference publish(DocumentReference document) throws XWikiException
     {
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
 
         // we can only publish from validating state, check that
-        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_VALIDATING), DRAFT, xcontext);
+        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_VALIDATING, STATUS_VALID), DRAFT, xcontext);
         if (workflow == null) {
             return null;
         }

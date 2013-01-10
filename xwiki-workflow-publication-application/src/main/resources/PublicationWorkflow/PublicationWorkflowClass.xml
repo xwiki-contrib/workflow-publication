@@ -11,8 +11,8 @@
 <customClass></customClass>
 <contentAuthor>XWiki.Admin</contentAuthor>
 <creationDate>1357556434000</creationDate>
-<date>1357729091000</date>
-<contentUpdateDate>1357729091000</contentUpdateDate>
+<date>1357824436000</date>
+<contentUpdateDate>1357824436000</contentUpdateDate>
 <version>1.1</version>
 <title>PublicationWorkflow Class</title>
 <template></template>
@@ -63,7 +63,7 @@
 <unmodifiable>0</unmodifiable>
 <validationMessage></validationMessage>
 <validationRegExp></validationRegExp>
-<values>draft|moderating|validating|published|archived</values>
+<values>draft|moderating|validating|valid|published|archived</values>
 <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
 </status>
 <target>

@@ -207,6 +207,23 @@ public class PublicationWorkflowService implements ScriptService
         }
     }
 
+    public boolean validate(DocumentReference document)
+    {
+        XWikiContext xcontext = getXContext();
+        try {
+            if (this.publicationRoles.canValidate(xcontext.getUserReference(),
+                xcontext.getWiki().getDocument(document, xcontext), xcontext)) {
+                return this.publicationWorkflow.validate(document);
+            } else {
+                return false;
+            }
+        } catch (XWikiException e) {
+            logger.warn("Could not mark document " + stringSerializer.serialize(document) + " as valid.");
+            // TODO: put error on context
+            return false;
+        }
+    }
+
     public DocumentReference publish(DocumentReference document)
     {
         XWikiContext xcontext = getXContext();
