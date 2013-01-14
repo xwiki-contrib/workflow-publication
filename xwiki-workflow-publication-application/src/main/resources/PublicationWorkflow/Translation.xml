@@ -1,63 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc>
-<web>PublicationWorkflow</web>
-<name>Translation</name>
-<language></language>
-<defaultLanguage>en</defaultLanguage>
-<translation>0</translation>
-<parent>Main.SpaceIndex</parent>
-<creator>XWiki.Admin</creator>
-<author>XWiki.Admin</author>
-<customClass></customClass>
-<contentAuthor>XWiki.Admin</contentAuthor>
-<creationDate>1357828638000</creationDate>
-<date>1357910811000</date>
-<contentUpdateDate>1357910434000</contentUpdateDate>
-<version>24.1</version>
-<title>Translation</title>
-<template></template>
-<defaultTemplate></defaultTemplate>
-<validationScript></validationScript>
-<comment></comment>
-<minorEdit>false</minorEdit>
-<syntaxId>xwiki/2.1</syntaxId>
-<hidden>true</hidden>
-<object>
-<class>
-<name>XWiki.TranslationDocumentClass</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<scope>
-<cache>0</cache>
-<disabled>0</disabled>
-<displayType>select</displayType>
-<multiSelect>0</multiSelect>
-<name>scope</name>
-<number>1</number>
-<prettyName>Scope</prettyName>
-<relationalStorage>0</relationalStorage>
-<separator> </separator>
-<separators> ,|</separators>
-<size>1</size>
-<unmodifiable>0</unmodifiable>
-<values>GLOBAL|WIKI|USER|ON_DEMAND</values>
-<classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-</scope>
-</class>
-<name>PublicationWorkflow.Translation</name>
-<number>0</number>
-<className>XWiki.TranslationDocumentClass</className>
-<guid>3e2040a1-f41f-4569-a775-8a474822ba62</guid>
-<property>
-<scope>WIKI</scope>
-</property>
-</object>
-<content>workflow.start.pagename = Page de publication
+  <web>PublicationWorkflow</web>
+  <name>Translation</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>Main.SpaceIndex</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357828638000</creationDate>
+  <date>1357910811000</date>
+  <contentUpdateDate>1357910434000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Translation</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <object>
+    <class>
+      <name>XWiki.TranslationDocumentClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>1</number>
+        <prettyName>Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <name>PublicationWorkflow.Translation</name>
+    <number>0</number>
+    <className>XWiki.TranslationDocumentClass</className>
+    <guid>3e2040a1-f41f-4569-a775-8a474822ba62</guid>
+    <property>
+      <scope>WIKI</scope>
+    </property>
+  </object>
+  <content>workflow.start.pagename = Page de publication
 workflow.start.spacename = Espace de publication
 workflow.start.dostart = Initier le workflow
 workflow.title = Workflow
@@ -94,4 +95,5 @@ workflow.unpublish.noDiff = Le brouillon est identique au document publié. Veui
 workflow.unpublish.diff = Le brouillon n'est pas identique au document publié. Vous pouvez décider d'écraser le brouillon en cochant la case ci-dessous.
 workflow.unpublish.submit = Dépublier
 workflow.unpublish.crush = Ecraser le brouillon
-</content></xwikidoc>
+</content>
+</xwikidoc>

@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc>
-<web>PublicationWorkflow</web>
-<name>PublicationWorkflowConfigSheet</name>
-<language></language>
-<defaultLanguage>en</defaultLanguage>
-<translation>0</translation>
-<parent>PublicationWorkflow.PublicationWorkflowConfigClass</parent>
-<creator>XWiki.Admin</creator>
-<author>XWiki.Admin</author>
-<customClass></customClass>
-<contentAuthor>XWiki.Admin</contentAuthor>
-<creationDate>1357556835000</creationDate>
-<date>1357556835000</date>
-<contentUpdateDate>1357556835000</contentUpdateDate>
-<version>1.1</version>
-<title>#if($doc.name == 'PublicationWorkflowConfigSheet')PublicationWorkflowConfig Sheet#{else}$services.display.title($doc, {'displayerHint': 'default'})#end</title>
-<template></template>
-<defaultTemplate></defaultTemplate>
-<validationScript></validationScript>
-<comment>Imported from XAR</comment>
-<minorEdit>false</minorEdit>
-<syntaxId>xwiki/2.1</syntaxId>
-<hidden>false</hidden>
-<content>{{velocity}}
+  <web>PublicationWorkflow</web>
+  <name>PublicationWorkflowConfigSheet</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>PublicationWorkflow.PublicationWorkflowConfigClass</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357556835000</creationDate>
+  <date>1357556835000</date>
+  <contentUpdateDate>1357556835000</contentUpdateDate>
+  <version>1.1</version>
+  <title>#if($doc.name == 'PublicationWorkflowConfigSheet')PublicationWorkflowConfig Sheet#{else}$services.display.title($doc, {'displayerHint': 'default'})#end</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{velocity}}
 ## You can modify this page to customize the presentation of your object.
 ## At first you should keep the default presentation and just save the document.
 
@@ -31,4 +32,5 @@
   ; $prop.prettyName
   : $doc.display($prop.getName())
 #end
-{{/velocity}}</content></xwikidoc>
+{{/velocity}}</content>
+</xwikidoc>
