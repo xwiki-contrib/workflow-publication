@@ -1,145 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc>
-<web>PublicationWorkflow</web>
-<name>PublicationWorkflowClass</name>
-<language></language>
-<defaultLanguage>en</defaultLanguage>
-<translation>0</translation>
-<parent>XWiki.XWikiClasses</parent>
-<creator>XWiki.Admin</creator>
-<author>XWiki.Admin</author>
-<customClass></customClass>
-<contentAuthor>XWiki.Admin</contentAuthor>
-<creationDate>1357556434000</creationDate>
-<date>1357824436000</date>
-<contentUpdateDate>1357824436000</contentUpdateDate>
-<version>1.1</version>
-<title>PublicationWorkflow Class</title>
-<template></template>
-<defaultTemplate></defaultTemplate>
-<validationScript></validationScript>
-<comment></comment>
-<minorEdit>false</minorEdit>
-<syntaxId>xwiki/2.0</syntaxId>
-<hidden>true</hidden>
-<class>
-<name>PublicationWorkflow.PublicationWorkflowClass</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<istarget>
-<customDisplay></customDisplay>
-<defaultValue>0</defaultValue>
-<disabled>0</disabled>
-<displayFormType>checkbox</displayFormType>
-<displayType></displayType>
-<name>istarget</name>
-<number>4</number>
-<prettyName>istarget</prettyName>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-</istarget>
-<status>
-<cache>0</cache>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<displayType>select</displayType>
-<multiSelect>0</multiSelect>
-<name>status</name>
-<number>1</number>
-<picker>0</picker>
-<prettyName>status</prettyName>
-<relationalStorage>0</relationalStorage>
-<separator> </separator>
-<separators> ,|</separators>
-<size>1</size>
-<sort>none</sort>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<values>draft|moderating|validating|valid|published|archived</values>
-<classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-</status>
-<target>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<name>target</name>
-<number>3</number>
-<picker>0</picker>
-<prettyName>target</prettyName>
-<size>30</size>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-</target>
-<workflow>
-<cache>0</cache>
-<classname></classname>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<displayType>select</displayType>
-<idField></idField>
-<multiSelect>0</multiSelect>
-<name>workflow</name>
-<number>2</number>
-<picker>0</picker>
-<prettyName>workflow</prettyName>
-<relationalStorage>0</relationalStorage>
-<separator> </separator>
-<separators></separators>
-<size>1</size>
-<sort>none</sort>
-<sql>select doc.title, object.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className = 'PublicationWorkflow.PublicationWorkflowConfigClass' and doc.name != 'PublicationWorkflowConfigTemplate' order by doc.title</sql>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<valueField></valueField>
-<classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
-</workflow>
-</class>
-<object>
-<class>
-<name>XWiki.DocumentSheetBinding</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<sheet>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<name>sheet</name>
-<number>1</number>
-<picker>0</picker>
-<prettyName>Sheet</prettyName>
-<size>30</size>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-</sheet>
-</class>
-<name>PublicationWorkflow.PublicationWorkflowClass</name>
-<number>0</number>
-<className>XWiki.DocumentSheetBinding</className>
-<guid>e8594265-b834-4d3e-b07c-31b427b556eb</guid>
-<property>
-<sheet>XWiki.ClassSheet</sheet>
-</property>
-</object>
-<content>{{velocity}}
+  <web>PublicationWorkflow</web>
+  <name>PublicationWorkflowClass</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>XWiki.XWikiClasses</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357556434000</creationDate>
+  <date>1357824436000</date>
+  <contentUpdateDate>1357824436000</contentUpdateDate>
+  <version>1.1</version>
+  <title>PublicationWorkflow Class</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.0</syntaxId>
+  <hidden>true</hidden>
+  <class>
+    <name>PublicationWorkflow.PublicationWorkflowClass</name>
+    <customClass/>
+    <customMapping/>
+    <defaultViewSheet/>
+    <defaultEditSheet/>
+    <defaultWeb/>
+    <nameField/>
+    <validationScript/>
+    <istarget>
+      <customDisplay/>
+      <defaultValue>0</defaultValue>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>istarget</name>
+      <number>4</number>
+      <prettyName>istarget</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </istarget>
+    <status>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>status</name>
+      <number>1</number>
+      <picker>0</picker>
+      <prettyName>status</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators> ,|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>draft|moderating|validating|valid|published|archived</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </status>
+    <target>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>target</name>
+      <number>3</number>
+      <picker>0</picker>
+      <prettyName>target</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </target>
+    <workflow>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <idField/>
+      <multiSelect>0</multiSelect>
+      <name>workflow</name>
+      <number>2</number>
+      <picker>0</picker>
+      <prettyName>workflow</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql>select doc.title, object.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className = 'PublicationWorkflow.PublicationWorkflowConfigClass' and doc.name != 'PublicationWorkflowConfigTemplate' order by doc.title</sql>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </workflow>
+  </class>
+  <object>
+    <class>
+      <name>XWiki.DocumentSheetBinding</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <sheet>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>sheet</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>Sheet</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </sheet>
+    </class>
+    <name>PublicationWorkflow.PublicationWorkflowClass</name>
+    <number>0</number>
+    <className>XWiki.DocumentSheetBinding</className>
+    <guid>e8594265-b834-4d3e-b07c-31b427b556eb</guid>
+    <property>
+      <sheet>XWiki.ClassSheet</sheet>
+    </property>
+  </object>
+  <content>{{velocity}}
 ## Replace Main with the Space where you want your documents to be created.
 ## Replace the default parent with the one of your choice and save the document.
 ##
 #set($defaultParent = $doc.fullName)
 #set($defaultSpace = 'Main')
-{{/velocity}}</content></xwikidoc>
+{{/velocity}}</content>
+</xwikidoc>

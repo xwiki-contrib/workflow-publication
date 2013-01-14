@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc>
-<web>PublicationWorkflow</web>
-<name>WebHome</name>
-<language></language>
-<defaultLanguage>en</defaultLanguage>
-<translation>0</translation>
-<parent></parent>
-<creator>XWiki.Admin</creator>
-<author>XWiki.Admin</author>
-<customClass></customClass>
-<contentAuthor>XWiki.Admin</contentAuthor>
-<creationDate>1357557002000</creationDate>
-<date>1357557184000</date>
-<contentUpdateDate>1357557184000</contentUpdateDate>
-<version>1.1</version>
-<title></title>
-<template></template>
-<defaultTemplate></defaultTemplate>
-<validationScript></validationScript>
-<comment></comment>
-<minorEdit>false</minorEdit>
-<syntaxId>xwiki/2.1</syntaxId>
-<hidden>false</hidden>
-<content>{{velocity}}
-#set($columns = ["doc.title", "contributor", "moderator", "validator", "_actions"])
+  <web>PublicationWorkflow</web>
+  <name>WebHome</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent/>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357557002000</creationDate>
+  <date>1358163292000</date>
+  <contentUpdateDate>1358163292000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{velocity}}
+
+#set($originalMsg = $msg)
+#set($msg = $services.dynamicMessageToolFactory.createDynamicMessageTool($msg, {
+  'meeting.livetable.doc.title': "Nom du workflow",
+  'meeting.livetable.contributor': "Contributeurs",
+  'meeting.livetable.moderator': "Moderateurs",
+  'meeting.livetable.validator': "Webmasters"
+}))
+#set($columns = ["doc.title", "contributor", "moderator", "validator"])
 #set($columnsProperties = {
    "doc.title" : {"type" : "text", "link" : "view"}
 })
 #set($options = { 
   "className":"PublicationWorkflow.PublicationWorkflowConfigClass",
+  'translationPrefix': 'meeting.livetable.',
   "rowCount": 10
 })
 #livetable("publicationworkflow" $columns $columnsProperties $options)
-{{/velocity}}</content></xwikidoc>
+#set($msg = $originalMsg)
+{{/velocity}}</content>
+</xwikidoc>

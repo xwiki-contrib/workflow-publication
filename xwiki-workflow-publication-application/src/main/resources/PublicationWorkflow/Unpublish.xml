@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>PublicationWorkflow</web>
+  <name>Unpublish</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>PublicationWorkflow.PublicationWorkflowPanel</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357839341000</creationDate>
+  <date>1357913042000</date>
+  <contentUpdateDate>1357896862000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Dépublier</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{velocity}}
+#set($action = "$!request.action")
+#set($workflowdoc = "$!request.workflowdoc")
+#if($workflowdoc == "" || $action == "")
+  {{info}}$msg.get('workflow.refusal.notenoughparams'){{/info}}
+#else
+  #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
+  #set($draft = $services.publicationworkflow.getDraftDocument($workflowDocRef))
+  #set($draft = $xwiki.getDocument($draft))
+  #set($publishedDoc = $xwiki.getDocument($workflowDocRef))
+  #set($diffs = $draft.getContentDiff($draft, $publishedDoc))
+  #set($nDiffs = $listtool.size($diffs)) 
+  #if($nDiffs == 0)
+    $msg.get('workflow.unpublish.noDiff')
+  #else
+    $msg.get('workflow.unpublish.diff')
+  #end
+
+  {{html wiki='true'}}
+  &lt;form action = $xwiki.getURL('PublicationWorkflow.Script') method='post'&gt;
+    &lt;input type='hidden' name='action' value="$action" /&gt;
+    &lt;input type='hidden' name='workflowdoc' value="$workflowdoc" /&gt;
+    #if($nDiffs != 0)
+      &lt;input type="checkbox" name="crush" value="1"/&gt;$msg.get('workflow.unpublish.crush')&lt;br&gt;&lt;br&gt;
+    #end
+    &lt;div class="buttonwrapper"&gt;
+      &lt;input type='submit' class='button' value=$msg.get('workflow.unpublish.submit') /&gt;
+    &lt;/div&gt;
+  &lt;/form&gt;
+  {{/html}}
+
+#end
+{{/velocity}}</content>
+</xwikidoc>
