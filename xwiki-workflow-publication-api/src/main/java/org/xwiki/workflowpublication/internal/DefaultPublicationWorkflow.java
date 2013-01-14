@@ -28,6 +28,8 @@ import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.logging.LogLevel;
+import org.xwiki.logging.event.LogEvent;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -40,6 +42,8 @@ import org.xwiki.workflowpublication.WorkflowConfigManager;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.merge.MergeConfiguration;
+import com.xpn.xwiki.doc.merge.MergeResult;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.classes.PropertyClass;
@@ -73,6 +77,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public final static String STATUS_PUBLISHED = "published";
 
     public final static String STATUS_ARCHIVED = "archived";
+
+    public static final EntityReference COMMENTS_CLASS = new EntityReference("XWikiComments", EntityType.DOCUMENT,
+        new EntityReference("XWiki", EntityType.SPACE));
 
     /**
      * The reference to the xwiki rights, relative to the current wiki. <br />
@@ -390,32 +397,25 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return null;
         }
         DocumentReference targetRef = explicitStringDocRefResolver.resolve(target, document);
+        XWikiDocument newDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
         // TODO: handle checking if the target document is free...
 
-        // TODO: copy this document properly, for now to this awfully dirty crap
-        if (!xcontext.getWiki().copyDocument(document, targetRef, null, true, true, true, xcontext)) {
-            // TODO: add exception on the context
-            return null;
+        this.copyContentsToNewVersion(doc, newDocument, xcontext);
+
+        // setup the workflow and target flag, if a workflow doesn't exist already
+        BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        if (newWorkflow == null) {
+            newWorkflow = newDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
+            newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
+            newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
+            newWorkflow.set(WF_TARGET_FIELDNAME, target, xcontext);
+            newWorkflow.set(WF_CONFIG_REF_FIELDNAME, workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
         }
 
-        // now get the new document and make some modifications
-        XWikiDocument newDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
-        // make it non-hidden
-        newDocument.setHidden(false);
-        // setup the workflow status and target flag
-        BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
-        newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-        newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
-
-        // remove the rights from the published doc, rights will be handled by the xwiki administrators on the space or
-        // on documents
-        this.removeRights(newDocument, xcontext);
-
         // TODO: figure out who should be the author of the published document
-        // TODO: figure out how to handle document archive
         // save the published document prepared like this
-        xcontext.getWiki().saveDocument(newDocument, "Setup the published document data.", true, xcontext);
+        xcontext.getWiki().saveDocument(newDocument, "Published new version of the document.", false, xcontext);
 
         // prepare the draft document as well
         // set the status
@@ -467,7 +467,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             } else {
                 // the existing draft is not published and force to draft is required
                 // copy the contents from target to draft
-                this.copyContentsToNewVersion(targetDoc, draftDoc);
+                this.copyContentsToNewVersion(targetDoc, draftDoc, xcontext);
                 // make the draft doc draft again
                 makeDocumentDraft(draftDoc, null, xcontext);
                 // save the draft document
@@ -548,11 +548,54 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * 
      * @param fromDocument
      * @param toDocument
+     * @return TODO
+     * @throws XWikiException
      */
-    private void copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument)
+    private boolean copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument, XWikiContext xcontext)
+        throws XWikiException
     {
-        // TODO: implement me
-        throw new UnsupportedOperationException();
+        // TODO: do this for all languages of the document to copy from
+
+        // use a fake 3 way merge: previous is toDocument without comments, rights and wf object
+        // current version is current toDocument
+        // next version is fromDocument without comments, rights and wf object
+        XWikiDocument previousDoc = toDocument.clone();
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
+            previousDoc.getDocumentReference()));
+        removeRights(previousDoc, xcontext);
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            previousDoc.getDocumentReference()));
+        // set reference and language
+
+        XWikiDocument nextDoc = fromDocument.clone();
+        // I shouldn't do this, but for merge to work I need to have same doc ref and I don't know how to set it
+        // otherwise
+        nextDoc.setDocumentReference(toDocument.getDocumentReference());
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
+        nextDoc.setHidden(false);
+        removeRights(nextDoc, xcontext);
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            nextDoc.getDocumentReference()));
+
+        MergeResult result = toDocument.merge(previousDoc, nextDoc, new MergeConfiguration(), xcontext);
+
+        List<LogEvent> exception = result.getLog().getLogs(LogLevel.ERROR);
+        if (exception.isEmpty()) {
+            return true;
+        } else {
+            StringBuffer exceptions = new StringBuffer();
+            for (LogEvent e : exception) {
+                if (exceptions.length() == 0) {
+                    exceptions.append(";");
+                }
+                exceptions.append(e.getMessage());
+            }
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                "Could not copy document contents from "
+                    + stringSerializer.serialize(fromDocument.getDocumentReference()) + " to document "
+                    + stringSerializer.serialize(toDocument.getDocumentReference()) + ". Caused by: "
+                    + exceptions.toString());
+        }
     }
 
     /**
