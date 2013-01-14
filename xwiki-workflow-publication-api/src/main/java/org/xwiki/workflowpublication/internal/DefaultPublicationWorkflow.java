@@ -410,7 +410,18 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // remove the rights from the published doc, rights will be handled by the xwiki administrators on the space or
         // on documents
-        this.removeRights(newDocument, xcontext);
+        //this.removeRights(newDocument, xcontext);
+        // No one is supposed to be able to edit the document...
+        BaseObject wfConfig =
+            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
+        if(wfConfig != null)
+        {
+            String validators = publicationRoles.getValidators(wfConfig, xcontext);
+            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
+            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
+            setRights(newDocument, Arrays.asList("edit"), Arrays.asList(validators, contributors, moderators), Arrays.<String> asList(),
+                false, xcontext);
+        }
 
         // TODO: figure out who should be the author of the published document
         // TODO: figure out how to handle document archive
@@ -421,15 +432,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // set the status
         workflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
         // give back the rights to the contributors, or do we? TODO: find out!
-        BaseObject wfConfig =
-            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
+        
+
         if (wfConfig != null) {
             String contributors = publicationRoles.getContributors(wfConfig, xcontext);
             String moderators = publicationRoles.getModerators(wfConfig, xcontext);
             String validators = publicationRoles.getValidators(wfConfig, xcontext);
 
-            // give the view and edit right to contributors, moderators and validators
-            setRights(doc, Arrays.asList("edit", "view"), Arrays.asList(contributors, moderators, validators),
+            // give the view right to contributors, moderators and validators, but can't edit without asking
+            setRights(doc, Arrays.asList("view"), Arrays.asList(contributors, moderators, validators),
                 Arrays.<String> asList(), true, xcontext);
         }
 
@@ -460,20 +471,24 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
             BaseObject workflow = draftDoc.getXObject(PUBLICATION_WORKFLOW_CLASS);
             String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
+            // make the draft doc draft again
+            makeDocumentDraft(draftDoc, workflow, xcontext);
+            /* Anca's code 
             if (STATUS_PUBLISHED.equals(draftStatus) || !forceToDraft) {
                 // a draft exists and it's either in state published, which means identical as the published doc, or
                 // some draft and the overwriting of draft is not required
                 // do nothing, draft will stay in place and target will be deleted at the end of this function
-            } else {
+            }*/
+            if (!forceToDraft) {
+            }
+             else {
                 // the existing draft is not published and force to draft is required
                 // copy the contents from target to draft
                 this.copyContentsToNewVersion(targetDoc, draftDoc);
-                // make the draft doc draft again
-                makeDocumentDraft(draftDoc, null, xcontext);
-                // save the draft document
-                xcontext.getWiki().saveDocument(draftDoc,
-                    "Created draft from published document " + stringSerializer.serialize(document), true, xcontext);
             }
+            // save the draft document
+            xcontext.getWiki().saveDocument(draftDoc,
+                "Created draft from published document " + stringSerializer.serialize(document), true, xcontext);
         } else {
             draftDocRef = this.createDraftDocument(document, xcontext);
         }
@@ -486,6 +501,17 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: put exception on the context
             return null;
         }
+    }
+    
+    @Override
+    public boolean editDraft(DocumentReference document) throws XWikiException
+    {
+        XWikiContext xcontext = getXContext();
+        XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
+        BaseObject workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        makeDocumentDraft(doc, workflow, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Changed status back to draft to enable edit", true, xcontext);
+        return true;
     }
 
     @Override
@@ -542,7 +568,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
     /**
      * Function that marshalls the contents from ##fromDocument## to ##toDocument##, besides the workflow object, the
-     * comment objects, the annotation objects, the rigths and the history. This function does not save the destination
+     * comment objects, the annotation objects, the rights and the history. This function does not save the destination
      * document, the caller is responsible of that, so that they can perform additional operations on the destination
      * document before save.
      * 
@@ -551,8 +577,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      */
     private void copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument)
     {
+        String newContent = fromDocument.getContent() ;
+        toDocument.setContent(newContent) ;
         // TODO: implement me
-        throw new UnsupportedOperationException();
     }
 
     /**
