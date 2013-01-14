@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357836976000</creationDate>
-  <date>1357926814000</date>
-  <contentUpdateDate>1357926814000</contentUpdateDate>
+  <date>1358184399000</date>
+  <contentUpdateDate>1358184399000</contentUpdateDate>
   <version>1.1</version>
   <title>Refuser</title>
   <template/>
@@ -38,6 +38,9 @@
     &lt;br&gt;&lt;br&gt;
     &lt;div class="buttonwrapper"&gt;
       &lt;input type='submit' class='button' value=$msg.get('workflow.refusal.submit') /&gt;
+    &lt;/div&gt;
+    &lt;div class="buttonwrapper"&gt;
+      &lt;input type='submit' class='button' name="cancel" value=$msg.get('workflow.refusal.cancel') /&gt;
     &lt;/div&gt;
   &lt;/form&gt;
   {{/html}}

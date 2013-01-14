@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357557002000</creationDate>
-  <date>1358163292000</date>
-  <contentUpdateDate>1358163292000</contentUpdateDate>
+  <date>1358182015000</date>
+  <contentUpdateDate>1358182015000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <template/>
@@ -25,13 +25,6 @@
   <hidden>false</hidden>
   <content>{{velocity}}
 
-#set($originalMsg = $msg)
-#set($msg = $services.dynamicMessageToolFactory.createDynamicMessageTool($msg, {
-  'meeting.livetable.doc.title': "Nom du workflow",
-  'meeting.livetable.contributor': "Contributeurs",
-  'meeting.livetable.moderator': "Moderateurs",
-  'meeting.livetable.validator': "Webmasters"
-}))
 #set($columns = ["doc.title", "contributor", "moderator", "validator"])
 #set($columnsProperties = {
    "doc.title" : {"type" : "text", "link" : "view"}
@@ -42,6 +35,5 @@
   "rowCount": 10
 })
 #livetable("publicationworkflow" $columns $columnsProperties $options)
-#set($msg = $originalMsg)
 {{/velocity}}</content>
 </xwikidoc>
