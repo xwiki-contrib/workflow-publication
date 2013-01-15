@@ -19,6 +19,7 @@
  */
 package org.xwiki.workflowpublication.internal;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +42,7 @@ import org.xwiki.workflowpublication.WorkflowConfigManager;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.merge.MergeConfiguration;
 import com.xpn.xwiki.doc.merge.MergeResult;
@@ -401,7 +403,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // TODO: handle checking if the target document is free...
 
-        this.copyContentsToNewVersion(doc, newDocument, xcontext);
+        // TODO: do this for all the languages of document to copy from, and remove the languages which are not anymore
+        try {
+            this.copyContentsToNewVersion(doc, newDocument, xcontext);
+        } catch (IOException e) {
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                "Error accessing attachments when copying document "
+                    + stringSerializer.serialize(doc.getDocumentReference()) + " to document "
+                    + stringSerializer.serialize(newDocument.getDocumentReference()), e);
+        }
 
         // setup the workflow and target flag, if a workflow doesn't exist already
         BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
@@ -467,7 +477,16 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             } else {
                 // the existing draft is not published and force to draft is required
                 // copy the contents from target to draft
-                this.copyContentsToNewVersion(targetDoc, draftDoc, xcontext);
+                try {
+                    // TODO: do this for all the languages of document to copy from, and remove the languages which are
+                    // not anymore
+                    this.copyContentsToNewVersion(targetDoc, draftDoc, xcontext);
+                } catch (IOException e) {
+                    throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                        "Error accessing attachments when copying document "
+                            + stringSerializer.serialize(targetDoc.getDocumentReference()) + " to document "
+                            + stringSerializer.serialize(draftDoc.getDocumentReference()), e);
+                }
                 // make the draft doc draft again
                 makeDocumentDraft(draftDoc, null, xcontext);
                 // save the draft document
@@ -550,19 +569,19 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param toDocument
      * @return TODO
      * @throws XWikiException
+     * @throws IOException
      */
     private boolean copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument, XWikiContext xcontext)
-        throws XWikiException
+        throws XWikiException, IOException
     {
-        // TODO: do this for all languages of the document to copy from
-
         // use a fake 3 way merge: previous is toDocument without comments, rights and wf object
         // current version is current toDocument
         // next version is fromDocument without comments, rights and wf object
         XWikiDocument previousDoc = toDocument.clone();
         previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
             previousDoc.getDocumentReference()));
-        removeRights(previousDoc, xcontext);
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
+            previousDoc.getDocumentReference()));
         previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
             previousDoc.getDocumentReference()));
         // set reference and language
@@ -573,11 +592,48 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         nextDoc.setDocumentReference(toDocument.getDocumentReference());
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
         nextDoc.setHidden(false);
-        removeRights(nextDoc, xcontext);
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
             nextDoc.getDocumentReference()));
 
+        // copy the attachments from the fromDocument to toDocument
+        for (XWikiAttachment fromAttachment : fromDocument.getAttachmentList()) {
+            // load the content of the fromAttachment
+            fromAttachment.loadContent(xcontext);
+            XWikiAttachment newAttachment = toDocument.getAttachment(fromAttachment.getFilename());
+            if (newAttachment == null) {
+                newAttachment =
+                    toDocument.addAttachment(fromAttachment.getFilename(),
+                        fromAttachment.getContentInputStream(xcontext), xcontext);
+                newAttachment.setAuthor(fromAttachment.getAuthor());
+                // the date setting is not helping, it will be the date of the copy, but put it anyway
+                newAttachment.setDate(fromAttachment.getDate());
+            } else {
+                // compare the contents of the attachment to know if we should update it or not
+                // TODO: figure out how could we do this without using so much memory
+                newAttachment.loadContent(xcontext);
+                boolean isSameAttachmentContent =
+                    Arrays.equals(newAttachment.getAttachment_content().getContent(), fromAttachment
+                        .getAttachment_content().getContent());
+                // unload the content of the newAttachment after comparison, since we don't need it anymore and we don't
+                // want to waste memory
+                newAttachment.setAttachment_content(null);
+                if (!isSameAttachmentContent) {
+                    // update it, the contents are not equal
+                    newAttachment.setContent(fromAttachment.getContentInputStream(xcontext));
+                }
+            }
+            // unload the attachment content of the from attachment so that we don't waste memory
+            fromAttachment.setAttachment_content(null);
+        }
+
+        // and now merge. Normally the attachments which are not in the next doc are deleted from the current doc
         MergeResult result = toDocument.merge(previousDoc, nextDoc, new MergeConfiguration(), xcontext);
+
+        // for some reason the creator doesn't seem to be copied if the toDocument is new, so let's put it
+        if (toDocument.isNew()) {
+            toDocument.setCreatorReference(fromDocument.getCreatorReference());
+        }
 
         List<LogEvent> exception = result.getLog().getLogs(LogLevel.ERROR);
         if (exception.isEmpty()) {
