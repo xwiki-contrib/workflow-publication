@@ -19,6 +19,7 @@
  */
 package org.xwiki.workflowpublication.internal;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +29,8 @@ import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.logging.LogLevel;
+import org.xwiki.logging.event.LogEvent;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -39,7 +42,10 @@ import org.xwiki.workflowpublication.WorkflowConfigManager;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.merge.MergeConfiguration;
+import com.xpn.xwiki.doc.merge.MergeResult;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.classes.PropertyClass;
@@ -73,6 +79,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public final static String STATUS_PUBLISHED = "published";
 
     public final static String STATUS_ARCHIVED = "archived";
+    
+    public static final EntityReference COMMENTS_CLASS = new EntityReference("XWikiComments", EntityType.DOCUMENT,
+        new EntityReference("XWiki", EntityType.SPACE));
 
     /**
      * The reference to the xwiki rights, relative to the current wiki. <br />
@@ -268,7 +277,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save the document prepared like this
         xcontext.getWiki().saveDocument(doc,
-            "Submitted document " + stringSerializer.serialize(document) + " to moderation ", true, xcontext);
+            "Soumission du document " + stringSerializer.serialize(document) + " à la modération ", true, xcontext);
 
         return true;
     }
@@ -288,7 +297,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Refused moderation: " + reason, false, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Modération refusée: " + reason, false, xcontext);
 
         return true;
     }
@@ -325,7 +334,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save the document prepared like this
         xcontext.getWiki().saveDocument(doc,
-            "Submitted document " + stringSerializer.serialize(document) + " to validation ", true, xcontext);
+            "Soumission du document " + stringSerializer.serialize(document) + " à la validation ", true, xcontext);
 
         return true;
     }
@@ -345,7 +354,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Refused validation: " + reason, false, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Publication refusée: " + reason, false, xcontext);
 
         return true;
     }
@@ -367,7 +376,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // participants to workflow can view it.
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Marked document " + stringSerializer.serialize(document) + " as valid. ",
+        xcontext.getWiki().saveDocument(doc, "Marque le document " + stringSerializer.serialize(document) + " comme étant valide. ",
             true, xcontext);
 
         return true;
@@ -390,62 +399,52 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return null;
         }
         DocumentReference targetRef = explicitStringDocRefResolver.resolve(target, document);
+        XWikiDocument newDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
         // TODO: handle checking if the target document is free...
 
-        // TODO: copy this document properly, for now to this awfully dirty crap
-        if (!xcontext.getWiki().copyDocument(document, targetRef, null, true, true, true, xcontext)) {
-            // TODO: add exception on the context
-            return null;
+        // TODO: do this for all the languages of document to copy from, and remove the languages which are not anymore
+        try {
+            this.copyContentsToNewVersion(doc, newDocument, xcontext);
+        } catch (IOException e) {
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                "Error accessing attachments when copying document "
+                    + stringSerializer.serialize(doc.getDocumentReference()) + " to document "
+                    + stringSerializer.serialize(newDocument.getDocumentReference()), e);
         }
 
-        // now get the new document and make some modifications
-        XWikiDocument newDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
-        // make it non-hidden
-        newDocument.setHidden(false);
-        // setup the workflow status and target flag
+        // setup the workflow and target flag, if a workflow doesn't exist already
         BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
-        newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-        newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
-
-        // remove the rights from the published doc, rights will be handled by the xwiki administrators on the space or
-        // on documents
-        //this.removeRights(newDocument, xcontext);
-        // No one is supposed to be able to edit the document...
-        BaseObject wfConfig =
-            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
-        if(wfConfig != null)
-        {
-            String validators = publicationRoles.getValidators(wfConfig, xcontext);
-            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
-            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
-            setRights(newDocument, Arrays.asList("edit"), Arrays.asList(validators, contributors, moderators), Arrays.<String> asList(),
-                false, xcontext);
+        if (newWorkflow == null) {
+            newWorkflow = newDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
+            newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
+            newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
+            newWorkflow.set(WF_TARGET_FIELDNAME, target, xcontext);
+            newWorkflow.set(WF_CONFIG_REF_FIELDNAME, workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
         }
 
         // TODO: figure out who should be the author of the published document
-        // TODO: figure out how to handle document archive
         // save the published document prepared like this
-        xcontext.getWiki().saveDocument(newDocument, "Setup the published document data.", true, xcontext);
+        xcontext.getWiki().saveDocument(newDocument, "Publication de la nouvelle version du document.", false, xcontext);
 
         // prepare the draft document as well
         // set the status
         workflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
         // give back the rights to the contributors, or do we? TODO: find out!
-        
-
+        BaseObject wfConfig =
+            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
         if (wfConfig != null) {
             String contributors = publicationRoles.getContributors(wfConfig, xcontext);
             String moderators = publicationRoles.getModerators(wfConfig, xcontext);
             String validators = publicationRoles.getValidators(wfConfig, xcontext);
 
-            // give the view right to contributors, moderators and validators, but can't edit without asking
-            setRights(doc, Arrays.asList("view"), Arrays.asList(contributors, moderators, validators),
+            // give the view and edit right to contributors, moderators and validators
+            setRights(doc, Arrays.asList("edit", "view"), Arrays.asList(contributors, moderators, validators),
                 Arrays.<String> asList(), true, xcontext);
         }
 
         // save the the draft document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Published this document to " + stringSerializer.serialize(targetRef),
+        xcontext.getWiki().saveDocument(doc, "Publication de ce document vers " + stringSerializer.serialize(targetRef),
             false, xcontext);
 
         return targetRef;
@@ -471,24 +470,29 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
             BaseObject workflow = draftDoc.getXObject(PUBLICATION_WORKFLOW_CLASS);
             String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
-            // make the draft doc draft again
-            makeDocumentDraft(draftDoc, workflow, xcontext);
-            /* Anca's code 
             if (STATUS_PUBLISHED.equals(draftStatus) || !forceToDraft) {
                 // a draft exists and it's either in state published, which means identical as the published doc, or
                 // some draft and the overwriting of draft is not required
                 // do nothing, draft will stay in place and target will be deleted at the end of this function
-            }*/
-            if (!forceToDraft) {
-            }
-             else {
+            } else {
                 // the existing draft is not published and force to draft is required
                 // copy the contents from target to draft
-                this.copyContentsToNewVersion(targetDoc, draftDoc);
+                try {
+                    // TODO: do this for all the languages of document to copy from, and remove the languages which are
+                    // not anymore
+                    this.copyContentsToNewVersion(targetDoc, draftDoc, xcontext);
+                } catch (IOException e) {
+                    throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                        "Error accessing attachments when copying document "
+                            + stringSerializer.serialize(targetDoc.getDocumentReference()) + " to document "
+                            + stringSerializer.serialize(draftDoc.getDocumentReference()), e);
+                }
+                // make the draft doc draft again
+                makeDocumentDraft(draftDoc, null, xcontext);
+                // save the draft document
+                xcontext.getWiki().saveDocument(draftDoc,
+                    "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
             }
-            // save the draft document
-            xcontext.getWiki().saveDocument(draftDoc,
-                "Created draft from published document " + stringSerializer.serialize(document), true, xcontext);
         } else {
             draftDocRef = this.createDraftDocument(document, xcontext);
         }
@@ -510,7 +514,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
         BaseObject workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
         makeDocumentDraft(doc, workflow, xcontext);
-        xcontext.getWiki().saveDocument(doc, "Changed status back to draft to enable edit", true, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Retour en status brouillon pour permettre l'édition", true, xcontext);
         return true;
     }
 
@@ -532,7 +536,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         publishedDoc.setHidden(true);
 
         // save it
-        xcontext.getWiki().saveDocument(publishedDoc, "Archived document", true, xcontext);
+        xcontext.getWiki().saveDocument(publishedDoc, "Archivation du document", true, xcontext);
 
         return true;
     }
@@ -561,25 +565,104 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         archivedDoc.setHidden(false);
 
         // save it
-        xcontext.getWiki().saveDocument(archivedDoc, "Published document from archive", true, xcontext);
+        xcontext.getWiki().saveDocument(archivedDoc, "Publication du document depuis une archive", true, xcontext);
 
         return true;
     }
 
     /**
      * Function that marshalls the contents from ##fromDocument## to ##toDocument##, besides the workflow object, the
-     * comment objects, the annotation objects, the rights and the history. This function does not save the destination
+     * comment objects, the annotation objects, the rigths and the history. This function does not save the destination
      * document, the caller is responsible of that, so that they can perform additional operations on the destination
      * document before save.
-     * 
+     *
      * @param fromDocument
      * @param toDocument
+     * @return TODO
+     * @throws XWikiException
+     * @throws IOException
      */
-    private void copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument)
+    private boolean copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument, XWikiContext xcontext)
+        throws XWikiException, IOException
     {
-        String newContent = fromDocument.getContent() ;
-        toDocument.setContent(newContent) ;
-        // TODO: implement me
+        // use a fake 3 way merge: previous is toDocument without comments, rights and wf object
+        // current version is current toDocument
+        // next version is fromDocument without comments, rights and wf object
+        XWikiDocument previousDoc = toDocument.clone();
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
+            previousDoc.getDocumentReference()));
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
+            previousDoc.getDocumentReference()));
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            previousDoc.getDocumentReference()));
+        // set reference and language
+
+        XWikiDocument nextDoc = fromDocument.clone();
+        // I shouldn't do this, but for merge to work I need to have same doc ref and I don't know how to set it
+        // otherwise
+        nextDoc.setDocumentReference(toDocument.getDocumentReference());
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
+        nextDoc.setHidden(false);
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            nextDoc.getDocumentReference()));
+
+        // copy the attachments from the fromDocument to toDocument
+        for (XWikiAttachment fromAttachment : fromDocument.getAttachmentList()) {
+            // load the content of the fromAttachment
+            fromAttachment.loadContent(xcontext);
+            XWikiAttachment newAttachment = toDocument.getAttachment(fromAttachment.getFilename());
+            if (newAttachment == null) {
+                newAttachment =
+                    toDocument.addAttachment(fromAttachment.getFilename(),
+                        fromAttachment.getContentInputStream(xcontext), xcontext);
+                newAttachment.setAuthor(fromAttachment.getAuthor());
+                // the date setting is not helping, it will be the date of the copy, but put it anyway
+                newAttachment.setDate(fromAttachment.getDate());
+            } else {
+                // compare the contents of the attachment to know if we should update it or not
+                // TODO: figure out how could we do this without using so much memory
+                newAttachment.loadContent(xcontext);
+                boolean isSameAttachmentContent =
+                    Arrays.equals(newAttachment.getAttachment_content().getContent(), fromAttachment
+                        .getAttachment_content().getContent());
+                // unload the content of the newAttachment after comparison, since we don't need it anymore and we don't
+                // want to waste memory
+                newAttachment.setAttachment_content(null);
+                if (!isSameAttachmentContent) {
+                    // update it, the contents are not equal
+                    newAttachment.setContent(fromAttachment.getContentInputStream(xcontext));
+                }
+            }
+            // unload the attachment content of the from attachment so that we don't waste memory
+            fromAttachment.setAttachment_content(null);
+        }
+
+        // and now merge. Normally the attachments which are not in the next doc are deleted from the current doc
+        MergeResult result = toDocument.merge(previousDoc, nextDoc, new MergeConfiguration(), xcontext);
+
+        // for some reason the creator doesn't seem to be copied if the toDocument is new, so let's put it
+        if (toDocument.isNew()) {
+            toDocument.setCreatorReference(fromDocument.getCreatorReference());
+        }
+
+        List<LogEvent> exception = result.getLog().getLogs(LogLevel.ERROR);
+        if (exception.isEmpty()) {
+            return true;
+        } else {
+            StringBuffer exceptions = new StringBuffer();
+            for (LogEvent e : exception) {
+                if (exceptions.length() == 0) {
+                    exceptions.append(";");
+                }
+                exceptions.append(e.getMessage());
+            }
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                "Could not copy document contents from "
+                    + stringSerializer.serialize(fromDocument.getDocumentReference()) + " to document "
+                    + stringSerializer.serialize(toDocument.getDocumentReference()) + ". Caused by: "
+                    + exceptions.toString());
+        }
     }
 
     /**
