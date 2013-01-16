@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357318493000</creationDate>
-  <date>1358182539000</date>
-  <contentUpdateDate>1358182460000</contentUpdateDate>
+  <date>1358346546000</date>
+  <contentUpdateDate>1358262554000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <template/>
@@ -110,8 +110,17 @@
 #set($discard = $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowPanel'))
 #panelheader($msg.get('workflow.title'))
 #set($isWorkflowDoc = $services.publicationworkflow.isWorkflowDocument($doc.prefixedFullName))
-#if(!$isWorkflowDoc)
+#if($doc.equals($xwiki.getDocument("PublicationWorkflow.Refusal")) || $doc.equals($xwiki.getDocument("PublicationWorkflow.Unpublish")))
+  #if($request.workflowdoc)
+    #set($workflowDoc = $xwiki.getDocument($request.workflowdoc))
+    #set($workflow = $workflowDoc.getObject('PublicationWorkflow.PublicationWorkflowClass'))
+    $msg.get('workflow.currentStatus'): $workflowDoc.display('status', $workflow)    
+  #end
+#elseif(!$isWorkflowDoc)
   ##add a form to start a workflow
+  #if($!request.same == 'true')
+    {{error}} Le document de publication doit être différent du document actuel.{{/error}}
+  #end 
   {{html clean="false"}}
     &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
       &lt;div id="informations"&gt;
@@ -182,11 +191,11 @@
       #end
     #elseif($state == "validating")
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full' onsubmit='return Publish()'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full' id='formPublish'&gt;
           &lt;input type="hidden" name="action" value="publish" /&gt;
           &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.publish')" class="button" /&gt;
+            &lt;input onclick="Publish()" value="$msg.get('workflow.publish')" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
@@ -209,11 +218,11 @@
       #end
     #elseif($state == "valid") 
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full' id="formPublishFromValid"&gt;
           &lt;input type="hidden" name="action" value="publish" /&gt;
           &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.publish')" class="button" /&gt;
+            &lt;input onclick="PublishFromValid()" value="$msg.get('workflow.publish')" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #end
@@ -241,11 +250,11 @@
           &lt;a href="$url"&gt; $msg.get('workflow.panel.draftVersion') &lt;/a&gt;
         &lt;/p&gt;      
 
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full' onsubmit='return Archive()'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' id='formArchive' class='xform full'&gt;
           &lt;input type="hidden" name="action" value="archive" /&gt;
           &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.archive')" class="button" /&gt;
+            &lt;input class="button" onclick="Archive()" value="$msg.get('workflow.archive')"/&gt;
           &lt;/div&gt;
         &lt;/form&gt;
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xform full'&gt;
@@ -266,7 +275,7 @@
           &lt;/div&gt;
         &lt;/form&gt;
       #elseif($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName) &amp;&amp; !$services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
-         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
+         &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xform full'&gt;
           &lt;input type="hidden" name="action" value="backtodraft" /&gt;
           &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
           &lt;div class="buttonwrapper"&gt;
@@ -373,28 +382,56 @@
     <property>
       <code>function Publish()
 {
-  var r=confirm("Veuillez confirmer que vous voulez bien publier ce document");
-  if (r==true)
-  {
-    return true ;
-  }
-else
-  {
-    return false ;
-  } 
+var params = {
+  confirmationText: "Etes vous sûr de vouloir publier ce document ?",
+  yesButtonText: "Oui",
+  noButtonText: "Non"
+};
+var behavior = {
+   onYes: function() {
+      document.getElementById('formPublish').submit();
+   },
+   onNo: function() {
+   }
+};
+
+new XWiki.widgets.ConfirmationBox(behavior, params);
+}
+
+function PublishFromValid()
+{
+var params = {
+  confirmationText: "Etes vous sûr de vouloir publier ce document ?",
+  yesButtonText: "Oui",
+  noButtonText: "Non"
+};
+var behavior = {
+   onYes: function() {
+      document.getElementById('formPublishFromValid').submit();
+   },
+   onNo: function() {
+   }
+};
+
+new XWiki.widgets.ConfirmationBox(behavior, params);
 }
 
 function Archive()
 {
-  var r=confirm("Veuillez confirmer que vous voulez bien archiver ce document");
-  if (r==true)
-  {
-    return true ;
-  }
-else
-  {
-    return false ;
-  } 
+var params = {
+  confirmationText: "Etes vous sûr de vouloir archiver ce document ?",
+  yesButtonText: "Oui",
+  noButtonText: "Non"
+};
+var behavior = {
+   onYes: function() {
+      document.getElementById('formArchive').submit();
+   },
+   onNo: function() {
+   }
+};
+
+new XWiki.widgets.ConfirmationBox(behavior, params);
 }</code>
     </property>
     <property>
@@ -492,9 +529,14 @@ else
   margin-bottom: 11px;
 }
 
-.xwikipanelcontents *
+.xwikipanelcontents .button
 {
   margin-bottom: 1px;
+}
+
+#formArchive .button, #formPublish .button, #formPublishFromValid .button
+{
+  text-align:center;
 }</code>
     </property>
     <property>

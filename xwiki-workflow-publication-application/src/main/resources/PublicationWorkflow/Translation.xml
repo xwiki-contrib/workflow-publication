@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357828638000</creationDate>
-  <date>1358183558000</date>
-  <contentUpdateDate>1358183558000</contentUpdateDate>
+  <date>1358327185000</date>
+  <contentUpdateDate>1358275057000</contentUpdateDate>
   <version>1.1</version>
   <title>Translation</title>
   <template/>
@@ -76,6 +76,8 @@ workflow.refusevalidation = Refuser
 workflow.unpublish = Dépublier
 workflow.archive = Archiver
 workflow.publishfromarchive = Republier
+
+workflow.backtodraft = Passer en brouillon
 workflow.panel.noContributionRight = Vous n'avez pas les droits nécessaires pour contribuer à la création de ce document.
 workflow.panel.noModerationRight = Ce document a été soumis à modération. Il n'est plus disponible pour le moment.
 workflow.panel.noValidationRight = Ce document a été validé et a été transmis aux Webmasters pour publication.
@@ -89,7 +91,7 @@ PublicationWorkflow.PublicationWorkflowClass_status_moderating = En cours de mod
 PublicationWorkflow.PublicationWorkflowClass_status_validating = En cours de validation
 PublicationWorkflow.PublicationWorkflowClass_status_valid = Validé
 PublicationWorkflow.PublicationWorkflowClass_status_published = Publié
-PublicationWorkflow.PublicationWorkflowClass_statsu_archived = Archivé
+PublicationWorkflow.PublicationWorkflowClass_status_archived = Archivé
 
 workflow.script.notenoughparams = Pas assez de paramètres.
 workflow.refusal.notenoughparams = Pas assez de paramètres.
@@ -100,6 +102,7 @@ workflow.refusal.cancel = Annuler
 workflow.unpublish.noDiff = Le brouillon est identique au document publié. Veuillez confirmer la dépublication. 
 workflow.unpublish.diff = Le brouillon n'est pas identique au document publié. Vous pouvez décider d'écraser le brouillon en cochant la case ci-dessous.
 workflow.unpublish.submit = Dépublier
-workflow.unpublish.crush = Ecraser le brouillon
-</content>
+
+workflow.unpublish.cancel = Annuler
+workflow.unpublish.crush = Ecraser le brouillon</content>
 </xwikidoc>

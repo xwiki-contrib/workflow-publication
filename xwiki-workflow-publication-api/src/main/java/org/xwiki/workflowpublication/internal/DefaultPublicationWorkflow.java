@@ -474,6 +474,14 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // a draft exists and it's either in state published, which means identical as the published doc, or
                 // some draft and the overwriting of draft is not required
                 // do nothing, draft will stay in place and target will be deleted at the end of this function
+                if(STATUS_PUBLISHED.equals(draftStatus))  //If status is published, change draft status back to draft
+                {
+                 // make the draft doc draft again
+                    makeDocumentDraft(draftDoc, workflow, xcontext);
+                    // save the draft document
+                    xcontext.getWiki().saveDocument(draftDoc,
+                        "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
+                }
             } else {
                 // the existing draft is not published and force to draft is required
                 // copy the contents from target to draft
@@ -488,7 +496,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                             + stringSerializer.serialize(draftDoc.getDocumentReference()), e);
                 }
                 // make the draft doc draft again
-                makeDocumentDraft(draftDoc, null, xcontext);
+                makeDocumentDraft(draftDoc, workflow, xcontext);
                 // save the draft document
                 xcontext.getWiki().saveDocument(draftDoc,
                     "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
@@ -680,12 +688,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             workflowObj = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
         }
 
-        workflow.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
-        workflow.set(WF_IS_TARGET_FIELDNAME, 0, xcontext);
+        workflowObj.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
+        workflowObj.set(WF_IS_TARGET_FIELDNAME, 0, xcontext);
         doc.setHidden(true);
 
         BaseObject wfConfig =
-            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
+            configManager.getWorkflowConfig(workflowObj.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
 
         if (wfConfig != null) {
             String contributors = publicationRoles.getContributors(wfConfig, xcontext);

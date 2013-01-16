@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357556398000</creationDate>
-  <date>1358187692000</date>
-  <contentUpdateDate>1358184507000</contentUpdateDate>
+  <date>1358346057000</date>
+  <contentUpdateDate>1358346057000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <template/>
@@ -38,7 +38,12 @@
   #if($action == "start")
     #set($targetReference = $services.model.createDocumentReference("", "$!request.space", "$!request.page"))
     #set($workflowConfig = "$request.workflow")
-    #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $workflowConfig, $targetReference))
+    ##TODO : Check that the target and the existing doc are differents
+    #if($targetReference.equals($workflowDocRef))
+      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
+    #else
+      #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $workflowConfig, $targetReference))
+    #end
   #elseif ($action == "submitformoderation")
     #set($result = $services.publicationworkflow.submitForModeration($workflowDocRef))
   #elseif ($action == "submitforvalidation")
@@ -53,7 +58,7 @@
     #set($result = $services.publicationworkflow.refuseValidation($workflowDocRef, "$!request.reason"))
   #elseif ($action == "editDraft")
     #set($result = $services.publicationworkflow.editDraft($workflowDocRef))
-  #elseif ($action == 'unpublish')
+  #elseif ($action == 'unpublish' &amp;&amp; !$request.cancel)
     #set($erase = ($request.crush == '1'))
     #set($result = $services.publicationworkflow.unpublish($workflowDocRef, $erase))
   #elseif ($action == 'archive')
@@ -61,7 +66,7 @@
   #elseif ($action == 'publishfromarchive')
     #set($result = $services.publicationworkflow.publishFromArchive($workflowDocRef))
   #elseif ($action == 'backtodraft')
-    #set($result = $services.publicationworkflow.unpublish($workflowDocRef, false))
+    #set($result = $services.publicationworkflow.unarchive($workflowDocRef, false))
   #end       
   
   #if ($result)
@@ -80,7 +85,11 @@
         #foreach($user in $users)
           #set($person = $user.getProperty('member').value)
           #set($mail = $xwiki.getUserName($person, "$email", false))
-          #set($recipients = "$recipients $mail,")
+          #if($recipients != "")
+            #set($recipients = "$recipients, $mail")
+          #else
+            #set($recipients = $mail)
+          #end
         #end
         #if($action=='submitformoderation')
           #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
@@ -96,7 +105,11 @@
         #foreach($user in $users)
           #set($person = $user.getProperty('member').value)
           #set($mail = $xwiki.getUserName($person, "$email", false))
-          #set($recipients = "$recipients $mail,")
+          #if($recipients != "")
+            #set($recipients = "$recipients, $mail")
+          #else
+            #set($recipients = $mail)
+          #end
         #end
         #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
         #if($action == 'submitforvalidation')
@@ -111,14 +124,18 @@
         #foreach($user in $users)
           #set($person = $user.getProperty('member').value)
           #set($mail = $xwiki.getUserName($person, "$email", false))
-          #set($recipients = "$recipients $mail,")
+          #if($recipients != "")
+            #set($recipients = "$recipients, $mail")
+          #else
+            #set($recipients = $mail)
+          #end
         #end
         #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
         #set($discard = $xwiki.mailsender.sendMessageFromTemplate("$context.user", $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de validation", $map))
       #end
     #end
 
-    #if($action == 'unpublish')          ##If the document is being unpublished we redirect to the draft
+    #if($action == 'unpublish' || $action=='backtodraft')          ##If the document is being unpublished or unarchived we redirect to the draft
       #set($draft = $services.publicationworkflow.getDraftDocument($workflowDocRef))
       $response.sendRedirect($xwiki.getURL($draft, 'view', ''))
     #elseif($action == 'publish')        ##If the document is being published we redirect to the final doc
