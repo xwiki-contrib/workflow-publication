@@ -79,7 +79,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public final static String STATUS_PUBLISHED = "published";
 
     public final static String STATUS_ARCHIVED = "archived";
-
+    
     public static final EntityReference COMMENTS_CLASS = new EntityReference("XWikiComments", EntityType.DOCUMENT,
         new EntityReference("XWiki", EntityType.SPACE));
 
@@ -277,7 +277,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save the document prepared like this
         xcontext.getWiki().saveDocument(doc,
-            "Submitted document " + stringSerializer.serialize(document) + " to moderation ", true, xcontext);
+            "Soumission du document " + stringSerializer.serialize(document) + " à la modération ", true, xcontext);
 
         return true;
     }
@@ -297,7 +297,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Refused moderation: " + reason, false, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Modération refusée: " + reason, false, xcontext);
 
         return true;
     }
@@ -334,7 +334,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save the document prepared like this
         xcontext.getWiki().saveDocument(doc,
-            "Submitted document " + stringSerializer.serialize(document) + " to validation ", true, xcontext);
+            "Soumission du document " + stringSerializer.serialize(document) + " à la validation ", true, xcontext);
 
         return true;
     }
@@ -354,7 +354,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Refused validation: " + reason, false, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Publication refusée: " + reason, false, xcontext);
 
         return true;
     }
@@ -376,7 +376,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // participants to workflow can view it.
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Marked document " + stringSerializer.serialize(document) + " as valid. ",
+        xcontext.getWiki().saveDocument(doc, "Marque le document " + stringSerializer.serialize(document) + " comme étant valide. ",
             true, xcontext);
 
         return true;
@@ -425,7 +425,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // TODO: figure out who should be the author of the published document
         // save the published document prepared like this
-        xcontext.getWiki().saveDocument(newDocument, "Published new version of the document.", false, xcontext);
+        xcontext.getWiki().saveDocument(newDocument, "Publication de la nouvelle version du document.", false, xcontext);
 
         // prepare the draft document as well
         // set the status
@@ -444,7 +444,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         // save the the draft document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Published this document to " + stringSerializer.serialize(targetRef),
+        xcontext.getWiki().saveDocument(doc, "Publication de ce document vers " + stringSerializer.serialize(targetRef),
             false, xcontext);
 
         return targetRef;
@@ -474,6 +474,14 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // a draft exists and it's either in state published, which means identical as the published doc, or
                 // some draft and the overwriting of draft is not required
                 // do nothing, draft will stay in place and target will be deleted at the end of this function
+                if(STATUS_PUBLISHED.equals(draftStatus))  //If status is published, change draft status back to draft
+                {
+                 // make the draft doc draft again
+                    makeDocumentDraft(draftDoc, workflow, xcontext);
+                    // save the draft document
+                    xcontext.getWiki().saveDocument(draftDoc,
+                        "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
+                }
             } else {
                 // the existing draft is not published and force to draft is required
                 // copy the contents from target to draft
@@ -488,10 +496,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                             + stringSerializer.serialize(draftDoc.getDocumentReference()), e);
                 }
                 // make the draft doc draft again
-                makeDocumentDraft(draftDoc, null, xcontext);
+                makeDocumentDraft(draftDoc, workflow, xcontext);
                 // save the draft document
                 xcontext.getWiki().saveDocument(draftDoc,
-                    "Created draft from published document " + stringSerializer.serialize(document), true, xcontext);
+                    "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
             }
         } else {
             draftDocRef = this.createDraftDocument(document, xcontext);
@@ -505,6 +513,17 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: put exception on the context
             return null;
         }
+    }
+    
+    @Override
+    public boolean editDraft(DocumentReference document) throws XWikiException
+    {
+        XWikiContext xcontext = getXContext();
+        XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
+        BaseObject workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        makeDocumentDraft(doc, workflow, xcontext);
+        xcontext.getWiki().saveDocument(doc, "Retour en status brouillon pour permettre l'édition", true, xcontext);
+        return true;
     }
 
     @Override
@@ -525,7 +544,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         publishedDoc.setHidden(true);
 
         // save it
-        xcontext.getWiki().saveDocument(publishedDoc, "Archived document", true, xcontext);
+        xcontext.getWiki().saveDocument(publishedDoc, "Archivation du document", true, xcontext);
 
         return true;
     }
@@ -554,7 +573,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         archivedDoc.setHidden(false);
 
         // save it
-        xcontext.getWiki().saveDocument(archivedDoc, "Published document from archive", true, xcontext);
+        xcontext.getWiki().saveDocument(archivedDoc, "Publication du document depuis une archive", true, xcontext);
 
         return true;
     }
@@ -564,7 +583,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * comment objects, the annotation objects, the rigths and the history. This function does not save the destination
      * document, the caller is responsible of that, so that they can perform additional operations on the destination
      * document before save.
-     * 
+     *
      * @param fromDocument
      * @param toDocument
      * @return TODO
@@ -669,12 +688,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             workflowObj = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
         }
 
-        workflow.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
-        workflow.set(WF_IS_TARGET_FIELDNAME, 0, xcontext);
+        workflowObj.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
+        workflowObj.set(WF_IS_TARGET_FIELDNAME, 0, xcontext);
         doc.setHidden(true);
 
         BaseObject wfConfig =
-            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
+            configManager.getWorkflowConfig(workflowObj.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
 
         if (wfConfig != null) {
             String contributors = publicationRoles.getContributors(wfConfig, xcontext);
