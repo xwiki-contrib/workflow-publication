@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>PublicationWorkflow</web>
+  <name>Overview</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>PublicationWorkflow.WebHome</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357902263000</creationDate>
+  <date>1358178349000</date>
+  <contentUpdateDate>1358178349000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Vue d'ensemble</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{velocity}}
+
+#set($xwqlstatement = "from doc.object('PublicationWorkflow.PublicationWorkflowClass') as workflow")
+#set($moderating = [])
+#set($validating = [])
+## Return all the results from the current wiki
+#set($result = $services.query.xwql("$xwqlstatement").execute())
+#foreach($item in $result)
+  #set($workflowDoc = $xwiki.getDocument($item))
+  #set($workflowObject = $workflowDoc.getObject('PublicationWorkflow.PublicationWorkflowClass'))
+  #set($isTarget = $workflowObject.getProperty('istarget').value)
+  #set($status = $workflowObject.getProperty('status').value)
+  #if($isTarget == '0')
+    #if($status == 'moderating' &amp;&amp; $services.publicationroles.canModerate($xcontext.user, $workflowDoc.prefixedFullName)) ##If the status is moderating and the current user has moderating rights
+      #set($discard = $moderating.add($item))
+    #elseif($status == 'validating' &amp;&amp; $services.publicationroles.canValidate($xcontext.user, $workflowDoc.prefixedFullName))
+      #set($discard = $validating.add($item))
+    #end
+  #end
+#end
+
+#if($request.moderateAll == 'true')
+  #set($fail = 0)
+  #set($newModerating = [])
+  #foreach($document in $moderating)
+    #set($xdoc = $xwiki.getDocument($document))
+    #set($docRef = $xdoc.getDocumentReference())
+    #set($result = $services.publicationworkflow.submitForValidation($docRef))
+    #if(!$result)
+      {{warning}}Un problème a été rencontré lors de la validation du document [[$xdoc]]{{/warning}}
+      #set($fail = 1) 
+      #set($discard = $newModerating.add($document))
+    #else
+      #set($discard = $validating.add($document))
+    #end
+  #end
+  #if($fail == 0)
+    {{info}}Tous les documents ont été validés{{/info}}
+  #end
+  #set($moderating = $newModerating)
+#elseif($request.publishAll == 'true')
+  #set($fail = 0)
+  #set($newValidating = [])
+  #foreach($document in $validating)
+    #set($xdoc = $xwiki.getDocument($document))
+    #set($docRef = $xdoc.getDocumentReference())
+    #set($result = $services.publicationworkflow.publish($docRef))
+    #if(!$result)
+      {{warning}}Un problème a été rencontré lors de la publication du document [[$xdoc]]{{/warning}}
+      #set($fail = 1) 
+      #set($discard = $newValidating.add($document))
+    #end
+  #end
+  #if($fail == 0)
+    {{info}}Tous les documents ont été publiés{{/info}}
+  #end
+  #set($validating = $newValidating)
+#end
+
+#if($listtool.size($moderating) &gt; 0)
+  Liste des documents en cours de modération :
+  #foreach($document in $moderating)
+    * [[$document]]
+  #end
+
+  {{html}}
+    &lt;form action='' method='post'&gt;
+      &lt;input type='hidden' name='moderateAll' value='true'/&gt;
+      &lt;div class='buttonwrapper'&gt;
+        &lt;input type='submit' class='button' value='Valider tous ces documents'/&gt;
+      &lt;/div&gt;
+    &lt;/form&gt;
+  {{/html}}
+
+#else
+  //Il n'y a aucun document en cours de modération pour lequel vous avez le status de modérateur//
+#end 
+
+#if($listtool.size($validating) &gt; 0)
+  Liste des documents en cours de validation :
+  #foreach($document in $validating)
+    * [[$document]]
+  #end
+
+  {{html}}
+    &lt;form action='' method='post'&gt;
+      &lt;input type='hidden' name='publishAll' value='true'/&gt; 
+      &lt;div class='buttonwrapper'&gt;
+        &lt;input type='submit' class='button' value='Publier tous ces documents'/&gt;
+      &lt;/div&gt;
+    &lt;/form&gt;
+  {{/html}}
+
+#else
+  //Il n'y a aucun document en cours de validation pour lequel vous avez le status de Webmaster//
+#end
+{{/velocity}}</content>
+</xwikidoc>

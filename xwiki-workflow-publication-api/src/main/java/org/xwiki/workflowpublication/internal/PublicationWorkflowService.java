@@ -257,6 +257,23 @@ public class PublicationWorkflowService implements ScriptService
             return null;
         }
     }
+    
+    public boolean editDraft(DocumentReference document)
+    {
+        XWikiContext xcontext = getXContext();
+        try {
+            if (this.publicationRoles.canContribute(xcontext.getUserReference(),
+                xcontext.getWiki().getDocument(document, xcontext), xcontext)) {
+                return this.publicationWorkflow.editDraft(document);
+            } else {
+                return false;
+            }
+        } catch (XWikiException e) {
+            logger.warn("Could not change " + stringSerializer.serialize(document) + " status to draft");
+            // TODO: put error on context
+            return false;
+        }
+    }
 
     public boolean archive(DocumentReference document)
     {

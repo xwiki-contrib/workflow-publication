@@ -1,122 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc>
-<web>PublicationWorkflow</web>
-<name>PublicationWorkflowConfigTemplate</name>
-<language></language>
-<defaultLanguage>en</defaultLanguage>
-<translation>0</translation>
-<parent>PublicationWorkflow.PublicationWorkflowConfigClass</parent>
-<creator>XWiki.Admin</creator>
-<author>XWiki.Admin</author>
-<customClass></customClass>
-<contentAuthor>XWiki.Admin</contentAuthor>
-<creationDate>1357556833000</creationDate>
-<date>1357556856000</date>
-<contentUpdateDate>1357556856000</contentUpdateDate>
-<version>1.1</version>
-<title>PublicationWorkflowConfig Template</title>
-<template></template>
-<defaultTemplate></defaultTemplate>
-<validationScript></validationScript>
-<comment></comment>
-<minorEdit>false</minorEdit>
-<syntaxId>xwiki/2.1</syntaxId>
-<hidden>false</hidden>
-<object>
-<class>
-<name>PublicationWorkflow.PublicationWorkflowConfigClass</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<contributor>
-<cache>0</cache>
-<classname></classname>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<displayType>select</displayType>
-<idField></idField>
-<multiSelect>0</multiSelect>
-<name>contributor</name>
-<number>1</number>
-<picker>0</picker>
-<prettyName>contributor</prettyName>
-<relationalStorage>0</relationalStorage>
-<separator> </separator>
-<separators></separators>
-<size>1</size>
-<sort>none</sort>
-<sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<valueField></valueField>
-<classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
-</contributor>
-<moderator>
-<cache>0</cache>
-<classname></classname>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<displayType>select</displayType>
-<idField></idField>
-<multiSelect>0</multiSelect>
-<name>moderator</name>
-<number>2</number>
-<picker>0</picker>
-<prettyName>moderator</prettyName>
-<relationalStorage>0</relationalStorage>
-<separator> </separator>
-<separators></separators>
-<size>1</size>
-<sort>none</sort>
-<sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<valueField></valueField>
-<classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
-</moderator>
-<validator>
-<cache>0</cache>
-<classname></classname>
-<customDisplay></customDisplay>
-<disabled>0</disabled>
-<displayType>select</displayType>
-<idField></idField>
-<multiSelect>0</multiSelect>
-<name>validator</name>
-<number>3</number>
-<picker>0</picker>
-<prettyName>validator</prettyName>
-<relationalStorage>0</relationalStorage>
-<separator> </separator>
-<separators></separators>
-<size>1</size>
-<sort>none</sort>
-<sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
-<unmodifiable>0</unmodifiable>
-<validationMessage></validationMessage>
-<validationRegExp></validationRegExp>
-<valueField></valueField>
-<classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
-</validator>
-</class>
-<name>PublicationWorkflow.PublicationWorkflowConfigTemplate</name>
-<number>0</number>
-<className>PublicationWorkflow.PublicationWorkflowConfigClass</className>
-<guid>9b9c5b6f-15d5-4de6-a649-0d01841d0c04</guid>
-<property>
-<contributor></contributor>
-</property>
-<property>
-<moderator></moderator>
-</property>
-<property>
-<validator></validator>
-</property>
-</object>
-<content></content></xwikidoc>
+  <web>PublicationWorkflow</web>
+  <name>PublicationWorkflowConfigTemplate</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>PublicationWorkflow.PublicationWorkflowConfigClass</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357556833000</creationDate>
+  <date>1358262522000</date>
+  <contentUpdateDate>1358262522000</contentUpdateDate>
+  <version>1.1</version>
+  <title>PublicationWorkflowConfig Template</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <object>
+    <class>
+      <name>PublicationWorkflow.PublicationWorkflowConfigClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <contributor>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <idField/>
+        <multiSelect>0</multiSelect>
+        <name>contributor</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>contributor</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort>none</sort>
+        <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+      </contributor>
+      <moderator>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <idField/>
+        <multiSelect>0</multiSelect>
+        <name>moderator</name>
+        <number>2</number>
+        <picker>0</picker>
+        <prettyName>moderator</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort>none</sort>
+        <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+      </moderator>
+      <validator>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <idField/>
+        <multiSelect>0</multiSelect>
+        <name>validator</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>validator</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort>none</sort>
+        <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+      </validator>
+    </class>
+    <name>PublicationWorkflow.PublicationWorkflowConfigTemplate</name>
+    <number>0</number>
+    <className>PublicationWorkflow.PublicationWorkflowConfigClass</className>
+    <guid>9b9c5b6f-15d5-4de6-a649-0d01841d0c04</guid>
+    <property>
+      <contributor/>
+    </property>
+    <property>
+      <moderator/>
+    </property>
+    <property>
+      <validator/>
+    </property>
+  </object>
+  <content/>
+</xwikidoc>

@@ -134,6 +134,15 @@ public interface PublicationWorkflow
     public DocumentReference unpublish(DocumentReference document, boolean forceToDraft) throws XWikiException;
 
     /**
+     * To edit back a draft whose status is published
+     * 
+     * @param document The draft that we want to edit
+     * @return
+     * @throws XWikiException
+     */
+    public boolean editDraft(DocumentReference document) throws XWikiException;
+    
+    /**
      * published -> archived. Not yet sure how it would work.
      * 
      * @param document the published document that should be archived.
