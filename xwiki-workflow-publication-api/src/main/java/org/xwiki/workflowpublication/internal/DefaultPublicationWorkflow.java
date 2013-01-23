@@ -22,8 +22,6 @@ package org.xwiki.workflowpublication.internal;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -82,7 +80,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public final static String STATUS_PUBLISHED = "published";
 
     public final static String STATUS_ARCHIVED = "archived";
-    
+
     public static final EntityReference COMMENTS_CLASS = new EntityReference("XWikiComments", EntityType.DOCUMENT,
         new EntityReference("XWiki", EntityType.SPACE));
 
@@ -111,7 +109,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * The 'allow / deny' property of the rights class.
      */
     public static final String RIGHTS_ALLOWDENY = "allow";
-    
 
     /**
      * For translations.
@@ -146,7 +143,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Inject
     @Named("compactwiki")
     private EntityReferenceSerializer<String> compactWikiSerializer;
-    
+
     @Inject
     private WorkflowConfigManager configManager;
 
@@ -234,13 +231,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflowObject, xcontext);
 
         // save the document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.start", Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
-        if(message.equals("workflow.save.start"))
-        {
-            message = "Started workflow " + workflowConfig + " on document " +stringSerializer.serialize(docName) ;
-        }
-        xcontext.getWiki().saveDocument(doc, message, true,xcontext);
+        String defaultMessage =
+            "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName);
+        String message =
+            this.getMessage(defaultMessage, "workflow.save.start",
+                Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
+        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
     }
@@ -289,12 +285,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // TODO: prevent the save protection from being executed, when it would be implemented
 
         // save the document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.submitForModeration", Arrays.asList(stringSerializer.serialize(document).toString()));
-        if(message.equals("workflow.save.submitForModeration"))
-        {
-            message = "Submitted document " + stringSerializer.serialize(document) + " for moderation " ;
-        }
+        String defaultMessage = "Submitted document " + stringSerializer.serialize(document) + " for moderation ";
+        String message =
+            this.getMessage("workflow.save.submitForModeration", defaultMessage,
+                Arrays.asList(stringSerializer.serialize(document).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
@@ -315,12 +309,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.refuseModeration", Arrays.asList(reason));
-        if(message.equals("workflow.save.refuseModeration"))
-        {
-            message = "Refused moderation : " + reason ;
-        }
+        String defaultMessage = "Refused moderation : " + reason;
+        String message = getMessage("workflow.save.refuseModeration", defaultMessage, Arrays.asList(reason));
         xcontext.getWiki().saveDocument(doc, message, false, xcontext);
 
         return true;
@@ -357,12 +347,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // TODO: prevent the save protection from being executed.
 
         // save the document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.submitForValidation", Arrays.asList(stringSerializer.serialize(document).toString()));
-        if(message.equals("workflow.save.submitForValidation"))
-        {
-            message = "Submitted document " + stringSerializer.serialize(document) + "for validation." ;
-        }
+        String defaultMessage = "Submitted document " + stringSerializer.serialize(document) + "for validation.";
+        String message =
+            getMessage("workflow.save.submitForValidation", defaultMessage,
+                Arrays.asList(stringSerializer.serialize(document).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
@@ -383,12 +371,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.refuseValidation", Arrays.asList(reason));
-        if(message.equals("workflow.save.refuseValidation"))
-        {
-            message = "Refused publication : " + reason ;
-        }
+        String defaultMessage = "Refused publication : " + reason;
+        String message = getMessage("workflow.save.refuseValidation", defaultMessage, Arrays.asList(reason));
         xcontext.getWiki().saveDocument(doc, message, false, xcontext);
 
         return true;
@@ -411,12 +395,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // participants to workflow can view it.
 
         // save the document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.validate", Arrays.asList(stringSerializer.serialize(document).toString()));
-        if(message.equals("workflow.save.validate"))
-        {
-            message = "Marked document " + stringSerializer.serialize(document) + " as valid." ;
-        }
+        String defaultMessage = "Marked document " + stringSerializer.serialize(document) + " as valid.";
+        String message =
+            getMessage("workflow.save.validate", defaultMessage,
+                Arrays.asList(stringSerializer.serialize(document).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
@@ -465,12 +447,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // TODO: figure out who should be the author of the published document
         // save the published document prepared like this
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.publishNew");
-        if(message.equals("workflow.save.publishNew"))
-        {
-            message = "Published new version of the document." ;
-        }
+        String defaultMessage = "Published new version of the document.";
+        String message = getMessage("workflow.save.publishNew", defaultMessage, null);
         xcontext.getWiki().saveDocument(newDocument, message, false, xcontext);
 
         // prepare the draft document as well
@@ -490,11 +468,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         // save the the draft document prepared like this
-        String message2 = messageTool.get("workflow.save.publishDraft", Arrays.asList(stringSerializer.serialize(targetRef).toString()));
-        if(message2.equals("workflow.save.publishDraft"))
-        {
-            message = "Published this document to " + stringSerializer.serialize(document) + "." ;
-        }
+        String defaultMessage2 = "Published this document to " + stringSerializer.serialize(document) + ".";
+        String message2 =
+            getMessage("workflow.save.publishDraft", defaultMessage2,
+                Arrays.asList(stringSerializer.serialize(targetRef).toString()));
         xcontext.getWiki().saveDocument(doc, message2, false, xcontext);
 
         return targetRef;
@@ -524,17 +501,16 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // a draft exists and it's either in state published, which means identical as the published doc, or
                 // some draft and the overwriting of draft is not required
                 // do nothing, draft will stay in place and target will be deleted at the end of this function
-                if(STATUS_PUBLISHED.equals(draftStatus))  //If status is published, change draft status back to draft
+                if (STATUS_PUBLISHED.equals(draftStatus)) // If status is published, change draft status back to draft
                 {
-                 // make the draft doc draft again
+                    // make the draft doc draft again
                     makeDocumentDraft(draftDoc, workflow, xcontext);
                     // save the draft document
-                    this.messageTool = new XWikiMessageTool(null, xcontext);
-                    String message = messageTool.get("workflow.save.unpublish",  Arrays.asList(stringSerializer.serialize(document).toString()));
-                    if(message.equals("workflow.save.unpublish"))
-                    {
-                        message = "Created draft from published document" + stringSerializer.serialize(document) + "." ;
-                    }
+                    String defaultMessage =
+                        "Created draft from published document" + stringSerializer.serialize(document) + ".";
+                    String message =
+                        getMessage("workflow.save.unpublish", defaultMessage,
+                            Arrays.asList(stringSerializer.serialize(document).toString()));
                     xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
                 }
             } else {
@@ -553,12 +529,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // make the draft doc draft again
                 makeDocumentDraft(draftDoc, workflow, xcontext);
                 // save the draft document
-                this.messageTool = new XWikiMessageTool(null, xcontext);
-                String message = messageTool.get("workflow.save.unpublish",  Arrays.asList(stringSerializer.serialize(document).toString()));
-                if(message.equals("workflow.save.unpublish"))
-                {
-                    message = "Created draft from published document" + stringSerializer.serialize(document) + "." ;
-                }
+                String defaultMessage =
+                    "Created draft from published document" + stringSerializer.serialize(document) + ".";
+                String message =
+                    getMessage("workflow.save.unpublish", defaultMessage,
+                        Arrays.asList(stringSerializer.serialize(document).toString()));
                 xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
             }
         } else {
@@ -574,7 +549,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return null;
         }
     }
-    
+
     @Override
     public boolean editDraft(DocumentReference document) throws XWikiException
     {
@@ -582,19 +557,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
         BaseObject workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
         String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
-        if(draftStatus.equals(STATUS_PUBLISHED))
-        {
+        if (draftStatus.equals(STATUS_PUBLISHED)) {
             makeDocumentDraft(doc, workflow, xcontext);
-            this.messageTool = new XWikiMessageTool(null, xcontext);
-            String message = messageTool.get("workflow.save.backToDraft");
-            if(message.equals("workflow.save.backToDraft"))
-            {
-                message = "Back to draft status to enable editing." ;
-            }
+            String defaultMessage = "Back to draft status to enable editing.";
+            String message = getMessage("workflow.save.backToDraft", defaultMessage, null);
             xcontext.getWiki().saveDocument(doc, message, true, xcontext);
             return true;
-        }
-        else
+        } else
             return false;
     }
 
@@ -616,12 +585,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         publishedDoc.setHidden(true);
 
         // save it
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.archive");
-        if(message.equals("workflow.save.archive"))
-        {
-            message = "Archived document." ;
-        }
+        String defaultMessage = "Archived document.";
+        String message = getMessage("workflow.save.archive", defaultMessage, null);
         xcontext.getWiki().saveDocument(publishedDoc, message, true, xcontext);
 
         return true;
@@ -651,12 +616,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         archivedDoc.setHidden(false);
 
         // save it
-        this.messageTool = new XWikiMessageTool(null, xcontext);
-        String message = messageTool.get("workflow.save.publishFromArchive");
-        if(message.equals("workflow.save.publishFromArchive"))
-        {
-            message = "Published document from an archive." ;
-        }
+        String defaultMessage = "Published document from an archive.";
+        String message = messageTool.get("workflow.save.publishFromArchive", defaultMessage, null);
         xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
 
         return true;
@@ -667,7 +628,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * comment objects, the annotation objects, the rigths and the history. This function does not save the destination
      * document, the caller is responsible of that, so that they can perform additional operations on the destination
      * document before save.
-     *
+     * 
      * @param fromDocument
      * @param toDocument
      * @return TODO
@@ -854,5 +815,29 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     private XWikiContext getXContext()
     {
         return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+    }
+
+    /**
+     * @param key Translation key
+     * @param params Parameters to include in the translation
+     * @param defaultMessage Message to display if the message tool
+     * @return message to use
+     */
+    private String getMessage(String key, String defaultMessage, List<String> params)
+    {
+        if (this.messageTool == null) {
+            this.messageTool = this.getXContext().getMessageTool();
+        }
+        String message = "";
+        if (params != null) {
+            message = messageTool.get(key, params);
+        } else {
+            message = messageTool.get(key);
+        }
+        if (message.equals(key)) {
+            return defaultMessage;
+        } else {
+            return message;
+        }
     }
 }
