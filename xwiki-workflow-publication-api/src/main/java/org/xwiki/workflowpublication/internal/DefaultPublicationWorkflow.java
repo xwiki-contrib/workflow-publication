@@ -22,6 +22,8 @@ package org.xwiki.workflowpublication.internal;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -49,6 +51,7 @@ import com.xpn.xwiki.doc.merge.MergeResult;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.classes.PropertyClass;
+import com.xpn.xwiki.web.XWikiMessageTool;
 
 /**
  * @version $Id$
@@ -108,6 +111,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * The 'allow / deny' property of the rights class.
      */
     public static final String RIGHTS_ALLOWDENY = "allow";
+    
+
+    /**
+     * For translations.
+     */
+    private XWikiMessageTool messageTool;
 
     /**
      * The execution, to get the context from it.
@@ -137,7 +146,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Inject
     @Named("compactwiki")
     private EntityReferenceSerializer<String> compactWikiSerializer;
-
+    
     @Inject
     private WorkflowConfigManager configManager;
 
@@ -225,9 +234,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflowObject, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc,
-            "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName), true,
-            xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.start", Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
+        if(message.equals("workflow.save.start"))
+        {
+            message = "Started workflow " + workflowConfig + " on document " +stringSerializer.serialize(docName) ;
+        }
+        xcontext.getWiki().saveDocument(doc, message, true,xcontext);
 
         return true;
     }
@@ -276,8 +289,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // TODO: prevent the save protection from being executed, when it would be implemented
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc,
-            "Soumission du document " + stringSerializer.serialize(document) + " à la modération ", true, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.submitForModeration", Arrays.asList(stringSerializer.serialize(document).toString()));
+        if(message.equals("workflow.save.submitForModeration"))
+        {
+            message = "Submitted document " + stringSerializer.serialize(document) + " for moderation " ;
+        }
+        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
     }
@@ -297,7 +315,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Modération refusée: " + reason, false, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.refuseModeration", Arrays.asList(reason));
+        if(message.equals("workflow.save.refuseModeration"))
+        {
+            message = "Refused moderation : " + reason ;
+        }
+        xcontext.getWiki().saveDocument(doc, message, false, xcontext);
 
         return true;
     }
@@ -333,8 +357,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // TODO: prevent the save protection from being executed.
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc,
-            "Soumission du document " + stringSerializer.serialize(document) + " à la validation ", true, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.submitForValidation", Arrays.asList(stringSerializer.serialize(document).toString()));
+        if(message.equals("workflow.save.submitForValidation"))
+        {
+            message = "Submitted document " + stringSerializer.serialize(document) + "for validation." ;
+        }
+        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
     }
@@ -354,7 +383,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         makeDocumentDraft(doc, workflow, xcontext);
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Publication refusée: " + reason, false, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.refuseValidation", Arrays.asList(reason));
+        if(message.equals("workflow.save.refuseValidation"))
+        {
+            message = "Refused publication : " + reason ;
+        }
+        xcontext.getWiki().saveDocument(doc, message, false, xcontext);
 
         return true;
     }
@@ -376,8 +411,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // participants to workflow can view it.
 
         // save the document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Marque le document " + stringSerializer.serialize(document) + " comme étant valide. ",
-            true, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.validate", Arrays.asList(stringSerializer.serialize(document).toString()));
+        if(message.equals("workflow.save.validate"))
+        {
+            message = "Marked document " + stringSerializer.serialize(document) + " as valid." ;
+        }
+        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
     }
@@ -425,7 +465,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // TODO: figure out who should be the author of the published document
         // save the published document prepared like this
-        xcontext.getWiki().saveDocument(newDocument, "Publication de la nouvelle version du document.", false, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.publishNew");
+        if(message.equals("workflow.save.publishNew"))
+        {
+            message = "Published new version of the document." ;
+        }
+        xcontext.getWiki().saveDocument(newDocument, message, false, xcontext);
 
         // prepare the draft document as well
         // set the status
@@ -444,8 +490,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         // save the the draft document prepared like this
-        xcontext.getWiki().saveDocument(doc, "Publication de ce document vers " + stringSerializer.serialize(targetRef),
-            false, xcontext);
+        String message2 = messageTool.get("workflow.save.publishDraft", Arrays.asList(stringSerializer.serialize(targetRef).toString()));
+        if(message2.equals("workflow.save.publishDraft"))
+        {
+            message = "Published this document to " + stringSerializer.serialize(document) + "." ;
+        }
+        xcontext.getWiki().saveDocument(doc, message2, false, xcontext);
 
         return targetRef;
     }
@@ -479,8 +529,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                  // make the draft doc draft again
                     makeDocumentDraft(draftDoc, workflow, xcontext);
                     // save the draft document
-                    xcontext.getWiki().saveDocument(draftDoc,
-                        "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
+                    this.messageTool = new XWikiMessageTool(null, xcontext);
+                    String message = messageTool.get("workflow.save.unpublish",  Arrays.asList(stringSerializer.serialize(document).toString()));
+                    if(message.equals("workflow.save.unpublish"))
+                    {
+                        message = "Created draft from published document" + stringSerializer.serialize(document) + "." ;
+                    }
+                    xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
                 }
             } else {
                 // the existing draft is not published and force to draft is required
@@ -498,8 +553,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // make the draft doc draft again
                 makeDocumentDraft(draftDoc, workflow, xcontext);
                 // save the draft document
-                xcontext.getWiki().saveDocument(draftDoc,
-                    "Création d'un brouillon depuis le document publié " + stringSerializer.serialize(document), true, xcontext);
+                this.messageTool = new XWikiMessageTool(null, xcontext);
+                String message = messageTool.get("workflow.save.unpublish",  Arrays.asList(stringSerializer.serialize(document).toString()));
+                if(message.equals("workflow.save.unpublish"))
+                {
+                    message = "Created draft from published document" + stringSerializer.serialize(document) + "." ;
+                }
+                xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
             }
         } else {
             draftDocRef = this.createDraftDocument(document, xcontext);
@@ -521,9 +581,21 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
         BaseObject workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
-        makeDocumentDraft(doc, workflow, xcontext);
-        xcontext.getWiki().saveDocument(doc, "Retour en status brouillon pour permettre l'édition", true, xcontext);
-        return true;
+        String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
+        if(draftStatus.equals(STATUS_PUBLISHED))
+        {
+            makeDocumentDraft(doc, workflow, xcontext);
+            this.messageTool = new XWikiMessageTool(null, xcontext);
+            String message = messageTool.get("workflow.save.backToDraft");
+            if(message.equals("workflow.save.backToDraft"))
+            {
+                message = "Back to draft status to enable editing." ;
+            }
+            xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+            return true;
+        }
+        else
+            return false;
     }
 
     @Override
@@ -544,7 +616,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         publishedDoc.setHidden(true);
 
         // save it
-        xcontext.getWiki().saveDocument(publishedDoc, "Archivation du document", true, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.archive");
+        if(message.equals("workflow.save.archive"))
+        {
+            message = "Archived document." ;
+        }
+        xcontext.getWiki().saveDocument(publishedDoc, message, true, xcontext);
 
         return true;
     }
@@ -573,7 +651,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         archivedDoc.setHidden(false);
 
         // save it
-        xcontext.getWiki().saveDocument(archivedDoc, "Publication du document depuis une archive", true, xcontext);
+        this.messageTool = new XWikiMessageTool(null, xcontext);
+        String message = messageTool.get("workflow.save.publishFromArchive");
+        if(message.equals("workflow.save.publishFromArchive"))
+        {
+            message = "Published document from an archive." ;
+        }
+        xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
 
         return true;
     }
