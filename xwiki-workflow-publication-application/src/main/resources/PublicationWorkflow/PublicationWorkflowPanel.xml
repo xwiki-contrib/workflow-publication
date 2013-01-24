@@ -12,7 +12,7 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357318493000</creationDate>
-  <date>1358877838000</date>
+  <date>1358949643000</date>
   <contentUpdateDate>1358789400000</contentUpdateDate>
   <version>1.1</version>
   <title/>
@@ -384,33 +384,23 @@
   var widgets = XWiki.widgets = XWiki.widgets || {};
   widgets.workflowNotif = Class.create({
   initialize: function() {
-    $$('#formPublish').each(function(item){
-      this.prepareAlertPublication(item);
-    }.bind(this));
-    $$('#formArchive').each(function(item){
-      this.prepareAlertArchivation(item);
-    }.bind(this));
-  },
-
-  prepareAlertPublication : function(formItem) {
-    formItem.observe('submit', function(event){
-      event.stop();
-      var params = {
-        confirmationText: "$msg.get('workflow.alert.publish')",
-        yesButtonText: "$msg.get('workflow.alert.yes')",
-        noButtonText: "$msg.get('workflow.alert.no')"
-      };
-      new XWiki.widgets.ConfirmationBox(
-        {
-          onYes : function() {formItem.submit();},
-        },
-        params
-        )
-    }.bind(this));
-  },
-
-  prepareAlertArchivation : function(formItem) {
-    formItem.observe('submit', function(event){
+    if($('formPublish') != undefined){
+      $('formPublish').observe('submit', function(event){
+        event.stop();
+        var params = {
+          confirmationText: "$msg.get('workflow.alert.publish')",
+          yesButtonText: "$msg.get('workflow.alert.yes')",
+          noButtonText: "$msg.get('workflow.alert.no')"
+        };
+        new XWiki.widgets.ConfirmationBox(
+          {
+            onYes : function() {$('formPublish').submit();},
+          },
+          params
+          )
+      }.bind(this));
+    }
+    $('formArchive').observe('submit', function(event){
       event.stop();
       var params = {
         confirmationText: "$msg.get('workflow.alert.archive')",
@@ -419,7 +409,7 @@
       };
       new XWiki.widgets.ConfirmationBox(
         {
-          onYes : function() {formItem.submit();},
+          onYes : function() {$('formArchive').submit();},
         },
         params
         )
