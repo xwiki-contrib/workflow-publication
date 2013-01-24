@@ -234,7 +234,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage =
             "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName);
         String message =
-            this.getMessage(defaultMessage, "workflow.save.start",
+            this.getMessage("workflow.save.start", defaultMessage,
                 Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
@@ -820,7 +820,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     /**
      * @param key Translation key
      * @param params Parameters to include in the translation
-     * @param defaultMessage Message to display if the message tool
+     * @param defaultMessage Message to display if the message tool finds no translation
      * @return message to use
      */
     private String getMessage(String key, String defaultMessage, List<String> params)
