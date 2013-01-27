@@ -35,6 +35,16 @@
   <properties>
     <xwiki.platform.version>4.1.4</xwiki.platform.version>
   </properties>
+  <developers>
+    <developer>
+      <id>devs</id>
+      <name>Anca Luca</name>
+    </developer>
+  </developers>
+  <organization>
+    <name>XWiki SAS</name>
+    <url>http://xwiki.com</url>
+  </organization>
   <scm>
     <connection>scm:git:git://github.com/xwiki-contrib/batchimport.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/batchimport.git</developerConnection>

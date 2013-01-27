@@ -204,6 +204,32 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     @Override
+    public void setupDraftAccess(XWikiDocument document, XWikiContext xcontext) throws XWikiException
+    {
+        BaseObject workflowObj = document.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        setupDraftAccess(document, workflowObj, xcontext);
+    }
+
+    private void setupDraftAccess(XWikiDocument document, BaseObject workflow, XWikiContext xcontext)
+        throws XWikiException
+    {
+        document.setHidden(true);
+
+        BaseObject wfConfig =
+            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
+
+        if (wfConfig != null) {
+            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
+            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
+            String validators = publicationRoles.getValidators(wfConfig, xcontext);
+
+            // give the view and edit right to contributors, moderators and validators
+            setRights(document, Arrays.asList("edit", "view"), Arrays.asList(contributors, moderators, validators),
+                Arrays.<String> asList(), true, xcontext);
+        }
+    }
+
+    @Override
     public boolean startWorkflow(DocumentReference docName, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException
     {
@@ -435,6 +461,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     + stringSerializer.serialize(newDocument.getDocumentReference()), e);
         }
 
+        // published document is visible
+        newDocument.setHidden(false);
         // setup the workflow and target flag, if a workflow doesn't exist already
         BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
         if (newWorkflow == null) {
@@ -655,7 +683,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // otherwise
         nextDoc.setDocumentReference(toDocument.getDocumentReference());
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
-        nextDoc.setHidden(false);
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
             nextDoc.getDocumentReference()));
@@ -735,20 +762,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         workflowObj.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
         workflowObj.set(WF_IS_TARGET_FIELDNAME, 0, xcontext);
-        doc.setHidden(true);
 
-        BaseObject wfConfig =
-            configManager.getWorkflowConfig(workflowObj.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
-
-        if (wfConfig != null) {
-            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
-            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
-            String validators = publicationRoles.getValidators(wfConfig, xcontext);
-
-            // give the view and edit right to contributors, moderators and validators
-            setRights(doc, Arrays.asList("edit", "view"), Arrays.asList(contributors, moderators, validators),
-                Arrays.<String> asList(), true, xcontext);
-        }
+        // and setup draft which will handle visibility and rights
+        setupDraftAccess(doc, workflowObj, xcontext);
     }
 
     private BaseObject validateWorkflow(XWikiDocument document, List<String> expectedStatuses,

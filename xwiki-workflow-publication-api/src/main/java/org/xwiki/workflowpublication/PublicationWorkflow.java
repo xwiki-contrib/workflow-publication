@@ -63,6 +63,18 @@ public interface PublicationWorkflow
      */
     public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException;
 
+    /**
+     * Sets up the draft rigths and visibility on the passed XWikiDocument, as a draft document. It's a helper function
+     * for the listeners to be able to setup the rights with one function. Workflow groups configuration will be taken
+     * from the workflow object that is attached to the passed document. If such workflow config does not exist, the
+     * document will not be changed. Note that this function does not save the document, it just changes it.
+     * 
+     * @param document The document to set the draft access settings on
+     * @param xcontext the context of the modification
+     * @throws XWikiException in case something goes wrong
+     */
+    public void setupDraftAccess(XWikiDocument document, XWikiContext xcontext) throws XWikiException;
+
     /* Functions to be used from the scripts */
 
     /**
@@ -141,7 +153,7 @@ public interface PublicationWorkflow
      * @throws XWikiException
      */
     public boolean editDraft(DocumentReference document) throws XWikiException;
-    
+
     /**
      * published -> archived. Not yet sure how it would work.
      * 
