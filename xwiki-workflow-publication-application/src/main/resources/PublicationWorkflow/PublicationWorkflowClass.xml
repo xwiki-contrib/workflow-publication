@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357556434000</creationDate>
-  <date>1358262479000</date>
-  <contentUpdateDate>1358262479000</contentUpdateDate>
+  <date>1359127677000</date>
+  <contentUpdateDate>1359127677000</contentUpdateDate>
   <version>1.1</version>
   <title>PublicationWorkflow Class</title>
   <template/>
@@ -97,7 +97,7 @@
       <separators/>
       <size>1</size>
       <sort>none</sort>
-      <sql>select doc.title, object.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className = 'PublicationWorkflow.PublicationWorkflowConfigClass' and doc.name != 'PublicationWorkflowConfigTemplate' order by doc.title</sql>
+      <sql>select obj.name, doc.title from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className = 'PublicationWorkflow.PublicationWorkflowConfigClass' and doc.name != 'PublicationWorkflowConfigTemplate' order by doc.title</sql>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
