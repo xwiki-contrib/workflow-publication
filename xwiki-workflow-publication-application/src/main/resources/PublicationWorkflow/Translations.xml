@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357828638000</creationDate>
-  <date>1358877707000</date>
-  <contentUpdateDate>1358877621000</contentUpdateDate>
+  <date>1360258092000</date>
+  <contentUpdateDate>1360258092000</contentUpdateDate>
   <version>1.1</version>
   <title>Translations</title>
   <template/>
@@ -68,7 +68,7 @@ workflow.start.spacename = Espace de publication
 workflow.start.dostart = Initier le workflow
 workflow.title = Workflow
 workflow.currentStatus = Statut actuel
-workflow.submitformoderation = Soumettre à &amp;#10; validation
+workflow.submitformoderation = Soumettre à validation
 workflow.submitforvalidation = Valider
 workflow.refusemoderation = Refuser
 workflow.publish = Publier
