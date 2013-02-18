@@ -678,10 +678,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             previousDoc.getDocumentReference()));
         // set reference and language
 
-        XWikiDocument nextDoc = fromDocument.clone();
-        // I shouldn't do this, but for merge to work I need to have same doc ref and I don't know how to set it
-        // otherwise
-        nextDoc.setDocumentReference(toDocument.getDocumentReference());
+        XWikiDocument nextDoc = fromDocument.duplicate(toDocument.getDocumentReference());
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
         nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
