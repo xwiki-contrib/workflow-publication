@@ -431,11 +431,7 @@ document.observe('xwiki:dom:loading', function() {
   #if($request.workflowdoc)
     #set($workflowDoc = $xwiki.getDocument($request.workflowdoc))
     #set($workflow = $workflowDoc.getObject('PublicationWorkflow.PublicationWorkflowClass'))
-    {{html clean="false"}}
-      &lt;div class="publicationworkflow-information"&gt;
-        $msg.get('workflow.currentStatus'): $workflowDoc.display('status', $workflow)    
-      &lt;/div&gt;
-    {{/html}}
+    $msg.get('workflow.currentStatus'): $workflowDoc.display('status', $workflow)    
   #end
 #elseif(!$isWorkflowDoc)
   ##add a form to start a workflow
@@ -473,10 +469,10 @@ document.observe('xwiki:dom:loading', function() {
 #else
   ## get the state of the workflow and create a form to advance to the next state, if the current user has the right
   #set($workflowObject = $doc.getObject("PublicationWorkflow.PublicationWorkflowClass"))
+  $msg.get('workflow.currentStatus'): $doc.display('status', $workflowObject)
   
   {{html clean="false"}}
     &lt;div class="publicationworkflow-info"&gt;
-    $msg.get('workflow.currentStatus'): $doc.display('status', $workflowObject)
     #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
     #set($state = $workflowObject.getProperty('status').value)
     #set($isTarget = $workflowObject.getProperty('istarget').value)
