@@ -121,13 +121,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Inject
     private Execution execution;
 
-    /**
-     * The current entity reference resolver, to resolve the notions class reference.
-     */
-    @Inject
-    @Named("current")
-    private DocumentReferenceResolver<EntityReference> currentReferenceEntityResolver;
-
     @Inject
     @Named("currentmixed")
     private DocumentReferenceResolver<String> currentMixedStringDocRefResolver;
@@ -166,7 +159,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public boolean isWorkflowDocument(XWikiDocument document, XWikiContext context) throws XWikiException
     {
         BaseObject workflowInstance =
-            document.getXObject(currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
+            document.getXObject(explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,
+                document.getDocumentReference()));
         return workflowInstance != null;
     }
 
