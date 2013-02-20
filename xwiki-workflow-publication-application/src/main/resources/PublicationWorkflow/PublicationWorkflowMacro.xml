@@ -433,7 +433,9 @@ document.observe('xwiki:dom:loading', function() {
     #set($workflow = $workflowDoc.getObject('PublicationWorkflow.PublicationWorkflowClass'))
     {{html clean="false"}}
       &lt;div class="publicationworkflow-information"&gt;
-        $msg.get('workflow.currentStatus'): $workflowDoc.display('status', $workflow)    
+        &lt;p&gt;
+          $msg.get('workflow.currentStatus'): $workflowDoc.display('status', $workflow)   
+        &lt;/p&gt; 
       &lt;/div&gt;
     {{/html}}
   #end
@@ -476,7 +478,9 @@ document.observe('xwiki:dom:loading', function() {
   
   {{html clean="false"}}
     &lt;div class="publicationworkflow-info"&gt;
-    $msg.get('workflow.currentStatus'): $doc.display('status', $workflowObject)
+      &lt;p&gt;
+        $msg.get('workflow.currentStatus'): $doc.display('status', $workflowObject)
+      &lt;/p&gt;
     #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
     #set($state = $workflowObject.getProperty('status').value)
     #set($isTarget = $workflowObject.getProperty('istarget').value)
