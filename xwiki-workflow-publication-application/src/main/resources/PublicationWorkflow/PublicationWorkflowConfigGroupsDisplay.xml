@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>PublicationWorkflow</web>
+  <name>PublicationWorkflowConfigGroupsDisplay</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent/>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1361370502000</creationDate>
+  <date>1361371552000</date>
+  <contentUpdateDate>1361371552000</contentUpdateDate>
+  <version>1.1</version>
+  <title>PublicationWorkflowConfigGroupsDisplay</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{velocity}}
+{{html wiki="false" clean="false"}}
+#set($property = $object.getxWikiClass().get($name))
+#if($type == 'edit')
+  #if ("$!value" == '')
+    #set ($value = '')
+  #end
+  &lt;select name="${object.getxWikiClass().name}_${object.number}_${name}" id="${object.getxWikiClass().name}_${object.number}_${name}"&gt;
+    &lt;option value=""#if ($value == '') selected="selected"#end&gt;---&lt;/option&gt;
+  #foreach($possibleValue in $property.mapValues.entrySet())
+    &lt;option value="$possibleValue.key"#if ($possibleValue.key.equals($value)) selected="selected"#end&gt;$possibleValue.value.value&lt;/option&gt;
+  #end
+  &lt;/select&gt;
+#else
+  $doc.displayView($property, $prefix, $object)
+#end
+{{/html}}
+{{/velocity}}</content>
+</xwikidoc>
