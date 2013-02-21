@@ -46,9 +46,9 @@
     <url>http://xwiki.com</url>
   </organization>
   <scm>
-    <connection>scm:git:git://github.com/xwiki-contrib/batchimport.git</connection>
-    <developerConnection>scm:git:git@github.com:xwiki-contrib/batchimport.git</developerConnection>
-    <url>https://github.com/xwiki-contrib/batchimport.git</url>
+    <connection>scm:git:git://github.com/xwiki-contrib/workflow-publication.git</connection>
+    <developerConnection>scm:git:git@github.com:xwiki-contrib/workflow-publication.git</developerConnection>
+    <url>https://github.com/xwiki-contrib/workflow-publication.git</url>
   </scm>
   <distributionManagement>
     <repository>
