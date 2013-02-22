@@ -19,7 +19,12 @@
  */
 package org.xwiki.workflowpublication.internal;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,6 +42,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.plugin.rightsmanager.RightsManagerPluginApi;
+import com.xpn.xwiki.user.api.XWikiGroupService;
 
 /**
  * @version $Id$
@@ -75,24 +81,24 @@ public class DefaultPublicationRoles implements PublicationRoles
     @Named("explicit")
     protected DocumentReferenceResolver<String> explicitStringDocRefResolver;
 
+    @Inject
+    @Named("default")
+    protected DocumentReferenceResolver<String> defaultStringDocRefResolver;
+
     /**
      * Checks if the passed member is in the passed group.
      * 
      * @param userRef the document reference of the current user
      * @param groupRef the group reference of the group to check
-     * @param rightsManager the rights manager plugin used to do the test
+     * @param xcontext TODO
      * @return {@code true} if the userRef is in groupRef, {@code false} otherwise
      * @throws XWikiException in case smth wrong happes while accessing groups docs et all
      */
-    private boolean isInGroup(DocumentReference userRef, DocumentReference groupRef,
-        RightsManagerPluginApi rightsManager) throws XWikiException
+    private boolean isInGroup(DocumentReference userRef, DocumentReference groupRef, XWikiContext xcontext)
+        throws XWikiException
     {
-        Collection<String> members = rightsManager.getAllMembersNamesForGroup(stringSerializer.serialize(groupRef));
-        // if the user is in the same wiki as the group and the local user name is in the group members list or if the
-        // members list contains the user full prefixed name
-        return (userRef.getWikiReference().getName().equals(groupRef.getWikiReference().getName()) && members
-            .contains(localStringSerializer.serialize(userRef)))
-            || members.contains(stringSerializer.serialize(userRef));
+        Collection<String> groupsOfMember = this.getGroups(userRef, true, true, true, xcontext);
+        return groupsOfMember.contains(stringSerializer.serialize(groupRef));
     }
 
     /**
@@ -154,8 +160,7 @@ public class DefaultPublicationRoles implements PublicationRoles
             if (!StringUtils.isEmpty(moderatorGroup)) {
                 isModerator =
                     isInGroup(userRef,
-                        explicitStringDocRefResolver.resolve(moderatorGroup, document.getDocumentReference()),
-                        rightsManager);
+                        explicitStringDocRefResolver.resolve(moderatorGroup, document.getDocumentReference()), context);
             }
             // if we already have it, don't bother to look further
             if (isModerator) {
@@ -167,8 +172,7 @@ public class DefaultPublicationRoles implements PublicationRoles
             if (!StringUtils.isEmpty(validatorGroup)) {
                 isValidator =
                     isInGroup(userRef,
-                        explicitStringDocRefResolver.resolve(validatorGroup, document.getDocumentReference()),
-                        rightsManager);
+                        explicitStringDocRefResolver.resolve(validatorGroup, document.getDocumentReference()), context);
             }
             // either moderator or validator can validate
             return isModerator || isValidator;
@@ -210,8 +214,7 @@ public class DefaultPublicationRoles implements PublicationRoles
             if (!StringUtils.isEmpty(validatorGroup)) {
                 isValidator =
                     isInGroup(userRef,
-                        explicitStringDocRefResolver.resolve(validatorGroup, document.getDocumentReference()),
-                        rightsManager);
+                        explicitStringDocRefResolver.resolve(validatorGroup, document.getDocumentReference()), context);
             }
             return isValidator;
         } catch (XWikiException e) {
@@ -253,7 +256,7 @@ public class DefaultPublicationRoles implements PublicationRoles
                 isContributor =
                     isInGroup(userRef,
                         explicitStringDocRefResolver.resolve(contributorGroup, document.getDocumentReference()),
-                        rightsManager);
+                        context);
             }
             if (isContributor) {
                 return true;
@@ -263,8 +266,7 @@ public class DefaultPublicationRoles implements PublicationRoles
             if (!StringUtils.isEmpty(moderatorGroup)) {
                 isModerator =
                     isInGroup(userRef,
-                        explicitStringDocRefResolver.resolve(moderatorGroup, document.getDocumentReference()),
-                        rightsManager);
+                        explicitStringDocRefResolver.resolve(moderatorGroup, document.getDocumentReference()), context);
             }
             if (isModerator) {
                 return true;
@@ -274,8 +276,7 @@ public class DefaultPublicationRoles implements PublicationRoles
             if (!StringUtils.isEmpty(validatorGroup)) {
                 isValidator =
                     isInGroup(userRef,
-                        explicitStringDocRefResolver.resolve(validatorGroup, document.getDocumentReference()),
-                        rightsManager);
+                        explicitStringDocRefResolver.resolve(validatorGroup, document.getDocumentReference()), context);
             }
             return isValidator;
         } catch (XWikiException e) {
@@ -333,5 +334,85 @@ public class DefaultPublicationRoles implements PublicationRoles
         }
 
         return workflowConfig.getStringValue(WF_CONFIG_VALIDATOR);
+    }
+
+    @Override
+    public Collection<String> getGroups(DocumentReference userOrGroup, boolean recursive, boolean localGroups,
+        boolean userWikiGroups, XWikiContext xcontext) throws XWikiException
+    {
+        // use a set as a collection to make sure duplicates are not added
+        Collection<String> allGroups = new HashSet<String>();
+        String localWiki = xcontext.getDatabase();
+        String userWiki = userOrGroup.getWikiReference().getName();
+
+        if (localGroups) {
+            allGroups.addAll(getMemberGroups(localWiki, userOrGroup, xcontext));
+        }
+        if (userWikiGroups && !localWiki.equals(userWiki)) {
+            allGroups.addAll(getMemberGroups(userWiki, userOrGroup, xcontext));
+        }
+
+        if (recursive) {
+            // use a set for a collection to make sure duplicates are not added
+            Collection<String> parentGroups = new HashSet<String>();
+            for (String group : allGroups) {
+                DocumentReference groupRef = defaultStringDocRefResolver.resolve(group);
+                parentGroups.addAll(getGroups(groupRef, recursive, localGroups, userWikiGroups, xcontext));
+            }
+            allGroups.addAll(parentGroups);
+        }
+
+        return allGroups;
+    }
+
+    /**
+     * Copied and adapted from XWikiRightServiceImpl to get the user groups for a user on a given wiki.
+     * 
+     * @param wiki
+     * @param memberReference
+     * @param context
+     * @return
+     * @throws XWikiException
+     */
+    private Collection<String> getMemberGroups(String wiki, DocumentReference memberReference, XWikiContext context)
+        throws XWikiException
+    {
+        XWikiGroupService groupService = context.getWiki().getGroupService(context);
+
+        Map<String, Collection<String>> grouplistcache = (Map<String, Collection<String>>) context.get("grouplist");
+        if (grouplistcache == null) {
+            grouplistcache = new HashMap<String, Collection<String>>();
+            context.put("grouplist", grouplistcache);
+        }
+
+        // the key is for the entity <code>prefixedFullName</code> in current wiki
+        String key = wiki + ":" + stringSerializer.serialize(memberReference);
+
+        Collection<String> tmpGroupList = grouplistcache.get(key);
+        if (tmpGroupList == null) {
+            String currentWiki = context.getDatabase();
+            try {
+                context.setDatabase(wiki);
+
+                Collection<DocumentReference> groupReferences =
+                    groupService.getAllGroupsReferencesForMember(memberReference, 0, 0, context);
+
+                tmpGroupList = new ArrayList<String>(groupReferences.size());
+                for (DocumentReference groupReference : groupReferences) {
+                    tmpGroupList.add(this.stringSerializer.serialize(groupReference));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to get groups for user or group [" + stringSerializer.serialize(memberReference)
+                    + "] in wiki [" + wiki + "]", e);
+
+                tmpGroupList = Collections.emptyList();
+            } finally {
+                context.setDatabase(currentWiki);
+            }
+
+            grouplistcache.put(key, tmpGroupList);
+        }
+
+        return tmpGroupList;
     }
 }

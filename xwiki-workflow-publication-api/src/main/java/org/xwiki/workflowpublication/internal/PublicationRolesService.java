@@ -19,6 +19,9 @@
  */
 package org.xwiki.workflowpublication.internal;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -129,6 +132,50 @@ public class PublicationRolesService implements ScriptService
                 + document, e);
             return false;
         }
+    }
+
+    public Collection<String> getGroups(DocumentReference userOrGroup, boolean recursive, boolean localGroups,
+        boolean userWikiGroups)
+    {
+        try {
+            XWikiContext context = getXContext();
+
+            return publicationRoles.getGroups(userOrGroup, recursive, localGroups, userWikiGroups, context);
+        } catch (XWikiException e) {
+            logger.error("There was an error getting all the groups for user " + userOrGroup, e);
+            return Collections.<String> emptyList();
+        }
+    }
+
+    public Collection<String> getGroups(String userOrGroup, boolean recursive, boolean localGroups,
+        boolean userWikiGroups)
+    {
+        DocumentReference userRef = (DocumentReference) referenceResolver.resolve(userOrGroup);
+        return this.getGroups(userRef, recursive, localGroups, userWikiGroups);
+    }
+
+    /**
+     * Shortcut method to get the groups regardless of the wiki where they are.
+     * 
+     * @param userOrGroup
+     * @param recursive
+     * @return
+     */
+    public Collection<String> getAllGroups(DocumentReference userOrGroup, boolean recursive)
+    {
+        return this.getGroups(userOrGroup, recursive, true, true);
+    }
+
+    /**
+     * Shortcut method to get the groups regardless of the wiki where they are.
+     * 
+     * @param userOrGroup
+     * @param recursive
+     * @return
+     */
+    public Collection<String> getAllGroups(String userOrGroup, boolean recursive)
+    {
+        return this.getGroups(userOrGroup, recursive, true, true);
     }
 
     /**
