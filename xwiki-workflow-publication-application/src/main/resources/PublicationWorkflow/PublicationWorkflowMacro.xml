@@ -572,7 +572,7 @@ document.observe('xwiki:dom:loading', function() {
       #if($isTarget == '0')
         #set($url = $xwiki.getURL("$target"))
         &lt;p&gt;
-          $msg.get('workflow.panel.thisIsDraft') &lt;br&gt;
+          $msg.get('workflow.panel.thisIsDraft') &lt;br /&gt;
           &lt;a href="$url"&gt; $msg.get('workflow.panel.publishedVersion') &lt;/a&gt;
         &lt;/p&gt;
         &lt;p&gt;
@@ -590,7 +590,7 @@ document.observe('xwiki:dom:loading', function() {
       #else
         #set($url = $xwiki.getURL($draft))
         &lt;p&gt;
-          $msg.get('workflow.panel.thisIsPublished') &lt;br&gt;
+          $msg.get('workflow.panel.thisIsPublished') &lt;br /&gt;
           &lt;a href="$url"&gt; $msg.get('workflow.panel.draftVersion') &lt;/a&gt;
         &lt;/p&gt;      
 
