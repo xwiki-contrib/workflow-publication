@@ -31,7 +31,7 @@
   <artifactId>xwiki-workflow-publication</artifactId>
   <name>XWiki Workflow Publication</name>
   <packaging>pom</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-rc-2</version>
   <properties>
     <xwiki.platform.version>4.1.4</xwiki.platform.version>
   </properties>
