@@ -100,9 +100,7 @@
         #end
       #elseif($action == 'refusemoderation')
         #set($contributors = $group.getProperty('contributor').value)
-        Contributors : $contributors
         #getUsersFromGroup($contributors)
-        Recipients : $recipients
         #set($map={'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExScriptternalURL()", 'reason':"$!request.reason"})
         #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de validation", $map))
       #end
