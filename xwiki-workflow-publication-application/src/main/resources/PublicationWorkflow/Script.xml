@@ -12,8 +12,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357556398000</creationDate>
-  <date>1360937816000</date>
-  <contentUpdateDate>1360937816000</contentUpdateDate>
+  <date>1362414812000</date>
+  <contentUpdateDate>1362414812000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <template/>
@@ -81,38 +81,18 @@
 
       #if($action=='submitformoderation' || $action=='refusevalidation')   ##In both cases, we should send a mail to the moderators
         #set($moderators = $group.getProperty('moderator').value)
-        #set($moderatorDoc = $xwiki.getDocument($moderators))
-        #set($users = $moderatorDoc.getObjects('XWiki.XWikiGroups'))
-        #foreach($user in $users)
-          #set($person = $user.getProperty('member').value)
-          #set($mail = $xwiki.getUserName($person, "$email", false))
-          #if($recipients != "")
-            #set($recipients = "$recipients, $mail")
-          #else
-            #set($recipients = $mail)
-          #end
-        #end
+        #getUsersFromGroup($moderators)
         #if($action=='submitformoderation')
           #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
           #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de validation", $map))
         #else
-          #set($map= {'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
+          #set($map= {'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
           #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de publication", $map))
         #end
       #elseif($action == 'submitforvalidation' || $action=='unpublish')
         #set($webmasters = $group.getProperty('validator').value)
-        #set($webmasterDoc = $xwiki.getDocument($webmasters))
-        #set($users = $webmasterDoc.getObjects('XWiki.XWikiGroups'))
-        #foreach($user in $users)
-          #set($person = $user.getProperty('member').value)
-          #set($mail = $xwiki.getUserName($person, "$email", false))
-          #if($recipients != "")
-            #set($recipients = "$recipients, $mail")
-          #else
-            #set($recipients = $mail)
-          #end
-        #end
-        #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
+        #getUsersFromGroup($webmasters)
+        #set($map={'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
         #if($action == 'submitforvalidation')
           #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de publication", $map))
         #else
@@ -120,18 +100,10 @@
         #end
       #elseif($action == 'refusemoderation')
         #set($contributors = $group.getProperty('contributor').value)
-        #set($contributorDoc = $xwiki.getDocument($contributors))
-        #set($users = $contributorDoc.getObjects('XWiki.XWikiGroups'))
-        #foreach($user in $users)
-          #set($person = $user.getProperty('member').value)
-          #set($mail = $xwiki.getUserName($person, "$email", false))
-          #if($recipients != "")
-            #set($recipients = "$recipients, $mail")
-          #else
-            #set($recipients = $mail)
-          #end
-        #end
-        #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
+        Contributors : $contributors
+        #getUsersFromGroup($contributors)
+        Recipients : $recipients
+        #set($map={'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExScriptternalURL()", 'reason':"$!request.reason"})
         #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de validation", $map))
       #end
     #end
@@ -149,6 +121,32 @@
     #end
   #else
     $msg.get('workflow.script.failed')
+  #end
+#end
+
+#macro(getUsersFromGroup $target)
+  #if($xwiki.exists($target))
+    #set($targetDoc = $xwiki.getDocument($target))
+    #set($groups = $targetDoc.getObjects('XWiki.XWikiGroups'))
+    #set($users = $targetDoc.getObjects('XWiki.XWikiUsers'))
+
+    #foreach($user in $users)
+      #set($mail = $user.getProperty("email").value)
+      #if($!mail != '')
+        #if($recipients != "")
+          #set($recipients = "$recipients, $mail")
+        #else
+          #set($recipients = $mail)
+        #end
+      #end
+    #end
+
+    #foreach($group in $groups)
+      #set($person = $group.getProperty('member').value)  
+
+      #getUsersFromGroup("$person")
+
+    #end
   #end
 #end
 {{/velocity}}</content>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xwikidoc>
+<web>PublicationWorkflow</web>
+<name>Script</name>
+<language></language>
+<defaultLanguage></defaultLanguage>
+<translation>0</translation>
+<parent></parent>
+<creator>xwiki:XWiki.Admin</creator>
+<author>xwiki:XWiki.tdelafosse</author>
+<customClass></customClass>
+<contentAuthor>xwiki:XWiki.tdelafosse</contentAuthor>
+<creationDate>1357556398000</creationDate>
+<date>1362414812000</date>
+<contentUpdateDate>1362414812000</contentUpdateDate>
+<version>9.1</version>
+<title></title>
+<template></template>
+<defaultTemplate></defaultTemplate>
+<validationScript></validationScript>
+<comment></comment>
+<minorEdit>false</minorEdit>
+<syntaxId>xwiki/2.1</syntaxId>
+<hidden>true</hidden>
+<content>{{velocity}}
+#set($defaultMail = $xwiki.getXWikiPreference('admin_email', 'mailer@xwiki.localdomain.com'))
+#set($action = "$!request.action")
+#set($workflowdoc = "$!request.workflowdoc")
+#if($workflowdoc == "" || $action == "")
+  {{info}}$msg.get('workflow.script.notenoughparams'){{/info}}
+#else
+  #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
+  #if($request.cancel)  
+    $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
+  #end
+  workflow doc ref: $workflowDocRef
+  Action : $action
+  #if($action == "start")
+    #set($targetReference = $services.model.createDocumentReference("", "$!request.space", "$!request.page"))
+    #set($workflowConfig = "$request.workflow")
+    ##TODO : Check that the target and the existing doc are differents
+    #if($targetReference.equals($workflowDocRef))
+      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
+    #else
+      #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $workflowConfig, $targetReference))
+    #end
+  #elseif ($action == "submitformoderation")
+    #set($result = $services.publicationworkflow.submitForModeration($workflowDocRef))
+  #elseif ($action == "submitforvalidation")
+    #set($result = $services.publicationworkflow.submitForValidation($workflowDocRef))
+  #elseif ($action == "validate")
+    #set($result = $services.publicationworkflow.validate($workflowDocRef))
+  #elseif ($action == "publish")
+    #set($result = $services.publicationworkflow.publish($workflowDocRef))
+  #elseif ($action == "refusemoderation" &amp;&amp; !$request.cancel)
+    #set($result = $services.publicationworkflow.refuseModeration($workflowDocRef, "$!request.reason"))
+  #elseif ($action == "refusevalidation" &amp;&amp; !$request.cancel)
+    #set($result = $services.publicationworkflow.refuseValidation($workflowDocRef, "$!request.reason"))
+  #elseif ($action == "editDraft")
+    #set($result = $services.publicationworkflow.editDraft($workflowDocRef))
+  #elseif ($action == 'unpublish' &amp;&amp; !$request.cancel)
+    #set($erase = ($request.crush == '1'))
+    #set($result = $services.publicationworkflow.unpublish($workflowDocRef, $erase))
+  #elseif ($action == 'archive')
+    #set($result = $services.publicationworkflow.archive($workflowDocRef))
+  #elseif ($action == 'publishfromarchive')
+    #set($result = $services.publicationworkflow.publishFromArchive($workflowDocRef))
+  #elseif ($action == 'backtodraft' &amp;&amp; !$request.cancel)
+    #set($result = $services.publicationworkflow.unarchive($workflowDocRef, false))
+  #end       
+  
+  #if ($result)
+    #if($action == 'submitformoderation' || $action == 'submitforvalidation' || $action == 'refusemoderation' || $action=='refusevalidation')
+      #set($recipients = '')
+      #set($document = $xwiki.getDocument($workflowDocRef))
+      #set($workflowObj = $document.getObject("PublicationWorkflow.PublicationWorkflowClass"))
+      #set($workflow = $workflowObj.getProperty("workflow").value)
+      #set($workflowDoc=$xwiki.getDocument($workflow))
+      #set($group = $workflowDoc.getObject("PublicationWorkflow.PublicationWorkflowConfigClass"))
+
+      #if($action=='submitformoderation' || $action=='refusevalidation')   ##In both cases, we should send a mail to the moderators
+        #set($moderators = $group.getProperty('moderator').value)
+        #getUsersFromGroup($moderators)
+        #if($action=='submitformoderation')
+          #set($map={'document':"$workflowdoc", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de validation", $map))
+        #else
+          #set($map= {'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de publication", $map))
+        #end
+      #elseif($action == 'submitforvalidation' || $action=='unpublish')
+        #set($webmasters = $group.getProperty('validator').value)
+        #getUsersFromGroup($webmasters)
+        #set($map={'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
+        #if($action == 'submitforvalidation')
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de publication", $map))
+        #else
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Dépublication", $map))
+        #end
+      #elseif($action == 'refusemoderation')
+        #set($contributors = $group.getProperty('contributor').value)
+        Contributors : $contributors
+        #getUsersFromGroup($contributors)
+        Recipients : $recipients
+        #set($map={'document':"$workflowDoc.getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExScriptternalURL()", 'reason':"$!request.reason"})
+        #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de validation", $map))
+      #end
+    #end
+
+    #if($action == 'unpublish' || $action=='backtodraft')          ##If the document is being unpublished or unarchived we redirect to the draft
+      #set($draft = $services.publicationworkflow.getDraftDocument($workflowDocRef))
+      $response.sendRedirect($xwiki.getURL($draft, 'view', ''))
+    #elseif($action == 'publish')        ##If the document is being published we redirect to the final doc
+      #set($workflowDoc = $xwiki.getDocument($workflowDocRef))
+      #set($workflowObject = $workflowDoc.getObject("PublicationWorkflow.PublicationWorkflowClass"))
+      #set($target = $workflowObject.getProperty('target').value)
+      $response.sendRedirect($xwiki.getURL($target, 'view', ''))
+    #else
+      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
+    #end
+  #else
+    $msg.get('workflow.script.failed')
+  #end
+#end
+
+#macro(getUsersFromGroup $target)
+  #if($xwiki.exists($target))
+    #set($targetDoc = $xwiki.getDocument($target))
+    #set($groups = $targetDoc.getObjects('XWiki.XWikiGroups'))
+    #set($users = $targetDoc.getObjects('XWiki.XWikiUsers'))
+
+    #foreach($user in $users)
+      #set($mail = $user.getProperty("email").value)
+      #if($!mail != '')
+        #if($recipients != "")
+          #set($recipients = "$recipients, $mail")
+        #else
+          #set($recipients = $mail)
+        #end
+      #end
+    #end
+
+    #foreach($group in $groups)
+      #set($person = $group.getProperty('member').value)  
+
+      #getUsersFromGroup("$person")
+
+    #end
+  #end
+#end
+{{/velocity}}</content></xwikidoc>
