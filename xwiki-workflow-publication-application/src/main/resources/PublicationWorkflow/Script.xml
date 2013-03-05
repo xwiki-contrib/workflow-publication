@@ -91,7 +91,7 @@
           #getUsersFromGroup($contributors)
         #end
         #if($action=='submitformoderation')
-          #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.gehttp://localhost:8081/xwiki/bin/view/XWiki/ModeratortDocument($workflowDocRef).getExternalURL()"})
+          #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
           #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de validation", $map))
         #else
           #set($map= {'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
