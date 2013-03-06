@@ -35,19 +35,19 @@
     <contributor>
       <cache>0</cache>
       <classname/>
-      <customDisplay/>
+      <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}</customDisplay>
       <disabled>0</disabled>
-      <displayType>select</displayType>
+      <displayType>input</displayType>
       <idField/>
       <multiSelect>0</multiSelect>
       <name>contributor</name>
       <number>1</number>
-      <picker>0</picker>
+      <picker>1</picker>
       <prettyName>contributor</prettyName>
       <relationalStorage>0</relationalStorage>
       <separator> </separator>
       <separators/>
-      <size>1</size>
+      <size>40</size>
       <sort>none</sort>
       <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
       <unmodifiable>0</unmodifiable>
@@ -85,17 +85,17 @@
       <classname/>
       <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}</customDisplay>
       <disabled>0</disabled>
-      <displayType>select</displayType>
+      <displayType>input</displayType>
       <idField/>
       <multiSelect>0</multiSelect>
       <name>moderator</name>
       <number>2</number>
-      <picker>0</picker>
+      <picker>1</picker>
       <prettyName>moderator</prettyName>
       <relationalStorage>0</relationalStorage>
       <separator> </separator>
       <separators/>
-      <size>1</size>
+      <size>40</size>
       <sort>none</sort>
       <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
       <unmodifiable>0</unmodifiable>
@@ -107,19 +107,19 @@
     <validator>
       <cache>0</cache>
       <classname/>
-      <customDisplay/>
+      <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}</customDisplay>
       <disabled>0</disabled>
-      <displayType>select</displayType>
+      <displayType>input</displayType>
       <idField/>
       <multiSelect>0</multiSelect>
       <name>validator</name>
       <number>3</number>
-      <picker>0</picker>
+      <picker>1</picker>
       <prettyName>validator</prettyName>
       <relationalStorage>0</relationalStorage>
       <separator> </separator>
       <separators/>
-      <size>1</size>
+      <size>40</size>
       <sort>none</sort>
       <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
       <unmodifiable>0</unmodifiable>

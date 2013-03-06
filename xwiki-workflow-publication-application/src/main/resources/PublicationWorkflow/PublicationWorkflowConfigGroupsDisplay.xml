@@ -23,19 +23,158 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
+  <object>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <name>PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>67c4160b-04c6-4af6-ab95-bd2d65088ca8</guid>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var XWiki = (function (XWiki) {
+  var widgets = XWiki.widgets = XWiki.widgets || {};
+  widgets.GroupsPicker = Class.create({
+  initialize: function(element) {
+    this.input = element;
+    // hack the focus listener to get a grip on the suggest that is used, so that we can change its url afterwards, when the select changes
+    this.input.writeAttribute('onfocus', this.input.readAttribute('onfocus').replace(/^/, 'return this._x_suggest = '));
+    var original_onfocus = this.input.onfocus;
+    var urlinput = this.input.up('.groupssuggest').down('input[name=groupssuggesturl]');    
+    this.globalURL = urlinput.value;
+    this.input.onfocus = function() {
+      this.suggest = original_onfocus.apply(this.input);
+      this.suggest.options.timeout = 5000;
+      // grab the local url and hold it
+      this.localURL = this.suggest.options.script;
+    }.bind(this);
+
+    // create a select to the right of the input to allow to change from local groups to global groups
+    var localGlobalSelect = new Element('select');
+    localGlobalSelect.insert(new Element('option', {'value' : 'local', 'selected' : 'selected'}).insert("$msg.get('xe.admin.local')"));
+    localGlobalSelect.insert(new Element('option', {'value' : 'global'}).insert("$msg.get('xe.admin.global')"));
+    // add it right after the input
+    this.input.insert({after : localGlobalSelect});
+    // listen to the change
+    localGlobalSelect.observe('change', this.toggleLocalGlobal.bindAsEventListener(this));
+  },
+  
+  toggleLocalGlobal : function(event) {
+    // switch the URLs of the input suggest depending on the value of the select
+    var select = event.findElement();
+    if (typeof(this.suggest) == 'undefined') {
+      return;
+    }
+    if (select.value == 'global') {
+      this.suggest.options.script = this.globalURL;
+    } else {
+      this.suggest.options.script = this.localURL;
+    }
+  }
+});
+  
+function init() {
+  $$(".groupssuggest .suggested").each(function(item) {
+    new XWiki.widgets.GroupsPicker(item);
+  });
+  return true;
+}
+
+// When the document is loading, replace the suggest with this changeable suggest. it's very important to do this on xwiki:dom:loading and not on loaded.
+(XWiki.isInitialized &amp;&amp; init())
+|| document.observe("xwiki:dom:loading", init);  
+
+  return XWiki;
+}(XWiki || {}));</code>
+    </property>
+    <property>
+      <name>Javascript extension to enhance the suggest of the groups with global groups suggestion</name>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
   <content>{{velocity}}
 {{html wiki="false" clean="false"}}
 #set($property = $object.getxWikiClass().get($name))
 #if($type == 'edit')
-  #if ("$!value" == '')
-    #set ($value = '')
-  #end
-  &lt;select name="${object.getxWikiClass().name}_${object.number}_${name}" id="${object.getxWikiClass().name}_${object.number}_${name}"&gt;
-    &lt;option value=""#if ($value == '') selected="selected"#end&gt;---&lt;/option&gt;
-  #foreach($possibleValue in $property.mapValues.entrySet())
-    &lt;option value="$possibleValue.key"#if ($possibleValue.key.equals($value)) selected="selected"#end&gt;$possibleValue.value.value&lt;/option&gt;
-  #end
-  &lt;/select&gt;
+  #set($discard = $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay', {'minify': false}))
+  &lt;span class="groupssuggest"&gt;$doc.displayEdit($property, $prefix, $object)
+  &lt;input type="hidden" name="groupssuggesturl" value="$escapetool.xml($doc.getURL('view', 'xpage=uorgsuggest&amp;amp;classname=XWiki.XWikiUsers&amp;amp;uorg=group&amp;amp;wiki=global'))&amp;amp;" disabled="disabled" /&gt;&lt;/span&gt;
 #else
   $doc.displayView($property, $prefix, $object)
 #end
