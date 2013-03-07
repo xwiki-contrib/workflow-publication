@@ -125,7 +125,7 @@
     localGlobalSelect.insert(new Element('option', {'value' : 'local', 'selected' : 'selected'}).insert("$msg.get('xe.admin.local')"));
     localGlobalSelect.insert(new Element('option', {'value' : 'global'}).insert("$msg.get('xe.admin.global')"));
     // add it right after the input
-    this.input.insert({after : localGlobalSelect});
+    this.input.insert({before : localGlobalSelect});
     // listen to the change
     localGlobalSelect.observe('change', this.toggleLocalGlobal.bindAsEventListener(this));
   },
