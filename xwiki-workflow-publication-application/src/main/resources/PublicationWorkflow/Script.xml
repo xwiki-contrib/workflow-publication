@@ -130,28 +130,26 @@
   #end
 #end
 
-#macro(getUsersFromGroup $target)
-  #if($xwiki.exists($target))
-    #set($targetDoc = $xwiki.getDocument($target))
-    #set($groups = $targetDoc.getObjects('XWiki.XWikiGroups'))
-    #set($users = $targetDoc.getObjects('XWiki.XWikiUsers'))
-
-    #foreach($user in $users)
-      #set($mail = $user.getProperty("email").value)
-      #if($!mail != '')
-        #if($recipients != "")
-          #set($recipients = "$recipients, $mail")
-        #else
-          #set($recipients = $mail)
-        #end
+#macro(getUsersFromGroup $target, $wiki)
+  #set($baseRef = $services.model.createDocumentReference($wiki, 'Main', 'WebHome'))
+  #set($targetDocRef = $services.model.resolveDocument($target, 'explicit', $baseRef))
+  #set($targetDoc = $xwiki.getDocument($targetDocRef))
+  #set($groups = $targetDoc.getObjects('XWiki.XWikiGroups'))
+  #set($users = $targetDoc.getObjects('XWiki.XWikiUsers'))
+  #foreach($user in $users)
+    #set($mail = $user.getProperty("email").value)
+    #if($!mail != '')
+      #if($recipients &amp;&amp; $recipients != "")
+        #set($recipients = "$recipients, $mail")
+      #else
+        #set($recipients = $mail)
       #end
     #end
-
-    #foreach($group in $groups)
-      #set($person = $group.getProperty('member').value)  
-
-      #getUsersFromGroup("$person")
-
+  #end
+  #foreach($group in $groups)
+    #set($person = $group.getProperty('member').value)  
+    #if($person &amp;&amp; $!person != '')
+      #getUsersFromGroup("$person", $targetDoc.getWiki())
     #end
   #end
 #end
