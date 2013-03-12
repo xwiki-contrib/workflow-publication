@@ -73,7 +73,7 @@
       <separators/>
       <size>40</size>
       <sort>none</sort>
-      <sql>select distinct doc.web from XWikiDocument doc;</sql>
+      <sql>select distinct doc.web from XWikiDocument doc</sql>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
