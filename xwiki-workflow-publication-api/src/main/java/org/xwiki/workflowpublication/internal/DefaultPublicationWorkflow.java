@@ -81,6 +81,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
     public final static String STATUS_ARCHIVED = "archived";
 
+    public final static String CONTEXTKEY_PUBLISHING = "publicationworkflow:publish";
+
     public static final EntityReference COMMENTS_CLASS = new EntityReference("XWikiComments", EntityType.DOCUMENT,
         new EntityReference("XWiki", EntityType.SPACE));
 
@@ -218,8 +220,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             String validators = publicationRoles.getValidators(wfConfig, xcontext);
 
             // give the view and edit right to contributors, moderators and validators
-            setRights(document, Arrays.asList("edit", "view"), Arrays.asList(contributors, moderators, validators),
-                Arrays.<String> asList(), true, xcontext);
+            fillRightsObject(document, Arrays.asList("edit", "comment", "view"),
+                Arrays.asList(contributors, moderators, validators), Arrays.<String> asList(), true, 0, xcontext);
+            // and remove the rest of the rights
+            removeRestOfRights(document, 1, xcontext);
         }
     }
 
@@ -296,10 +300,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String contributors = publicationRoles.getContributors(wfConfig, xcontext);
 
         // give the view and edit right to moderators and validators ...
-        setRights(doc, Arrays.asList("edit", "view"), Arrays.asList(moderators, validators), Arrays.<String> asList(),
-            true, xcontext);
+        fillRightsObject(doc, Arrays.asList("edit", "comment", "view"), Arrays.asList(moderators, validators),
+            Arrays.<String> asList(), true, 0, xcontext);
         // ... and only view for contributors
-        addRights(doc, Arrays.asList("view"), Arrays.asList(contributors), Arrays.<String> asList(), true, xcontext);
+        fillRightsObject(doc, Arrays.asList("view"), Arrays.asList(contributors), Arrays.<String> asList(), true, 1,
+            xcontext);
+        // and remove the rest of the rights
+        removeRestOfRights(doc, 2, xcontext);
 
         // save the doc.
         // TODO: prevent the save protection from being executed, when it would be implemented
@@ -357,11 +364,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String moderators = publicationRoles.getModerators(wfConfig, xcontext);
 
         // give the view and edit right to validators ...
-        setRights(doc, Arrays.asList("edit", "view"), Arrays.asList(validators), Arrays.<String> asList(), true,
-            xcontext);
+        fillRightsObject(doc, Arrays.asList("edit", "comment", "view"), Arrays.asList(validators),
+            Arrays.<String> asList(), true, 0, xcontext);
         // ... and only view for contributors and moderators
-        addRights(doc, Arrays.asList("view"), Arrays.asList(moderators, contributors), Arrays.<String> asList(), true,
-            xcontext);
+        fillRightsObject(doc, Arrays.asList("view"), Arrays.asList(moderators, contributors), Arrays.<String> asList(),
+            true, 1, xcontext);
+        // remove the rest of the rights, if any
+        removeRestOfRights(doc, 2, xcontext);
 
         // save the doc.
         // TODO: prevent the save protection from being executed.
@@ -471,23 +480,17 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // save the published document prepared like this
         String defaultMessage = "Published new version of the document.";
         String message = getMessage("workflow.save.publishNew", defaultMessage, null);
-        xcontext.getWiki().saveDocument(newDocument, message, false, xcontext);
+        try {
+            // setup the context to let events know that they are in the publishing context
+            xcontext.put(CONTEXTKEY_PUBLISHING, true);
+            xcontext.getWiki().saveDocument(newDocument, message, false, xcontext);
+        } finally {
+            xcontext.remove(CONTEXTKEY_PUBLISHING);
+        }
 
         // prepare the draft document as well
         // set the status
         workflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-        // give back the rights to the contributors, or do we? TODO: find out!
-        BaseObject wfConfig =
-            configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
-        if (wfConfig != null) {
-            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
-            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
-            String validators = publicationRoles.getValidators(wfConfig, xcontext);
-
-            // give the view and edit right to contributors, moderators and validators
-            setRights(doc, Arrays.asList("edit", "view"), Arrays.asList(contributors, moderators, validators),
-                Arrays.<String> asList(), true, xcontext);
-        }
 
         // save the the draft document prepared like this
         String defaultMessage2 = "Published this document to " + stringSerializer.serialize(document) + ".";
@@ -780,20 +783,30 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         return workflowObj;
     }
 
-    private void setRights(XWikiDocument document, List<String> levels, List<String> groups, List<String> users,
-        boolean allowdeny, XWikiContext context) throws XWikiException
-    {
-        // delete existing rights, if any
-        this.removeRights(document, context);
-
-        addRights(document, levels, groups, users, allowdeny, context);
-    }
-
-    private void addRights(XWikiDocument document, List<String> levels, List<String> groups, List<String> users,
-        boolean allowdeny, XWikiContext context) throws XWikiException
+    /**
+     * Fills the n-th non-null rights object in this document with the passed settings. <br />
+     * NOTE that n is not actually the object number, but an ordinal: first, second, etc among all the non-null objects.
+     * It is however 0-based. We need to proceed like this for rights setup because otherwise (remove all objects, add
+     * objects) object numbers are incremented and this can turn out to be pretty bad for performance, since empty slots
+     * are filled with nulls. <br/>
+     * If such an object does not exist, the function will create one and fill it in. <br />
+     * To setup multiple sets of rights on a document, use this function multiple times with incrementing values,
+     * starting on 0, for the n argument.
+     * 
+     * @param document
+     * @param levels
+     * @param groups
+     * @param users
+     * @param allowdeny
+     * @param n
+     * @param context
+     * @throws XWikiException
+     */
+    private void fillRightsObject(XWikiDocument document, List<String> levels, List<String> groups, List<String> users,
+        boolean allowdeny, int n, XWikiContext context) throws XWikiException
     {
         // create a new object of type xwiki rights
-        BaseObject rightsObject = document.newXObject(RIGHTS_CLASS, context);
+        BaseObject rightsObject = getNonNullRightsObject(document, n, context);
         // put the rights and create
         rightsObject.set(RIGHTS_ALLOWDENY, allowdeny ? 1 : 0, context);
         // prepare the value for the groups property: it's a bit uneasy, we cannot pass a list to the BaseObject.set
@@ -811,9 +824,74 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         rightsObject.set(RIGHTS_LEVELS, levelsProperty.getValue(), context);
     }
 
-    private void removeRights(XWikiDocument document, XWikiContext context) throws XWikiException
+    /**
+     * @param document
+     * @param index
+     * @param xcontext
+     * @return the object of type rights with ordinal 'index' in the list of rights objects of the passed document or a
+     *         new object if none is found. If the first non-null object is needed, the passed index needs to be 0
+     *         regardless of the actual object number of that rights object. If the second object is needed, the passed
+     *         index should be 1, etc.
+     * @throws XWikiException
+     */
+    private BaseObject getNonNullRightsObject(XWikiDocument document, int index, XWikiContext xcontext)
+        throws XWikiException
     {
-        document.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, document.getDocumentReference()));
+        int nonNullIndex = 0;
+        List<BaseObject> rightObjects = document.getXObjects(RIGHTS_CLASS);
+        if (rightObjects != null) {
+            for (BaseObject rObj : rightObjects) {
+                if (rObj != null) {
+                    if (nonNullIndex == index) {
+                        return rObj;
+                    }
+                    nonNullIndex++;
+                }
+            }
+        }
+        return document.newXObject(RIGHTS_CLASS, xcontext);
+    }
+
+    /**
+     * Removes all non-null objects of type rights of this document, starting with the one with index
+     * {@code startingWith}. Note that startingWith is not an actual object number, but an ordinal: only non-null
+     * objects are counted.
+     * 
+     * @param document
+     * @param startingWith
+     * @param context
+     * @throws XWikiException
+     */
+    private void removeRestOfRights(XWikiDocument document, int startingWith, XWikiContext context)
+        throws XWikiException
+    {
+        // if starting with is smaller or equal to 0, remove all.
+        if (startingWith <= 0) {
+            document.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
+                document.getDocumentReference()));
+            return;
+        }
+
+        int nonNullIndex = 0;
+        List<BaseObject> objects = document.getXObjects(RIGHTS_CLASS);
+        if (objects == null) {
+            // yey, nothing to do
+            return;
+        }
+        // for all the positions in the objects array...
+        for (int i = 0; i < objects.size(); i++) {
+            // ... get the object
+            BaseObject rObj = objects.get(i);
+            if (rObj != null) {
+                // ... if it's not null
+                if (nonNullIndex >= startingWith) {
+                    // ... and the index is higher than the starting position, remove it
+                    document.removeXObject(rObj);
+                }
+                // ... increment the non null index
+                nonNullIndex++;
+            }
+        }
     }
 
     /**
