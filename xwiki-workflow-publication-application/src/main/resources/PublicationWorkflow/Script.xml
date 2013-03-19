@@ -24,6 +24,31 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity}}
+
+#macro(getUsersFromGroup $target, $wiki)
+  #set($baseRef = $services.model.createDocumentReference($wiki, 'Main', 'WebHome'))
+  #set($targetDocRef = $services.model.resolveDocument($target, 'explicit', $baseRef))
+  #set($targetDoc = $xwiki.getDocument($targetDocRef))
+  #set($groups = $targetDoc.getObjects('XWiki.XWikiGroups'))
+  #set($users = $targetDoc.getObjects('XWiki.XWikiUsers'))
+  #foreach($user in $users)
+    #set($mail = $user.getProperty("email").value)
+    #if($!mail != '')
+      #if($recipients &amp;&amp; $recipients != "")
+        #set($recipients = "$recipients, $mail")
+      #else
+        #set($recipients = $mail)
+      #end
+    #end
+  #end
+  #foreach($group in $groups)
+    #set($person = $group.getProperty('member').value)  
+    #if($person &amp;&amp; $!person != '')
+      #getUsersFromGroup("$person", $targetDoc.getWiki())
+    #end
+  #end
+#end
+
 #set($defaultMail = $xwiki.getXWikiPreference('admin_email', 'mailer@xwiki.localdomain.com'))
 #set($action = "$!request.action")
 #set($workflowdoc = "$!request.workflowdoc")
@@ -127,30 +152,6 @@
     #end
   #else
     $msg.get('workflow.script.failed')
-  #end
-#end
-
-#macro(getUsersFromGroup $target, $wiki)
-  #set($baseRef = $services.model.createDocumentReference($wiki, 'Main', 'WebHome'))
-  #set($targetDocRef = $services.model.resolveDocument($target, 'explicit', $baseRef))
-  #set($targetDoc = $xwiki.getDocument($targetDocRef))
-  #set($groups = $targetDoc.getObjects('XWiki.XWikiGroups'))
-  #set($users = $targetDoc.getObjects('XWiki.XWikiUsers'))
-  #foreach($user in $users)
-    #set($mail = $user.getProperty("email").value)
-    #if($!mail != '')
-      #if($recipients &amp;&amp; $recipients != "")
-        #set($recipients = "$recipients, $mail")
-      #else
-        #set($recipients = $mail)
-      #end
-    #end
-  #end
-  #foreach($group in $groups)
-    #set($person = $group.getProperty('member').value)  
-    #if($person &amp;&amp; $!person != '')
-      #getUsersFromGroup("$person", $targetDoc.getWiki())
-    #end
   #end
 #end
 {{/velocity}}</content>
