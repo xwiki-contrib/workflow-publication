@@ -65,6 +65,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
     public final static String WF_IS_TARGET_FIELDNAME = "istarget";
 
+    public final static String WF_IS_DRAFTSPACE_FIELDNAME = "defaultDraftSpace";
+
     public final static int DRAFT = 0;
 
     public final static int PUBLISHED = 1;
@@ -186,7 +188,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         return currentMixedStringDocRefResolver.resolve(results.get(0));
     }
 
-    private DocumentReference createDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
+    @Override
+    public DocumentReference createDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
         throws XWikiException
     {
         if (getDraftDocument(targetRef, xcontext) != null) {
@@ -194,8 +197,71 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
-        // TODO: implement me
-        return null;
+
+        // we can only create a draft for a published document, from the published or archived state.
+        BaseObject workflow =
+            validateWorkflow(targetDocument, Arrays.asList(STATUS_PUBLISHED, STATUS_ARCHIVED), PUBLISHED, xcontext);
+        if (workflow == null) {
+            return null;
+        }
+
+        return this.createDraftDocument(targetDocument, xcontext);
+    }
+
+    private DocumentReference createDraftDocument(XWikiDocument targetDocument, XWikiContext xcontext)
+        throws XWikiException
+    {
+        DocumentReference targetRef = targetDocument.getDocumentReference();
+
+        // if this document is not a workflow document, return nothing
+        if (!this.isWorkflowDocument(targetDocument, xcontext)) {
+            // TODO: put exception on the context
+            return null;
+        }
+        // get the workflow config in the target document to get the default drafts space
+        BaseObject wfConfig = configManager.getWorkflowConfigForWorkflowDoc(targetDocument, xcontext);
+        if (wfConfig == null) {
+            // TODO: put error on the context
+            return null;
+        }
+        String defaultDraftsSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME);
+        if (StringUtils.isEmpty(defaultDraftsSpace)) {
+            // TODO: put exception on the context
+            return null;
+        }
+        defaultDraftsSpace = defaultDraftsSpace.trim();
+        // get a new document in the drafts space, starting with the name of the target document
+        String draftDocName = xcontext.getWiki().getUniquePageName(defaultDraftsSpace, targetRef.getName(), xcontext);
+        DocumentReference draftDocRef =
+            new DocumentReference(targetRef.getWikiReference().getName(), defaultDraftsSpace, draftDocName);
+        XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
+        try {
+            // TODO: copy translated documents
+            this.copyContentsToNewVersion(targetDocument, draftDoc, xcontext);
+        } catch (IOException e) {
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                "Error accessing attachments when copying document " + stringSerializer.serialize(targetRef)
+                    + " to document " + stringSerializer.serialize(draftDocRef), e);
+        }
+
+        BaseObject draftWfObject =
+            draftDoc.newXObject(
+                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
+                xcontext);
+        draftWfObject.set(WF_CONFIG_REF_FIELDNAME,
+            compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
+        draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef), xcontext);
+        this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
+        // setup the creator to the current user
+        draftDoc.setCreatorReference(xcontext.getUserReference());
+        // and save the document
+        String defaultMessage2 = "Created draft for " + stringSerializer.serialize(targetRef) + ".";
+        String message2 =
+            getMessage("workflow.save.createDraft", defaultMessage2,
+                Arrays.asList(stringSerializer.serialize(targetRef).toString()));
+        xcontext.getWiki().saveDocument(draftDoc, message2, false, xcontext);
+
+        return draftDocRef;
 
     }
 
@@ -263,13 +329,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
-    }
-
-    @Override
-    public List<String> startMatchingWorkflows(DocumentReference doc, DocumentReference target, XWikiContext xcontext)
-    {
-        // TODO: implement me
-        return null;
     }
 
     @Override
@@ -562,7 +621,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
             }
         } else {
-            draftDocRef = this.createDraftDocument(document, xcontext);
+            draftDocRef = this.createDraftDocument(targetDoc, xcontext);
         }
 
         if (draftDocRef != null) {

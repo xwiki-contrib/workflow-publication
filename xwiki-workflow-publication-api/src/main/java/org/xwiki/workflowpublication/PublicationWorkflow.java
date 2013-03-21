@@ -19,8 +19,6 @@
  */
 package org.xwiki.workflowpublication;
 
-import java.util.List;
-
 import org.xwiki.component.annotation.Role;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -47,8 +45,6 @@ public interface PublicationWorkflow
     public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException;
 
-    public List<String> startMatchingWorkflows(DocumentReference doc, DocumentReference target, XWikiContext xcontext);
-
     /**
      * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
      * and which has the passed target as target. Note that this function looks for the document in the current wiki.
@@ -62,6 +58,20 @@ public interface PublicationWorkflow
      * @throws XWikiException
      */
     public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException;
+
+    /**
+     * Creates a draft document corresponding to the passed target reference, which will have as a target the passed
+     * reference. The draft document is created in the same wiki, the space where the document is created is taken from
+     * the defaultDraftsSpace property of the workflow config of the target and the name of the draft document is an
+     * unique name generated starting from the target document.
+     * 
+     * @param targetRef
+     * @param xcontext
+     * @return
+     * @throws XWikiException
+     */
+    public DocumentReference createDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
+        throws XWikiException;
 
     /**
      * Sets up the draft rigths and visibility on the passed XWikiDocument, as a draft document. It's a helper function

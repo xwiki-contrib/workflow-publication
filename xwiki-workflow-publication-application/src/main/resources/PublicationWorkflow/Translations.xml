@@ -84,9 +84,9 @@ workflow.panel.noContributionRight = Vous n'avez pas les droits nécessaires pou
 workflow.panel.noModerationRight = Ce document a été soumis à modération. Il n'est plus disponible pour le moment.
 workflow.panel.noValidationRight = Ce document a été validé et a été transmis aux Webmasters pour publication.
 workflow.panel.thisIsDraft = Le document actuel est un brouillon. Pour consulter sa version publiée, cliquez sur le lien ci-dessous.
-workflow.panel.thisIsPublished = Le document actuel est la version publiée. Vous pouvez retourner au brouillon en cliquant sur le lien ci-dessous.
+workflow.panel.thisIsPublished = Le document actuel est la version publiée. Utilisez la version brouillon de ce document pour y apporter des modifications.
 workflow.panel.publishedVersion = Version publiée
-workflow.panel.draftVersion = Brouillon
+workflow.panel.draftVersion = Accéder au brouillon
 
 workflow.panel.alreadyExist = Le document de publication doit être différent du document actuel.
 

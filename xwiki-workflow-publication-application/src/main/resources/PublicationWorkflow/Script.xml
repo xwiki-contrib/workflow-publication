@@ -84,6 +84,16 @@
     #set($result = $services.publicationworkflow.refuseValidation($workflowDocRef, "$!request.reason"))
   #elseif ($action == "editDraft")
     #set($result = $services.publicationworkflow.editDraft($workflowDocRef))
+  #elseif ($action == "getEditableDraft")
+    ## parameter is the target document, check if a draft already exists
+    #set($existingDraft = $services.publicationworkflow.getDraftDocument($workflowDocRef))
+    #if ($existingDraft)
+      #set($result = $services.publicationworkflow.editDraft($existingDraft))
+      #set($docToShow = $existingDraft)
+    #else
+      #set($result = $services.publicationworkflow.createDraftDocument($workflowDocRef))
+      #set($docToShow = $result)
+    #end
   #elseif ($action == 'unpublish' &amp;&amp; !$request.cancel)
     #set($erase = ($request.crush == '1'))
     #set($result = $services.publicationworkflow.unpublish($workflowDocRef, $erase))
@@ -147,6 +157,8 @@
       #set($workflowObject = $workflowDoc.getObject("PublicationWorkflow.PublicationWorkflowClass"))
       #set($target = $workflowObject.getProperty('target').value)
       $response.sendRedirect($xwiki.getURL($target, 'view', ''))
+    #elseif($action == 'getEditableDraft')## if we're starting a new edit session from the target, direct to the draft
+      $response.sendRedirect($xwiki.getURL($docToShow, 'view', ''))
     #else
       $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
     #end

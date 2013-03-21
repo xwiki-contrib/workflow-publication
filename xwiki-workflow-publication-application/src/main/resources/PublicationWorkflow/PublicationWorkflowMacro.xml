@@ -485,7 +485,6 @@ document.observe('xwiki:dom:loading', function() {
     #set($state = $workflowObject.getProperty('status').value)
     #set($isTarget = $workflowObject.getProperty('istarget').value)
     #set($target = $workflowObject.getProperty('target').value)
-    #set($draft = $services.publicationworkflow.getDraftDocument($doc.getDocumentReference()))
     #if($state == "draft")
       #if($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName))
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
@@ -588,12 +587,6 @@ document.observe('xwiki:dom:loading', function() {
           &lt;/div&gt;
         &lt;/form&gt;
       #else
-        #set($url = $xwiki.getURL($draft))
-        &lt;p&gt;
-          $msg.get('workflow.panel.thisIsPublished') &lt;br /&gt;
-          &lt;a href="$url"&gt; $msg.get('workflow.panel.draftVersion') &lt;/a&gt;
-        &lt;/p&gt;      
-
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' id='formArchive' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="archive" /&gt;
@@ -612,6 +605,26 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type='submit' value="$msg.get('workflow.unpublish')" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
+        ## display actions related to the draft document
+        #set($draft = $services.publicationworkflow.getDraftDocument($doc.getDocumentReference()))
+        &lt;p&gt;
+          $msg.get('workflow.panel.thisIsPublished')
+        &lt;/p&gt;
+        &lt;div&gt;
+          #if ($draft &amp;&amp; $xwiki.getDocument($draft).getObject('PublicationWorkflow.PublicationWorkflowClass').getProperty('status').value != "published")
+            &lt;form action="$xwiki.getURL($draft)" method='get' class='xformInline'&gt;
+          #else
+            &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
+              &lt;div&gt;
+                &lt;input type="hidden" name="action" value="getEditableDraft" /&gt;
+                &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+              &lt;/div&gt;
+          #end
+              &lt;div class="buttonwrapper"&gt;
+                &lt;input type='submit' class="button" value="$msg.get('workflow.panel.draftVersion')" /&gt;
+              &lt;/div&gt;
+            &lt;/form&gt;
+        &lt;/div&gt;
       #end
     #elseif($state == "archived")
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))

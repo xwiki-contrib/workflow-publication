@@ -19,8 +19,6 @@
  */
 package org.xwiki.workflowpublication.internal;
 
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -120,13 +118,6 @@ public class PublicationWorkflowService implements ScriptService
         }
     }
 
-    public List<String> startMatchingWorkflows(DocumentReference doc, DocumentReference target)
-    {
-        XWikiContext xcontext = getXContext();
-
-        return this.publicationWorkflow.startMatchingWorkflows(doc, target, xcontext);
-    }
-
     public DocumentReference getDraftDocument(DocumentReference target)
     {
         XWikiContext xcontext = getXContext();
@@ -134,6 +125,23 @@ public class PublicationWorkflowService implements ScriptService
             return this.publicationWorkflow.getDraftDocument(target, xcontext);
         } catch (XWikiException e) {
             logger.warn("Could not query for workflow draft for target " + stringSerializer.serialize(target));
+            // TODO: put error on context
+            return null;
+        }
+    }
+
+    public DocumentReference createDraftDocument(DocumentReference target)
+    {
+        XWikiContext xcontext = getXContext();
+        try {
+            if (this.publicationRoles.canContribute(xcontext.getUserReference(),
+                xcontext.getWiki().getDocument(target, xcontext), xcontext)) {
+                return this.publicationWorkflow.createDraftDocument(target, xcontext);
+            } else {
+                return null;
+            }
+        } catch (XWikiException e) {
+            logger.warn("Could not create draft for target " + stringSerializer.serialize(target));
             // TODO: put error on context
             return null;
         }
