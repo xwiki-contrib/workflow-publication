@@ -129,6 +129,7 @@ workflow.save.refuseValidation = Publication refusée : {0}
 workflow.save.validate = Marque le document {0} comme étant valide.
 workflow.save.publishNew = Publication de la nouvelle version du document.
 workflow.save.publishDraft = Publication de ce document vers {0}.
+workflow.save.createDraft=Création du brouillon du document {0}.
 workflow.save.unpublish = Création d'un brouillon depuis le document publié {0}.
 workflow.save.backToDraft = Retour en statut brouillon pour permettre l'édition.
 workflow.save.archive = Archivation du document.
