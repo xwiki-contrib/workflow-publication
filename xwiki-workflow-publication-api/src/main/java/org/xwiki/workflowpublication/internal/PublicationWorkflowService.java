@@ -96,6 +96,21 @@ public class PublicationWorkflowService implements ScriptService
         }
     }
 
+    public boolean isModified(DocumentReference fromDoc, DocumentReference toDoc)
+    {
+        XWikiContext xcontext = getXContext();
+        try {
+            XWikiDocument fromDocDoc = xcontext.getWiki().getDocument(fromDoc, xcontext);
+            XWikiDocument toDocDoc = xcontext.getWiki().getDocument(toDoc, xcontext);
+            return this.publicationWorkflow.isModified(fromDocDoc, toDocDoc, xcontext);
+        } catch (XWikiException e) {
+            logger.warn("Could not compare documents " + stringSerializer.serialize(fromDoc) + " and "
+                + stringSerializer.serialize(toDoc), e);
+            // by default, if we don't know better, we say they are different
+            return true;
+        }
+    }
+
     public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target)
     {
         XWikiContext xcontext = getXContext();

@@ -42,6 +42,20 @@ public interface PublicationWorkflow
 
     boolean isWorkflowDocument(XWikiDocument document, XWikiContext context) throws XWikiException;
 
+    /**
+     * Returns {@code true} if the two documents are different, {@code false} otherwise. Note that this function ignores
+     * changes in comments, rights and publication workflow objects, as well as metadata changes such as dates and
+     * authors. It is made to compare a published document with a draft document to decide whether one needs to be
+     * overwritten with the other (on unpublish).
+     * 
+     * @param fromDoc
+     * @param toDoc
+     * @param context
+     * @return
+     * @throws XWikiException
+     */
+    boolean isModified(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext context) throws XWikiException;
+
     public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException;
 

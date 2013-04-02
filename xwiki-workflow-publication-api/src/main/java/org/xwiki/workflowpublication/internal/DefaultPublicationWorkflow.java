@@ -27,6 +27,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
+import org.suigeneris.jrcs.diff.DifferentiationFailedException;
+import org.suigeneris.jrcs.diff.delta.Delta;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.logging.LogLevel;
@@ -42,12 +44,14 @@ import org.xwiki.workflowpublication.WorkflowConfigManager;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.MetaDataDiff;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.merge.MergeConfiguration;
 import com.xpn.xwiki.doc.merge.MergeResult;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
+import com.xpn.xwiki.objects.ObjectDiff;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.web.XWikiMessageTool;
 
@@ -166,6 +170,104 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             document.getXObject(explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,
                 document.getDocumentReference()));
         return workflowInstance != null;
+    }
+
+    @Override
+    public boolean isModified(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext xcontext) throws XWikiException
+    {
+        // check if fromDoc is different from toDoc, using the same strategy we use in copyContentsToNewVersion: compare
+        // document content, document metadata (besides author), compare objects besides comments, rights and
+        // publication workflow class, compare attachments (including attachment content).
+        XWikiDocument previousDoc = toDoc.clone();
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
+            previousDoc.getDocumentReference()));
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
+            previousDoc.getDocumentReference()));
+        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            previousDoc.getDocumentReference()));
+        // set reference and language
+
+        XWikiDocument nextDoc = fromDoc.duplicate(toDoc.getDocumentReference());
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
+        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            nextDoc.getDocumentReference()));
+        // 0. content diff
+        try {
+            List<Delta> contentDiffs = previousDoc.getContentDiff(previousDoc, nextDoc, xcontext);
+            if (contentDiffs.size() > 0) {
+                // we found content differences, we stop here and return
+                return true;
+            }
+        } catch (DifferentiationFailedException e) {
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DIFF, XWikiException.ERROR_XWIKI_DIFF_CONTENT_ERROR,
+                "Cannot make diff between content of documents "
+                    + stringSerializer.serialize(fromDoc.getDocumentReference()) + " and documents "
+                    + stringSerializer.serialize(toDoc.getDocumentReference()), e);
+        }
+        // 1. meta data diffs, other than document author
+        List<MetaDataDiff> metaDiffs = previousDoc.getMetaDataDiff(previousDoc, nextDoc, xcontext);
+        // if there is a change other than author, it's a real change
+        for (MetaDataDiff metaDataDiff : metaDiffs) {
+            if (!metaDataDiff.getField().equals("author")) {
+                // is modified, return here, don't need to check the rest, we don't care
+                return true;
+            }
+        }
+        // 2. object diffs
+        List<List<ObjectDiff>> objectDiffs = previousDoc.getObjectDiff(previousDoc, nextDoc, xcontext);
+        if (objectDiffs.size() > 0) {
+            // is modified, return here, don't need to check the rest, we don't care
+            return true;
+        }
+        // 3. attachment diffs
+        // compare the attachments from the previous document to nextDocument, if there is one which is in one and not
+        // in the other, scream change
+        for (XWikiAttachment fromAttachment : previousDoc.getAttachmentList()) {
+            // check if the attachment exists in the other document
+            XWikiAttachment toAttachment = nextDoc.getAttachment(fromAttachment.getFilename());
+            if (toAttachment == null) {
+                // attachment does not exist in the new document, it's a change, return and stop
+                return true;
+            }
+        }
+        // check also the attachments in the nextDoc. If there is one which is not in previous doc, we scream
+        // modification
+        for (XWikiAttachment toAttachment : nextDoc.getAttachmentList()) {
+            // check if the attachment exists in the other document
+            XWikiAttachment fromAttachment = nextDoc.getAttachment(toAttachment.getFilename());
+            if (fromAttachment == null) {
+                // attachment does not exist in the old document, it's a change, return and stop
+                return true;
+            }
+        }
+        // for all common attachments, check their content and if we find 2 attachments with different content, scream
+        // change
+        for (XWikiAttachment fromAttachment : previousDoc.getAttachmentList()) {
+            XWikiAttachment toAttachment = nextDoc.getAttachment(fromAttachment.getFilename());
+            if (toAttachment == null) {
+                continue;
+            }
+            // load the content of the fromAttachment
+            fromAttachment.loadContent(xcontext);
+            // compare the contents of the attachment to know if we should update it or not
+            // TODO: figure out how could we do this without using so much memory
+            toAttachment.loadContent(xcontext);
+            boolean isSameAttachmentContent =
+                Arrays.equals(toAttachment.getAttachment_content().getContent(), fromAttachment.getAttachment_content()
+                    .getContent());
+            // unload the content of the attachments after comparison, since we don't need it anymore and we don't
+            // want to waste memory
+            toAttachment.setAttachment_content(null);
+            fromAttachment.setAttachment_content(null);
+            if (!isSameAttachmentContent) {
+                // there is a change, return
+                return true;
+            }
+        }
+
+        // if nothing has happened previously, there is no change
+        return false;
     }
 
     @Override
