@@ -880,6 +880,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         if (toDocument.isNew()) {
             toDocument.setCreatorReference(fromDocument.getCreatorReference());
         }
+        // Author does not seem to be merged anymore in the merge function in newer versions, so we'll do it here
+        toDocument.setAuthorReference(fromDocument.getAuthorReference());
 
         List<LogEvent> exception = result.getLog().getLogs(LogLevel.ERROR);
         if (exception.isEmpty()) {
