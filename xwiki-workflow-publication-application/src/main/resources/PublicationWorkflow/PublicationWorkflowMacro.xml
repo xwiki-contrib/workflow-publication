@@ -464,7 +464,7 @@ document.observe('xwiki:dom:loading', function() {
         #end
         &lt;/select&gt;
         &lt;input type="hidden" name="action" value="start" /&gt;
-        &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+        &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
       &lt;/div&gt;
       &lt;div class="buttonwrapper"&gt;
         &lt;input type='submit' value="$msg.get('workflow.start.dostart')" class="button" /&gt;
@@ -490,7 +490,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="submitformoderation" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.submitformoderation')" class="button" /&gt;
@@ -504,7 +504,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="submitforvalidation" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.submitforvalidation')" class="button" /&gt;
@@ -513,7 +513,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="refusemoderation" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.refusemoderation')" class="secondary button" /&gt;
@@ -536,7 +536,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="validate" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.valid')" class="button" /&gt;
@@ -546,7 +546,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="refusevalidation" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.refusevalidation')" class="button secondary" /&gt;
@@ -560,7 +560,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline' id="formPublish"&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="publish" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.publish')" class='button' /&gt;
@@ -580,7 +580,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="editDraft" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.editDraft')" class="button" /&gt;
@@ -590,7 +590,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' id='formArchive' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="archive" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' class="button" value="$msg.get('workflow.archive')"/&gt;
@@ -599,7 +599,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="unpublish" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.unpublish')" class="button" /&gt;
@@ -617,7 +617,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
               &lt;div&gt;
                 &lt;input type="hidden" name="action" value="getEditableDraft" /&gt;
-                &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+                &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
               &lt;/div&gt;
           #end
               &lt;div class="buttonwrapper"&gt;
@@ -631,7 +631,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="publishfromarchive" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.publishfromarchive')" class="button" /&gt;
@@ -641,7 +641,7 @@ document.observe('xwiki:dom:loading', function() {
          &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="backtodraft" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$msg.get('workflow.backtodraft')" class="button" /&gt;
