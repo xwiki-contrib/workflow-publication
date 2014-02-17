@@ -145,6 +145,19 @@ public class PublicationWorkflowService implements ScriptService
         }
     }
 
+    public DocumentReference getDraftDocument(DocumentReference target, String wiki)
+    {
+        XWikiContext xcontext = getXContext();
+        try {
+            return this.publicationWorkflow.getDraftDocument(target, wiki, xcontext);
+        } catch (XWikiException e) {
+            logger.warn("Could not query for workflow draft for target " + stringSerializer.serialize(target)
+                + " on wiki " + wiki);
+            // TODO: put error on context
+            return null;
+        }
+    }
+
     public DocumentReference createDraftDocument(DocumentReference target)
     {
         XWikiContext xcontext = getXContext();

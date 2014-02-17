@@ -61,10 +61,8 @@ public interface PublicationWorkflow
 
     /**
      * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
-     * and which has the passed target as target. Note that this function looks for the document in the current wiki.
-     * The target is compared to the target as relative to the current wiki, if the target is in the current wiki, and
-     * absolute if the target is not in the current wiki. So basically this function should be called in the context of
-     * the wiki containing the draft.
+     * and which has the passed target as target. Note that this function looks for the draft document on the same wiki
+     * as the passed target document.
      * 
      * @param targetRef
      * @param xcontext
@@ -72,6 +70,24 @@ public interface PublicationWorkflow
      * @throws XWikiException
      */
     public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException;
+
+    /**
+     * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
+     * and which has the passed target as target. Note that this function looks for the document in the passed wiki. The
+     * target is compared to the target relative to the passed wiki: without wiki reference if the target is in the same
+     * wiki as the passed wiki and fully prefixed if they're in different wikis. This function should be called when,
+     * for a reason or another, the draft is not in the same wiki as the target document.
+     * 
+     * @param wiki parameter should be the wiki where the draft is expected to be.
+     * @param targetRef
+     * @param wiki
+     * @param xcontext
+     * @return
+     * @throws XWikiException
+     * @since 1.1
+     */
+    public DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext)
+        throws XWikiException;
 
     /**
      * Creates a draft document corresponding to the passed target reference, which will have as a target the passed

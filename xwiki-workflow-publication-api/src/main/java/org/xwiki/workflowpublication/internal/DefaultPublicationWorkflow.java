@@ -38,6 +38,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 import org.xwiki.workflowpublication.WorkflowConfigManager;
@@ -128,10 +129,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      */
     @Inject
     private Execution execution;
-
-    @Inject
-    @Named("currentmixed")
-    private DocumentReferenceResolver<String> currentMixedStringDocRefResolver;
 
     @Inject
     @Named("explicit")
@@ -273,21 +270,40 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Override
     public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException
     {
+        return this.getDraftDocument(targetRef, targetRef.getWikiReference().getName(), xcontext);
+    }
+
+    @Override
+    public DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext)
+        throws XWikiException
+    {
         String workflowsQuery =
             "select obj.name from BaseObject obj, StringProperty target, IntegerProperty istarget where "
                 + "obj.className = ? and obj.id = target.id.id and target.id.name = ? and target.value = ? and "
                 + "obj.id = istarget.id.id and istarget.id.name = ? and istarget.value = 0";
+        // serialize the target WRT the passed wiki parameter
+        String serializedTargetName = compactWikiSerializer.serialize(targetRef, new WikiReference(wiki));
+        // the class needs to be serialized compact anyway, and it's a wikiless entity reference, so we don't need to
+        // worry about on which wiki it gets serialized
         List<String> params =
             Arrays.asList(compactWikiSerializer.serialize(PUBLICATION_WORKFLOW_CLASS), WF_TARGET_FIELDNAME,
-                compactWikiSerializer.serialize(targetRef), WF_IS_TARGET_FIELDNAME);
-        List<String> results = xcontext.getWiki().getStore().search(workflowsQuery, 0, 0, params, xcontext);
+                serializedTargetName, WF_IS_TARGET_FIELDNAME);
+        List<String> results = null;
+        // query on the passed database
+        String originalDatabase = xcontext.getDatabase();
+        try {
+            xcontext.setDatabase(wiki);
+            results = xcontext.getWiki().getStore().search(workflowsQuery, 0, 0, params, xcontext);
+        } finally {
+            xcontext.setDatabase(originalDatabase);
+        }
 
-        if (results.size() <= 0) {
+        if (results == null || results.size() <= 0) {
             return null;
         }
 
-        // if there are more results, use the first one
-        return currentMixedStringDocRefResolver.resolve(results.get(0));
+        // if there are more results, use the first one, resolve it relative to passed wiki reference
+        return explicitStringDocRefResolver.resolve(results.get(0), new WikiReference(wiki));
     }
 
     @Override
