@@ -106,10 +106,15 @@
     </property>
     <property>
       <content>{{velocity}}
+  {{html clean="false" wiki="false"}}
   #panelheader($msg.get('workflow.title'))
+  {{/html}}
 
   {{publicationworkflow /}}
+
+  {{html clean="false" wiki="false"}}
   #panelfooter()
+  {{/html}}
 {{/velocity}}</content>
     </property>
     <property>

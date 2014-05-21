@@ -36,19 +36,19 @@
       <contributor>
         <cache>0</cache>
         <classname/>
-        <customDisplay/>
+        <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}</customDisplay>
         <disabled>0</disabled>
-        <displayType>select</displayType>
+        <displayType>input</displayType>
         <idField/>
         <multiSelect>0</multiSelect>
         <name>contributor</name>
         <number>1</number>
-        <picker>0</picker>
+        <picker>1</picker>
         <prettyName>contributor</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators/>
-        <size>1</size>
+        <size>40</size>
         <sort>none</sort>
         <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
         <unmodifiable>0</unmodifiable>
@@ -57,22 +57,46 @@
         <valueField/>
         <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
       </contributor>
-      <moderator>
+      <defaultDraftSpace>
         <cache>0</cache>
         <classname/>
         <customDisplay/>
         <disabled>0</disabled>
-        <displayType>select</displayType>
+        <displayType>input</displayType>
+        <idField/>
+        <multiSelect>0</multiSelect>
+        <name>defaultDraftSpace</name>
+        <number>4</number>
+        <picker>1</picker>
+        <prettyName>defaultDraftSpace</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>40</size>
+        <sort>none</sort>
+        <sql>select distinct doc.web from XWikiDocument doc</sql>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+      </defaultDraftSpace>
+      <moderator>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}</customDisplay>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
         <idField/>
         <multiSelect>0</multiSelect>
         <name>moderator</name>
         <number>2</number>
-        <picker>0</picker>
+        <picker>1</picker>
         <prettyName>moderator</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators/>
-        <size>1</size>
+        <size>40</size>
         <sort>none</sort>
         <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
         <unmodifiable>0</unmodifiable>
@@ -84,19 +108,19 @@
       <validator>
         <cache>0</cache>
         <classname/>
-        <customDisplay/>
+        <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}</customDisplay>
         <disabled>0</disabled>
-        <displayType>select</displayType>
+        <displayType>input</displayType>
         <idField/>
         <multiSelect>0</multiSelect>
         <name>validator</name>
         <number>3</number>
-        <picker>0</picker>
+        <picker>1</picker>
         <prettyName>validator</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
         <separators/>
-        <size>1</size>
+        <size>40</size>
         <sort>none</sort>
         <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'</sql>
         <unmodifiable>0</unmodifiable>
@@ -120,5 +144,5 @@
       <validator/>
     </property>
   </object>
-  <content/>
+  <content>{{include document="PublicationWorkflowConfigSheet" /}}</content>
 </xwikidoc>

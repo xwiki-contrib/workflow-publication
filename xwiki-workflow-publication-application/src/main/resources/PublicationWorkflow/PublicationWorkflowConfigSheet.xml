@@ -23,6 +23,34 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
+  <object>
+    <class>
+      <name>XWiki.EditModeClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultEditMode>
+        <disabled>0</disabled>
+        <name>defaultEditMode</name>
+        <number>1</number>
+        <prettyName>Default Edit Mode</prettyName>
+        <size>15</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultEditMode>
+    </class>
+    <name>PublicationWorkflow.PublicationWorkflowConfigSheet</name>
+    <number>0</number>
+    <className>XWiki.EditModeClass</className>
+    <guid>27073582-5827-4228-8b9a-bcb25d84d69a</guid>
+    <property>
+      <defaultEditMode>inline</defaultEditMode>
+    </property>
+  </object>
   <content>{{velocity}}
 ## You can modify this page to customize the presentation of your object.
 ## At first you should keep the default presentation and just save the document.
