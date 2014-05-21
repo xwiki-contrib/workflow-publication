@@ -27,25 +27,27 @@
     <artifactId>xwiki-workflow-publication</artifactId>
     <version>1.2-SNAPSHOT</version>
   </parent>
-  <artifactId>xwiki-workflow-publication-api</artifactId>
-  <name>XWiki Workflow Publication API</name>
+  <artifactId>xwiki-workflow-publication-mergebackport</artifactId>
+  <name>XWiki Workflow Publication Merge Tools Backport on 3.1.1</name>
   <packaging>jar</packaging>
   <dependencies>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.contrib.workflow-publication</groupId>
-      <artifactId>xwiki-workflow-publication-mergebackport</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-oldcore</artifactId>
       <version>${xwiki.platform.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-logging-api</artifactId>
+      <version>3.2.1</version>
+      <!-- exclude the 3.2.1 observation api, we have the 3.1.1 one -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.xwiki.commons</groupId>
+          <artifactId>xwiki-commons-observation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>

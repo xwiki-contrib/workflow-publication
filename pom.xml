@@ -63,6 +63,7 @@
     </repository>
   </distributionManagement>
   <modules>
+    <module>xwiki-workflow-publication-mergebackport</module>
     <module>xwiki-workflow-publication-api</module>
     <module>xwiki-workflow-publication-application</module>
   </modules>

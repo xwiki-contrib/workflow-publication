@@ -43,16 +43,23 @@ import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 import org.xwiki.workflowpublication.WorkflowConfigManager;
 
+import org.apache.commons.lang3.ObjectUtils;
+import com.xpn.xwiki.doc.merge.CollisionException;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.AttachmentDiff;
 import com.xpn.xwiki.doc.MetaDataDiff;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.merge.MergeConfiguration;
 import com.xpn.xwiki.doc.merge.MergeResult;
+import com.xpn.xwiki.doc.merge.MergeUtils;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ObjectDiff;
+import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.web.XWikiMessageTool;
 
@@ -901,7 +908,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         // and now merge. Normally the attachments which are not in the next doc are deleted from the current doc
-        MergeResult result = toDocument.merge(previousDoc, nextDoc, new MergeConfiguration(), xcontext);
+        MergeResult result = this.mergeDocuments(toDocument, previousDoc, nextDoc, new MergeConfiguration(), xcontext);
 
         // for some reason the creator doesn't seem to be copied if the toDocument is new, so let's put it
         if (toDocument.isNew()) {
@@ -928,6 +935,164 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     + stringSerializer.serialize(toDocument.getDocumentReference()) + ". Caused by: "
                     + exceptions.toString());
         }
+    }
+    
+    private MergeResult mergeDocuments(XWikiDocument thisDoc, XWikiDocument previousDoc, XWikiDocument nextDoc,
+        MergeConfiguration configuration, XWikiContext xcontext) throws XWikiException
+    {
+        MergeResult mergeResult = new MergeResult();
+
+        // Title
+        thisDoc.setTitle(MergeUtils.mergeString(previousDoc.getTitle(), nextDoc.getTitle(), thisDoc.getTitle(), mergeResult));
+
+        // Content
+        thisDoc.setContent(MergeUtils.mergeString(previousDoc.getContent(), nextDoc.getContent(), thisDoc.getContent(),
+            mergeResult));
+
+        // Parent
+        if (!ObjectUtils.equals(previousDoc.getAuthorReference(), nextDoc.getAuthorReference())) {
+            if (ObjectUtils.equals(previousDoc.getAuthorReference(), thisDoc.getAuthorReference())) {
+                thisDoc.setParentReference(nextDoc.getParentReference());
+
+                mergeResult.setModified(true);
+            }
+        }
+
+        // Author
+        if (!ObjectUtils.equals(previousDoc.getAuthorReference(), nextDoc.getAuthorReference())
+            && ObjectUtils.equals(previousDoc.getAuthorReference(), thisDoc.getAuthorReference())) {
+            thisDoc.setAuthorReference(nextDoc.getAuthorReference());
+
+            mergeResult.setModified(true);
+        }
+
+        // Objects
+        List<List<ObjectDiff>> objectsDiff = previousDoc.getObjectDiff(previousDoc, nextDoc, xcontext);
+        if (!objectsDiff.isEmpty()) {
+            // Apply diff on result
+            for (List<ObjectDiff> objectClassDiff : objectsDiff) {
+                for (ObjectDiff diff : objectClassDiff) {
+                    BaseObject objectResult = thisDoc.getXObject(diff.getXClassReference(), diff.getNumber());
+                    BaseObject previousObject =
+                        previousDoc.getXObject(diff.getXClassReference(), diff.getNumber());
+                    BaseObject newObject = nextDoc.getXObject(diff.getXClassReference(), diff.getNumber());
+                    PropertyInterface propertyResult =
+                        objectResult != null ? objectResult.getField(diff.getPropName()) : null;
+                    PropertyInterface previousProperty =
+                        previousObject != null ? previousObject.getField(diff.getPropName()) : null;
+                    PropertyInterface newProperty = newObject != null ? newObject.getField(diff.getPropName()) : null;
+
+                    if (diff.getAction() == ObjectDiff.ACTION_OBJECTADDED) {
+                        if (objectResult == null) {
+                            thisDoc.setXObject(newObject.getNumber(), configuration.isProvidedVersionsModifiables() ? newObject
+                                : (BaseObject)newObject.clone());
+                            mergeResult.setModified(true);
+                        } else {
+                            // XXX: collision between DB and new: object to add but already exists in the DB
+                            mergeResult.getErrors().add(
+                                new CollisionException("Collision found on object [" + objectResult.getDocumentReference()
+                                    + "]"));
+                        }
+                    } else if (diff.getAction() == ObjectDiff.ACTION_OBJECTREMOVED) {
+                        if (objectResult != null) {
+                            if (objectResult.equals(previousObject)) {
+                                thisDoc.removeXObject(objectResult);
+                                mergeResult.setModified(true);
+                            } else {
+                                // XXX: collision between DB and new: object to remove but not the same as previous
+                                // version
+                                mergeResult.getErrors().add(
+                                    new CollisionException("Collision found on object [" + objectResult.getDocumentReference()
+                                        + "]"));
+                            }
+                        } else {
+                            // Already removed from DB, lets assume the user is prescient
+                            mergeResult.getWarnings()
+                                .add(
+                                    new CollisionException("Object [" + previousObject.getDocumentReference()
+                                        + "] already removed"));
+                        }
+                    } else if (previousObject != null && newObject != null) {
+                        if (diff.getAction() == ObjectDiff.ACTION_PROPERTYADDED) {
+                            if (propertyResult == null) {
+                                objectResult.addField(diff.getPropName(), newProperty);
+                                mergeResult.setModified(true);
+                            } else {
+                                // XXX: collision between DB and new: property to add but already exists in the DB
+                                mergeResult.getErrors().add(
+                                    new CollisionException("Collision found on object property ["
+                                        + propertyResult.getName() + "]"));
+                            }
+                        } else if (diff.getAction() == ObjectDiff.ACTION_PROPERTYREMOVED) {
+                            if (propertyResult != null) {
+                                if (propertyResult.equals(previousProperty)) {
+                                    objectResult.removeField(diff.getPropName());
+                                    mergeResult.setModified(true);
+                                } else {
+                                    // XXX: collision between DB and new: supposed to be removed but the DB version is
+                                    // not the same as the previous version
+                                    mergeResult.getErrors().add(
+                                        new CollisionException("Collision found on object property ["
+                                            + propertyResult.getName() + "]"));
+                                }
+                            } else {
+                                // Already removed from DB, lets assume the user is prescient
+                                mergeResult.getWarnings().add(
+                                    new CollisionException("Object property [" + previousProperty.getName()
+                                        + "] already removed"));
+                            }
+                        } else if (diff.getAction() == ObjectDiff.ACTION_PROPERTYCHANGED) {
+                            if (propertyResult != null) {
+                                if (propertyResult.equals(previousProperty)) {
+                                    objectResult.addField(diff.getPropName(), newProperty);
+                                    mergeResult.setModified(true);
+                                } else {
+                                    // TODO: try to apply a 3 ways merge on the property
+                                }
+                            } else {
+                                // XXX: collision between DB and new: property to modify but does not exists in DB
+                                // Lets assume it's a mistake to fix
+                                mergeResult.getWarnings().add(
+                                    new CollisionException("Object [" + newProperty.getName()
+                                        + "] does not exists"));
+
+                                objectResult.addField(diff.getPropName(), newProperty);
+                                mergeResult.setModified(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Class
+        BaseClass classResult = thisDoc.getXClass();
+        BaseClass previousClass = previousDoc.getXClass();
+        BaseClass newClass = nextDoc.getXClass();
+        // FIXME: re-add this line here
+        // classResult.merge(previousClass, newClass, configuration, xcontext, mergeResult);
+
+        // Attachments
+        List<AttachmentDiff> attachmentsDiff =
+            previousDoc.getAttachmentDiff(previousDoc, nextDoc, xcontext);
+        if (!attachmentsDiff.isEmpty()) {
+            // Apply deleted attachment diff on result (new attachment has already been saved)
+            for (AttachmentDiff diff : attachmentsDiff) {
+                if (diff.getNewVersion() == null) {
+                    try {
+                        XWikiAttachment attachmentResult = thisDoc.getAttachment(diff.getFileName());
+
+                        thisDoc.deleteAttachment(attachmentResult, xcontext);
+
+                        mergeResult.setModified(true);
+                    } catch (XWikiException e) {
+                        mergeResult.getErrors().add(e);
+                    }
+                }
+            }
+        }
+
+        return mergeResult;
     }
 
     /**
