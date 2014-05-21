@@ -135,8 +135,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     private DocumentReferenceResolver<String> explicitStringDocRefResolver;
 
     @Inject
-    @Named("explicit")
+    @Named("explicit/reference")
     private DocumentReferenceResolver<EntityReference> explicitReferenceDocRefResolver;
+    
+    @Inject
+    @Named("current/reference")
+    private DocumentReferenceResolver<EntityReference> currentReferenceDocRefResolver;
 
     @Inject
     @Named("compactwiki")
@@ -386,7 +390,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Override
     public void setupDraftAccess(XWikiDocument document, XWikiContext xcontext) throws XWikiException
     {
-        BaseObject workflowObj = document.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        DocumentReference publicationWorkflowClass = currentReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS);
+        BaseObject workflowObj = document.getXObject(publicationWorkflowClass);
         setupDraftAccess(document, workflowObj, xcontext);
     }
 
@@ -644,7 +649,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // published document is visible
         newDocument.setHidden(false);
         // setup the workflow and target flag, if a workflow doesn't exist already
-        BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        BaseObject newWorkflow =
+            newDocument.getXObject(this.currentReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS));
         if (newWorkflow == null) {
             newWorkflow = newDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
             newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
@@ -697,7 +703,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         if (draftDocRef != null) {
             // if there is a draft reference, check whether we need to overwrite it with the published version or not
             XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
-            BaseObject workflow = draftDoc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+            BaseObject workflow =
+                draftDoc.getXObject(this.currentReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS));
             String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
             if (STATUS_PUBLISHED.equals(draftStatus) || !forceToDraft) {
                 // a draft exists and it's either in state published, which means identical as the published doc, or
@@ -757,7 +764,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     {
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
-        BaseObject workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        BaseObject workflow = doc.getXObject(this.currentReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS));
         String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
         if (draftStatus.equals(STATUS_PUBLISHED)) {
             makeDocumentDraft(doc, workflow, xcontext);
@@ -819,7 +826,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save it
         String defaultMessage = "Published document from an archive.";
-        String message = messageTool.get("workflow.save.publishFromArchive", defaultMessage, null);
+        String saveMessageKey = "workflow.save.publishFromArchive";
+        String message = messageTool.get(saveMessageKey, null);
+        if (message.equals(saveMessageKey)) {
+            message = defaultMessage;
+        }
         xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
 
         return true;
@@ -899,12 +910,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // Author does not seem to be merged anymore in the merge function in newer versions, so we'll do it here
         toDocument.setAuthorReference(fromDocument.getAuthorReference());
 
-        List<LogEvent> exception = result.getLog().getLogs(LogLevel.ERROR);
+        List<Exception> exception = result.getErrors();
+        
         if (exception.isEmpty()) {
             return true;
         } else {
             StringBuffer exceptions = new StringBuffer();
-            for (LogEvent e : exception) {
+            for (Exception e : exception) {
                 if (exceptions.length() == 0) {
                     exceptions.append(";");
                 }
@@ -930,7 +942,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     {
         BaseObject workflowObj = workflow;
         if (workflowObj == null) {
-            workflowObj = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+            workflowObj = doc.getXObject(this.currentReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS));
         }
 
         workflowObj.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
@@ -947,7 +959,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: put error on the context
             return null;
         }
-        BaseObject workflowObj = document.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        BaseObject workflowObj =
+            document.getXObject(this.currentReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS));
         // check statuses
         if (!expectedStatuses.contains(workflowObj.getStringValue(WF_STATUS_FIELDNAME))) {
             // TODO: put error on the context
@@ -1017,7 +1030,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         throws XWikiException
     {
         int nonNullIndex = 0;
-        List<BaseObject> rightObjects = document.getXObjects(RIGHTS_CLASS);
+        List<BaseObject> rightObjects = document.getXObjects(this.currentReferenceDocRefResolver.resolve(RIGHTS_CLASS));
         if (rightObjects != null) {
             for (BaseObject rObj : rightObjects) {
                 if (rObj != null) {
@@ -1052,7 +1065,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         int nonNullIndex = 0;
-        List<BaseObject> objects = document.getXObjects(RIGHTS_CLASS);
+        List<BaseObject> objects = document.getXObjects(this.currentReferenceDocRefResolver.resolve(RIGHTS_CLASS));
         if (objects == null) {
             // yey, nothing to do
             return;

@@ -21,7 +21,7 @@ package org.xwiki.workflowpublication;
 
 import java.util.Collection;
 
-import org.xwiki.component.annotation.Role;
+import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.xpn.xwiki.XWikiContext;
@@ -34,7 +34,7 @@ import com.xpn.xwiki.objects.BaseObject;
  * 
  * @version $Id $
  */
-@Role
+@ComponentRole
 public interface PublicationRoles
 {
     /**

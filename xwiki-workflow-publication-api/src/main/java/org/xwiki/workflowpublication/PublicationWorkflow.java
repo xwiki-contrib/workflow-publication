@@ -19,7 +19,7 @@
  */
 package org.xwiki.workflowpublication;
 
-import org.xwiki.component.annotation.Role;
+import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -31,7 +31,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 /**
  * @version $Id$
  */
-@Role
+@ComponentRole
 public interface PublicationWorkflow
 {
     /**

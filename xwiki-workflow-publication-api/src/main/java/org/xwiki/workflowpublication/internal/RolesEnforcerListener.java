@@ -132,27 +132,27 @@ public class RolesEnforcerListener implements EventListener
         XWikiContext context = (XWikiContext) data;
 
         // check if the old document is a workflow document, if it is, we need to handle moderation protection
+        boolean isOtherWorkflowChange = false;
         try {
             if (!publicationWorkflow.isWorkflowDocument(previousDocument, context)) {
                 return;
+            }
+            // get the workflow object and get the state, in the new document and in the old document
+            List<List<ObjectDiff>> objectDiffs =
+                currentDocument.getObjectDiff(previousDocument, currentDocument, context);
+            for (List<ObjectDiff> objectChanges : objectDiffs) {
+                for (ObjectDiff diff : objectChanges) {
+                    // if a change is in a workflow object, it's a workflow change
+                    if (diff.getXClassReference().equals(
+                        currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS))) {
+                        isOtherWorkflowChange = true;
+                    }
+                }
             }
         } catch (XWikiException exc) {
             logger.warn("Could not get workflow config document for document "
                 + stringSerializer.serialize(previousDocument.getDocumentReference()));
             return;
-        }
-
-        // get the workflow object and get the state, in the new document and in the old document
-        boolean isOtherWorkflowChange = false;
-        List<List<ObjectDiff>> objectDiffs = currentDocument.getObjectDiff(previousDocument, currentDocument, context);
-        for (List<ObjectDiff> objectChanges : objectDiffs) {
-            for (ObjectDiff diff : objectChanges) {
-                // if a change is in a workflow object, it's a workflow change
-                if (diff.getXClassReference().equals(
-                    currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS))) {
-                    isOtherWorkflowChange = true;
-                }
-            }
         }
 
         if (isOtherWorkflowChange) {
