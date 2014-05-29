@@ -135,35 +135,35 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * The execution, to get the context from it.
      */
     @Inject
-    private Execution execution;
+    protected Execution execution;
 
     @Inject
     @Named("explicit")
-    private DocumentReferenceResolver<String> explicitStringDocRefResolver;
+    protected DocumentReferenceResolver<String> explicitStringDocRefResolver;
 
     @Inject
     @Named("explicit/reference")
-    private DocumentReferenceResolver<EntityReference> explicitReferenceDocRefResolver;
+    protected DocumentReferenceResolver<EntityReference> explicitReferenceDocRefResolver;
     
     @Inject
     @Named("current/reference")
-    private DocumentReferenceResolver<EntityReference> currentReferenceDocRefResolver;
+    protected DocumentReferenceResolver<EntityReference> currentReferenceDocRefResolver;
 
     @Inject
     @Named("compactwiki")
-    private EntityReferenceSerializer<String> compactWikiSerializer;
+    protected EntityReferenceSerializer<String> compactWikiSerializer;
 
     @Inject
-    private WorkflowConfigManager configManager;
+    protected WorkflowConfigManager configManager;
 
     @Inject
-    private PublicationRoles publicationRoles;
+    protected PublicationRoles publicationRoles;
 
     /**
      * Reference string serializer.
      */
     @Inject
-    private EntityReferenceSerializer<String> stringSerializer;
+    protected EntityReferenceSerializer<String> stringSerializer;
 
     /**
      * {@inheritDoc}
@@ -187,19 +187,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // document content, document metadata (besides author), compare objects besides comments, rights and
         // publication workflow class, compare attachments (including attachment content).
         XWikiDocument previousDoc = toDoc.clone();
-        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
-            previousDoc.getDocumentReference()));
-        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
-            previousDoc.getDocumentReference()));
-        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
-            previousDoc.getDocumentReference()));
+        this.cleanUpIrrelevantDataFromDoc(previousDoc, xcontext);
         // set reference and language
 
         XWikiDocument nextDoc = fromDoc.duplicate(toDoc.getDocumentReference());
-        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
-        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
-        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
-            nextDoc.getDocumentReference()));
+        this.cleanUpIrrelevantDataFromDoc(nextDoc, xcontext);
         // 0. content diff
         try {
             List<Delta> contentDiffs = previousDoc.getContentDiff(previousDoc, nextDoc, xcontext);
@@ -855,26 +847,18 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @throws XWikiException
      * @throws IOException
      */
-    private boolean copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument, XWikiContext xcontext)
+    protected boolean copyContentsToNewVersion(XWikiDocument fromDocument, XWikiDocument toDocument, XWikiContext xcontext)
         throws XWikiException, IOException
     {
         // use a fake 3 way merge: previous is toDocument without comments, rights and wf object
         // current version is current toDocument
         // next version is fromDocument without comments, rights and wf object
         XWikiDocument previousDoc = toDocument.clone();
-        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
-            previousDoc.getDocumentReference()));
-        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
-            previousDoc.getDocumentReference()));
-        previousDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
-            previousDoc.getDocumentReference()));
+        this.cleanUpIrrelevantDataFromDoc(previousDoc, xcontext);
         // set reference and language
 
         XWikiDocument nextDoc = fromDocument.duplicate(toDocument.getDocumentReference());
-        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS, nextDoc.getDocumentReference()));
-        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS, nextDoc.getDocumentReference()));
-        nextDoc.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
-            nextDoc.getDocumentReference()));
+        this.cleanUpIrrelevantDataFromDoc(nextDoc, xcontext);
 
         // copy the attachments from the fromDocument to toDocument
         for (XWikiAttachment fromAttachment : fromDocument.getAttachmentList()) {
@@ -936,8 +920,25 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     + exceptions.toString());
         }
     }
-    
-    private MergeResult mergeDocuments(XWikiDocument thisDoc, XWikiDocument previousDoc, XWikiDocument nextDoc,
+
+    /**
+     * Cleans up the irrelevant data from the passed document, for merge and comparison between draft document and
+     * published document. This function alters its parameter. By default it removes rights objects, comments, and the
+     * publication workflow document.
+     * 
+     * @param document the document to clean up irrelevant data from, it alters its parameter.
+     */
+    protected void cleanUpIrrelevantDataFromDoc(XWikiDocument document, XWikiContext xcontext)
+    {
+        document.removeXObjects(explicitReferenceDocRefResolver.resolve(COMMENTS_CLASS,
+            document.getDocumentReference()));
+        document.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
+            document.getDocumentReference()));
+        document.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
+            document.getDocumentReference()));
+    }
+
+    protected MergeResult mergeDocuments(XWikiDocument thisDoc, XWikiDocument previousDoc, XWikiDocument nextDoc,
         MergeConfiguration configuration, XWikiContext xcontext) throws XWikiException
     {
         MergeResult mergeResult = new MergeResult();
@@ -1103,7 +1104,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param xcontext
      * @throws XWikiException
      */
-    private void makeDocumentDraft(XWikiDocument doc, BaseObject workflow, XWikiContext xcontext) throws XWikiException
+    protected void makeDocumentDraft(XWikiDocument doc, BaseObject workflow, XWikiContext xcontext) throws XWikiException
     {
         BaseObject workflowObj = workflow;
         if (workflowObj == null) {
@@ -1117,7 +1118,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         setupDraftAccess(doc, workflowObj, xcontext);
     }
 
-    private BaseObject validateWorkflow(XWikiDocument document, List<String> expectedStatuses,
+    protected BaseObject validateWorkflow(XWikiDocument document, List<String> expectedStatuses,
         Integer expectedIsTarget, XWikiContext xcontext) throws XWikiException
     {
         if (!this.isWorkflowDocument(document, xcontext)) {
@@ -1159,7 +1160,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param context
      * @throws XWikiException
      */
-    private void fillRightsObject(XWikiDocument document, List<String> levels, List<String> groups, List<String> users,
+    protected void fillRightsObject(XWikiDocument document, List<String> levels, List<String> groups, List<String> users,
         boolean allowdeny, int n, XWikiContext context) throws XWikiException
     {
         // create a new object of type xwiki rights
@@ -1191,7 +1192,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      *         index should be 1, etc.
      * @throws XWikiException
      */
-    private BaseObject getNonNullRightsObject(XWikiDocument document, int index, XWikiContext xcontext)
+    protected BaseObject getNonNullRightsObject(XWikiDocument document, int index, XWikiContext xcontext)
         throws XWikiException
     {
         int nonNullIndex = 0;
@@ -1219,7 +1220,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param context
      * @throws XWikiException
      */
-    private void removeRestOfRights(XWikiDocument document, int startingWith, XWikiContext context)
+    protected void removeRestOfRights(XWikiDocument document, int startingWith, XWikiContext context)
         throws XWikiException
     {
         // if starting with is smaller or equal to 0, remove all.
@@ -1254,7 +1255,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     /**
      * @return the xwiki context from the execution context
      */
-    private XWikiContext getXContext()
+    protected XWikiContext getXContext()
     {
         return (XWikiContext) execution.getContext().getProperty("xwikicontext");
     }
@@ -1265,7 +1266,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param defaultMessage Message to display if the message tool finds no translation
      * @return message to use
      */
-    private String getMessage(String key, String defaultMessage, List<String> params)
+    protected String getMessage(String key, String defaultMessage, List<String> params)
     {
         if (this.messageTool == null) {
             this.messageTool = this.getXContext().getMessageTool();
