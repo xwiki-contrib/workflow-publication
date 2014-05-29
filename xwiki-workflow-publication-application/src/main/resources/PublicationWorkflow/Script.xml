@@ -127,25 +127,25 @@
         #end
         #if($action=='submitformoderation')
           #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de validation", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate Demande de validation", $map))
         #else
           #set($map= {'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de publication", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate Refus de publication", $map))
         #end
       #elseif($action == 'submitforvalidation' || $action=='unpublish')
         #set($webmasters = $group.getProperty('validator').value)
         #getUsersFromGroup($webmasters)
         #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
         #if($action == 'submitforvalidation')
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Demande de publication", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate Demande de publication", $map))
         #else
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Dépublication", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate Dépublication", $map))
         #end
       #elseif($action == 'refusemoderation')
         #set($contributors = $group.getProperty('contributor').value)
         #getUsersFromGroup($contributors)
         #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
-        #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate : Refus de validation", $map))
+        #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, "fr", "PublicationWorkflow.MailTemplate Refus de validation", $map))
       #end
     #end
 

@@ -2,7 +2,7 @@
 
 <xwikidoc>
   <web>PublicationWorkflow</web>
-  <name>MailTemplate : Demande de validation</name>
+  <name>MailTemplate Demande de validation</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -72,7 +72,7 @@
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </text>
     </class>
-    <name>PublicationWorkflow.MailTemplate : Demande de validation</name>
+    <name>PublicationWorkflow.MailTemplate Demande de validation</name>
     <number>0</number>
     <className>XWiki.Mail</className>
     <guid>607f4c71-1e9e-4520-8096-c0a89ecca00e</guid>

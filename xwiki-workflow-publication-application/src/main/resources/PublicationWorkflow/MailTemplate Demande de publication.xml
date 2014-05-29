@@ -2,7 +2,7 @@
 
 <xwikidoc>
   <web>PublicationWorkflow</web>
-  <name>MailTemplate : Refus de publication</name>
+  <name>MailTemplate Demande de publication</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -11,11 +11,11 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1358181005000</creationDate>
-  <date>1358182951000</date>
-  <contentUpdateDate>1358181086000</contentUpdateDate>
+  <creationDate>1358173900000</creationDate>
+  <date>1358183101000</date>
+  <contentUpdateDate>1358174586000</contentUpdateDate>
   <version>1.1</version>
-  <title>MailTemplate : Refus de publication</title>
+  <title/>
   <template/>
   <defaultTemplate/>
   <validationScript/>
@@ -72,13 +72,12 @@
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </text>
     </class>
-    <name>PublicationWorkflow.MailTemplate : Refus de publication</name>
+    <name>PublicationWorkflow.MailTemplate Demande de publication</name>
     <number>0</number>
     <className>XWiki.Mail</className>
-    <guid>fe67ebe4-4d43-4041-ab1c-4598d8da0ee1</guid>
+    <guid>ec130a94-dabf-45a6-9784-a69143784ff8</guid>
     <property>
-      <html>Les webmasters ont refusé de valider le document $document pour les raisons suivantes : $reason &lt;br&gt;
-Vous pouvez revenir au brouillon pour le modifier &lt;a href="$url"&gt;ici&lt;/a&gt;. 
+      <html>Le document $document a été validé par les modérateurs. Vous pouvez consulter sa version actuelle &lt;a href=$url&gt; ici &lt;/a&gt;, et choisir de le publier ou non. &lt;br&gt;&lt;br&gt; 
 
 Ce courriel a été envoyé automatiquement par XWiki.</html>
     </property>
@@ -86,14 +85,13 @@ Ce courriel a été envoyé automatiquement par XWiki.</html>
       <language>fr</language>
     </property>
     <property>
-      <subject>Refus de publication</subject>
+      <subject>Demande de publication</subject>
     </property>
     <property>
-      <text>Les webmasters ont refusé de valider le document $document pour les raisons suivantes : $reason
-Vous pouvez revenir au brouillon pour le modifier en suivant le lien $url. 
+      <text>Le document $document a été validé par les modérateurs. Vous pouvez consulter sa version actuelle ici : $url, et choisir de le publier ou non. 
 
 Ce courriel a été envoyé automatiquement par XWiki.</text>
     </property>
   </object>
-  <content>Modèle de mail à envoyer aux modérateurs lorsque les Webmasters ont refusé la publication d'un document qu'ils avaient validé. </content>
+  <content/>
 </xwikidoc>
