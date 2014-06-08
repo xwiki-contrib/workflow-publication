@@ -52,6 +52,12 @@
 #set($defaultMail = $xwiki.getXWikiPreference('admin_email', 'mailer@xwiki.localdomain.com'))
 #set($action = "$!request.action")
 #set($workflowdoc = "$!request.workflowdoc")
+## get the document to which to redirect after the action is done
+#set($redirectdoc = "$!request.redirectdoc")
+#if ($redirectdoc == '')
+  ## if none specified, redirect to the workflowdoc
+  #set($redirectdoc = $workflowdoc)
+#end
 #if($workflowdoc == "" || $action == "")
   {{info}}$msg.get('workflow.script.notenoughparams'){{/info}}
 #else
@@ -69,6 +75,18 @@
       $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
     #else
       #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $workflowConfig, $targetReference))
+    #end
+  #elseif($action == 'startastarget')
+    #set($workflowConfig = "$!request.workflow")
+    #if ($workflowConfig == '')
+      $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=missingparams'))
+    #elseif(!$xwiki.exists($workflowDocRef))
+      $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=targetdoesnotexist'))
+    #else
+      #set($result = $services.publicationworkflow.startWorkflowAsTarget($workflowDocRef, $workflowConfig))
+      #if (!$result)
+        $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=invalidpage'))
+      #end
     #end
   #elseif ($action == "submitformoderation")
     #set($result = $services.publicationworkflow.submitForModeration($workflowDocRef))
@@ -160,7 +178,8 @@
     #elseif($action == 'getEditableDraft')## if we're starting a new edit session from the target, direct to the draft
       $response.sendRedirect($xwiki.getURL($docToShow, 'view', ''))
     #else
-      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
+      ## in all other situations redirect to the document specified from the parameters
+      $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', ''))
     #end
   #else
     $msg.get('workflow.script.failed')

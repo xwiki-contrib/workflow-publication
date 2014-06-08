@@ -132,6 +132,28 @@ public class PublicationWorkflowService implements ScriptService
             return false;
         }
     }
+    
+    public boolean startWorkflowAsTarget(DocumentReference doc, String workflowConfig)
+    {
+        XWikiContext xcontext = getXContext();
+        try {
+            if (xcontext
+                .getWiki()
+                .getRightService()
+                .hasAccessLevel("edit", stringSerializer.serialize(xcontext.getUserReference()),
+                    stringSerializer.serialize(doc), xcontext)) {
+                return this.publicationWorkflow.startWorkflowAsTarget(doc, workflowConfig, xcontext);
+            } else {
+                // TODO: put error on context
+                return false;
+            }
+        } catch (XWikiException e) {
+            logger.warn("Could not start workflow for document " + stringSerializer.serialize(doc) + " and config "
+                + workflowConfig);
+            // TODO: put error on context
+            return false;
+        }
+    }    
 
     public DocumentReference getDraftDocument(DocumentReference target)
     {

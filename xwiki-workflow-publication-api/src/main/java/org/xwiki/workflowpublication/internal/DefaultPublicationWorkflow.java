@@ -452,6 +452,58 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         return true;
     }
+    
+    @Override
+    public boolean startWorkflowAsTarget(DocumentReference docName, String workflowConfig, XWikiContext xcontext)
+        throws XWikiException
+    {
+        XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
+
+        // check that the document is no already under workflow
+        if (this.isWorkflowDocument(doc, xcontext)) {
+            // TODO: put this error on the context
+            return false;
+        }
+
+        // Check that the target is free. i.e. no other workflow document targets this target
+        if (this.getDraftDocument(docName, xcontext) != null) {
+            // TODO: put this error on the context
+            return false;
+        }
+
+        BaseObject workflowObject =
+            doc.newXObject(
+                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, docName),
+                xcontext);
+        BaseObject wfConfig = configManager.getWorkflowConfig(workflowConfig, xcontext);
+        if (wfConfig == null) {
+            // TODO: put error on the context
+            return false;
+        }
+
+        workflowObject.set(WF_CONFIG_REF_FIELDNAME, workflowConfig, xcontext);
+        workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(docName, docName), xcontext);
+        // mark document as target
+        workflowObject.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
+        workflowObject.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
+        
+        //there are no rights settings on published documents, as per the rule of workflow 
+
+        // save the document prepared like this
+        String defaultMessage =
+            "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName) + " as target";
+        String message =
+            this.getMessage("workflow.save.startastarget", defaultMessage,
+                Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
+        // make sure the save message is not longer than 255 since that will be throwing exception on save and we
+        // definitely don't want that
+        if (message.length() > 255) {
+            message = message.substring(0, 255);
+        }
+        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+
+        return true;
+    }
 
     @Override
     public boolean submitForModeration(DocumentReference document) throws XWikiException
