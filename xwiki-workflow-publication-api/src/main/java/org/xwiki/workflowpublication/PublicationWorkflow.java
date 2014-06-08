@@ -60,6 +60,22 @@ public interface PublicationWorkflow
         XWikiContext xcontext) throws XWikiException;
 
     /**
+     * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
+     * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
+     * will be called on this published document. Roughly this function is only setting up the marker on {@code target}
+     * as a published documemt. It does, however, all verifications (that there is no other worflow on that document,
+     * etc).
+     * 
+     * @param target
+     * @param workflowConfig
+     * @param xcontext
+     * @return
+     * @throws XWikiException
+     */
+    public boolean startWorkflowAsTarget(DocumentReference target, String workflowConfig, XWikiContext xcontext)
+        throws XWikiException;
+
+    /**
      * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
      * and which has the passed target as target. Note that this function looks for the draft document on the same wiki
      * as the passed target document.
