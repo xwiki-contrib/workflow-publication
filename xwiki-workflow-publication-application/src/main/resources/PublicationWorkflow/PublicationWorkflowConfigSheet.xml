@@ -23,14 +23,21 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content>{{velocity}}
-## You can modify this page to customize the presentation of your object.
-## At first you should keep the default presentation and just save the document.
+  <content>{{velocity output="false"}}
+#macro(displayGroupEditLink $groupFullName)
+  #if("$!groupFullName" != '')
+    [[[[image:icon:group_edit||alt="$msg.get('edit')"]]&gt;&gt;path:$xwiki.getURL($groupFullName, 'inline', "xredirect=$escapetool.url($doc.getURL())")||title="$msg.get('PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint')"]]
+  #end
+#end
+{{/velocity}}
 
-#set($class = $doc.getObject('PublicationWorkflow.PublicationWorkflowConfigClass').xWikiClass)
+{{velocity}}
+#set($object = $doc.getObject('PublicationWorkflow.PublicationWorkflowConfigClass'))
+#set($class = $object.xWikiClass)
 #foreach($prop in $class.properties)
-  ; $prop.prettyName
-  : $doc.display($prop.getName())
+  ; $doc.displayPrettyName($prop.name, $object)
+  : $doc.display($prop.getName()) #if ("!$xcontext.action" != 'edit' &amp;&amp; "$!xcontext.action" != 'inline' &amp;&amp; ($prop.name == 'contributor' || $prop.name == 'validator' || $prop.name == 'moderator'))#displayGroupEditLink($object.getProperty($prop.name).value)#end
+
 #end
 {{/velocity}}</content>
 </xwikidoc>
