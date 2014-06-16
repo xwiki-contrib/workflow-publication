@@ -110,6 +110,8 @@ workflow.unpublish.submit = Dépublier
 workflow.unpublish.cancel = Annuler
 workflow.unpublish.crush = Ecraser le brouillon
 
+workflow.overview.listDrafts=Liste de documents en etat brouillon :
+workflow.overview.noDraftDoc=Il n'y a aucun document brouillon pour lequel vous avez le status de contributeur.
 workflow.overview.noWebmasterDoc = Il n'y a aucun document en cours de validation pour lequel vous avez le status de Webmaster
 workflow.overview.noModerationDoc = Il n'y a aucun document en cours de modération pour lequel vous avez le status de modérateur
 workflow.overview.publishAll = Publier tous ces documents
