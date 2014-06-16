@@ -144,5 +144,5 @@
       <validator/>
     </property>
   </object>
-  <content>{{include document="PublicationWorkflowConfigSheet" /}}</content>
+  <content>{{include document="PublicationWorkflow.PublicationWorkflowConfigSheet" /}}</content>
 </xwikidoc>

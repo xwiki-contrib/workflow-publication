@@ -28,6 +28,7 @@
 #set($xwqlstatement = "from doc.object('PublicationWorkflow.PublicationWorkflowClass') as workflow")
 #set($moderating = [])
 #set($validating = [])
+#set($drafts = {})
 ## Return all the results from the current wiki
 #set($result = $services.query.xwql("$xwqlstatement").execute())
 #foreach($item in $result)
@@ -40,6 +41,8 @@
       #set($discard = $moderating.add($item))
     #elseif($status == 'validating' &amp;&amp; $services.publicationroles.canValidate($xcontext.user, $workflowDoc.prefixedFullName))
       #set($discard = $validating.add($item))
+    #elseif($status == 'draft' &amp;&amp; $services.publicationroles.canContribute($xcontext.user, $workflowDoc.prefixedFullName))
+      #set($discard = $drafts.put($item, $workflowDoc.displayTitle))
     #end
   #end
 #end
@@ -81,6 +84,15 @@
   #end
   #set($validating = $newValidating)
 #end
+
+#if($drafts.size() &gt; 0)
+  $msg.get('workflow.overview.listDrafts')
+  #foreach($document in $drafts.entrySet())
+    * [[$document.value&gt;&gt;$document.key]]
+  #end
+#else
+  //$msg.get('workflow.overview.noDraftDoc')//
+#end 
 
 #if($listtool.size($moderating) &gt; 0)
   $msg.get('workflow.overview.listModerating')
