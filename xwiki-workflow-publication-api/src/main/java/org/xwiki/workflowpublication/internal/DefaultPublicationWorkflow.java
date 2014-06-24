@@ -484,7 +484,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             xcontext);
         // and remove the rest of the rights
         removeRestOfRights(doc, 2, xcontext);
-
+        
+        // Add the author in order to keep track of the person who request the moderation
+        doc.setAuthorReference(xcontext.getUserReference());
         // save the doc.
         // TODO: prevent the save protection from being executed, when it would be implemented
 
