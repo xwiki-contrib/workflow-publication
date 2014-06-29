@@ -67,6 +67,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public static final String WF_TARGET_FIELDNAME = "target";
 
     public final static String WF_STATUS_FIELDNAME = "status";
+    
+    public final static String WF_AUTHOR_STATUS_FIELDNAME = "authorStatus";
 
     public final static String WF_IS_TARGET_FIELDNAME = "istarget";
 
@@ -485,8 +487,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // and remove the rest of the rights
         removeRestOfRights(doc, 2, xcontext);
         
-        // Add the author in order to keep track of the person who request the moderation
-        doc.setAuthorReference(xcontext.getUserReference());
+        // Add the author in order to keep track of the person who change the status
+        workflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+
         // save the doc.
         // TODO: prevent the save protection from being executed, when it would be implemented
 
@@ -513,7 +516,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // preconditions met, make the document back draft
         makeDocumentDraft(doc, workflow, xcontext);
-
+       
+        // Add the author in order to keep track of the person who change the status
+        workflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         // save the document prepared like this
         String defaultMessage = "Refused moderation : " + reason;
         String message = getMessage("workflow.save.refuseModeration", defaultMessage, Arrays.asList(reason));
@@ -535,6 +541,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // put the status to validating
         workflow.set(WF_STATUS_FIELDNAME, STATUS_VALIDATING, xcontext);
+        
+        // Add the author in order to keep track of the person who change the status
+        workflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);      
+        
         // and put the rights
         BaseObject wfConfig =
             configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
@@ -577,7 +587,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // preconditions met, make the document back draft
         makeDocumentDraft(doc, workflow, xcontext);
-
+        
+        // Add the author in order to keep track of the person who change the status
+        workflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         // save the document prepared like this
         String defaultMessage = "Refused publication : " + reason;
         String message = getMessage("workflow.save.refuseValidation", defaultMessage, Arrays.asList(reason));
@@ -599,6 +612,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // put the status to valid
         workflow.set(WF_STATUS_FIELDNAME, STATUS_VALID, xcontext);
+        
+        // Add the author in order to keep track of the person who change the status
+        workflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         // rights stay the same, only validator has the right to edit the document in the valid state, all other
         // participants to workflow can view it.
 
@@ -671,6 +688,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // set the status
         workflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
 
+        // Add the author in order to keep track of the person who change the status
+        workflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         // save the the draft document prepared like this
         String defaultMessage2 = "Published this document to " + stringSerializer.serialize(document) + ".";
         String message2 =
@@ -786,6 +806,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // finally, preconditions are met, put the document on hidden (hoping that this is what archive actually means)
         // TODO: figure out what archive actually means
         publishedWorkflow.set(WF_STATUS_FIELDNAME, STATUS_ARCHIVED, xcontext);
+        
+        // Add the author in order to keep track of the person who change the status
+        publishedWorkflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         publishedDoc.setHidden(true);
 
         // save it
@@ -817,6 +841,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // finally, preconditions are met, put the document on visible (hoping that this is what archive actually means)
         // TODO: figure out what archive actually means
         archivedWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
+        
+        // Add the author in order to keep track of the person who change the status
+        archivedWorkflow.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         archivedDoc.setHidden(false);
 
         // save it
@@ -936,6 +964,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         workflowObj.set(WF_STATUS_FIELDNAME, STATUS_DRAFT, xcontext);
+        
+        // Add the author in order to keep track of the person who change the status
+        workflowObj.set(WF_AUTHOR_STATUS_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        
         workflowObj.set(WF_IS_TARGET_FIELDNAME, 0, xcontext);
 
         // and setup draft which will handle visibility and rights
