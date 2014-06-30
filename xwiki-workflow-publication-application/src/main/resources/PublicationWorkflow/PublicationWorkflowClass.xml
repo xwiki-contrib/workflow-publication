@@ -67,6 +67,27 @@
       <values>draft|moderating|validating|valid|published|archived</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </status>
+    <statusAuthor>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>input</displayType>
+      <multiSelect>0</multiSelect>
+      <name>statusAuthor</name>
+      <number>5</number>
+      <picker>1</picker>
+      <prettyName>statusAuthor</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>20</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <usesList>0</usesList>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
+    </statusAuthor>
     <target>
       <customDisplay/>
       <disabled>0</disabled>
