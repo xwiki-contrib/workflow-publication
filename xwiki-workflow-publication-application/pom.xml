@@ -31,8 +31,13 @@
   <name>XWiki Publication Workflow Application</name>
   <packaging>xar</packaging>
   <dependencies>
-    <!-- Adding batch import api as dependencies since these pages need the 
+    <!-- Adding publication workflow api as dependencies since these pages need the 
       server in order to work properly and for EM to find them related. -->
+    <dependency>
+      <groupId>org.xwiki.contrib.workflow-publication</groupId>
+      <artifactId>xwiki-workflow-publication-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <extensions>
