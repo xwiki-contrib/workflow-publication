@@ -1,4 +1,4 @@
 workflow-publication
 ====================
 
-Tentative publication workflow code.
+See http://extensions.xwiki.org/xwiki/bin/view/Extension/XWiki+Publication+Workflow+Application
