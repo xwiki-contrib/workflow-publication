@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xwikidoc>
+  <web>PublicationWorkflow</web>
+  <name>Translations</name>
+  <language>de</language>
+  <defaultLanguage>fr</defaultLanguage>
+  <translation>1</translation>
+  <parent>Main.SpaceIndex</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1357828638000</creationDate>
+  <date>1360258092000</date>
+  <contentUpdateDate>1360258092000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Translations</title>
+  <template/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <object>
+    <class>
+      <name>XWiki.TranslationDocumentClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>1</number>
+        <prettyName>Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <name>PublicationWorkflow.Translations</name>
+    <number>0</number>
+    <className>XWiki.TranslationDocumentClass</className>
+    <guid>5169bd63-2e30-45b9-862d-24d270c75bcc</guid>
+    <property>
+      <scope>WIKI</scope>
+    </property>
+  </object>
+  <content>meeting.livetable.doc.title = Name des Workflows
+meeting.livetable.contributor = Autor
+meeting.livetable.moderator = Vorprüfer
+meeting.livetable.validator = Freigeber
+
+workflow.start.pagename = Öffentlicher Seitenname
+workflow.start.spacename = Öffentlicher Bereich
+workflow.start.dostart = Workflow starten
+workflow.title = Workflow
+workflow.currentStatus = Status
+workflow.submitformoderation = Vorprüfung beantragen
+workflow.submitforvalidation = Freigabe beantragen
+workflow.refusemoderation = Vorprüfung ablehnen
+workflow.publish = Veröffentlichen
+workflow.publishDirectly = Direkt Veröffentlichen
+workflow.refusevalidation = Freigabe ablehnen
+workflow.unpublish = Depublizieren
+workflow.archive = Archivieren
+workflow.publishfromarchive = Republizieren
+workflow.valid = Nur Freigeben
+workflow.editDraft = Entwurf bearbeiten
+
+workflow.backtodraft = Zum Entwurf
+workflow.panel.noContributionRight = Sie haben nicht die erforderlichen Rechte um dieses Dokument zu bearbeiten.
+workflow.panel.noModerationRight = Das Dokument befindet sich derzeit in der Vorprüfung und ist daher im Moment nicht verfügbar.
+workflow.panel.noValidationRight = Das Dokument wurde vorgeprüft und befindet sich derzeit in der Freigabe.
+workflow.panel.thisIsDraft = Dies ist die Entwurfsan­sicht. Für die veröffent­lichte Version, klicken Sie bitte auf folgenden Link.
+workflow.panel.thisIsDraft2 = Um diesen Entwurf zu bearbeiten, klicken Sie bitte auf folgende Schaltfläche.
+workflow.panel.thisIsPublished = Dieses ist ein ver­öffent­lichtes Dokument. Um Änderungen vorzu­nehmen, wechseln Sie bitte zum Entwurf.
+workflow.panel.publishedVersion = Veröffentlichte Version
+workflow.panel.draftVersion = Zum Entwurf
+
+workflow.panel.alreadyExist = Das veröffentlichte Dokument muss sich vom Entwurf unterscheiden.
+
+PublicationWorkflow.PublicationWorkflowClass_status_draft = In Bearbeitung
+PublicationWorkflow.PublicationWorkflowClass_status_moderating = In Vorprüfung
+PublicationWorkflow.PublicationWorkflowClass_status_validating = In Freigabe
+PublicationWorkflow.PublicationWorkflowClass_status_valid = Freigegeben
+PublicationWorkflow.PublicationWorkflowClass_status_published = Veröffentlicht
+PublicationWorkflow.PublicationWorkflowClass_status_archived = Archiviert
+
+workflow.script.notenoughparams = Nicht genügend Parameter.
+workflow.refusal.notenoughparams = Nicht genügend Parameter.
+workflow.refusal.message = Geben Sie hier einen Grund für die Ablehnung an.
+workflow.refusal.submit = Ablehnen
+workflow.refusal.cancel = Abbrechen
+
+workflow.unpublish.noDiff = Der Entwurf ist identisch mit der veröffentlichten Version. Bitte bestätigen Sie die Depublizierung.
+workflow.unpublish.diff = Der Entwurf ist nicht identisch mit der veröffentlichten Version. Sie können entscheiden, ob Sie den Entwurf überschreiben möchten.
+workflow.unpublish.submit = Depublizieren
+
+workflow.unpublish.cancel = Abbrechen
+workflow.unpublish.crush = Entwurf überschreiben
+
+workflow.overview.listDrafts = Liste der Dokumente in Bearbeitung:
+workflow.overview.noDraftDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Bearbeiten haben.
+workflow.overview.noWebmasterDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Freigeben haben.
+workflow.overview.noModerationDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Vorprüfen haben.
+workflow.overview.publishAll = Alle veröffentlichen
+workflow.overview.validateAll = Für alle Freigabe beantragen
+workflow.overview.listValidating = Liste der Dokumente in der Freigabe:
+workflow.overview.listModerating = Liste der Dokumente in der Vorprüfung:
+workflow.overview.successPublish = Alle Dokumente wurden veröffentlicht
+workflow.overview.successValidate = Für alle Dokumente wurde eine Freigabe beantragt
+workflow.overview.failValidate = Bei der Übermittlung zur Freigabe ist bei folgendem Dokument ein Problem aufgetreten [[{0}]]
+workflow.overview.failPublish = Bei der Veröffentlichung ist bei folgendem Dokument ein Problem aufgetreten [[{0}]]
+
+workflow.save.start = Workflow {0} wurde für das Dokument {1} gestartet.
+workflow.save.submitForModeration = Das Dokument {0} wurde zur Vorprüfung übermittelt.
+workflow.save.refuseModeration = Vorprüfung abgelehnt : {0}
+workflow.save.submitForValidation = Das Dokument {0} wurde zur Freigabe übermittelt.
+workflow.save.refuseValidation = Freigabe abgelehnt : {0}
+workflow.save.validate = Das Dokument {0} wurde als gültig markiert.
+workflow.save.publishNew = Es wurde eine neue Version des Dokuments veröffentlicht.
+workflow.save.publishDraft = Das Dokument wurde veröffentlicht als {0}.
+workflow.save.createDraft = Entwurf für Dokument {0} erzeugt.
+workflow.save.unpublish = Entwurf aus zuvor veröffentlichtem Dokument {0} erzeugt.
+workflow.save.backToDraft = Status wurde auf Entwurf zurückgesetzt.
+workflow.save.archive = Dokument wurde archiviert.
+workflow.save.publishFromArchive = Aus Archiv veröffentlicht.
+
+workflow.alert.publish = Wollen Sie dieses Dokument wirklich veröffentlichen?
+workflow.alert.publishDirectly = Wollen Sie dieses Dokument wirklich ohne weitere Prüfung veröffentlichen?
+workflow.alert.archive = Wollen Sie dieses Dokument wirklich archivieren?
+workflow.alert.yes = Ja
+workflow.alert.no = Nein
+
+workflow.script.failed = Beim Ausführen der Workflow-Aktion ist ein Fehler aufgetreten.</content>
+</xwikidoc>
