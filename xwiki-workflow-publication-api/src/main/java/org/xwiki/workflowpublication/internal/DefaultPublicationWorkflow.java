@@ -921,39 +921,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         this.cleanUpIrrelevantDataFromDoc(previousDoc, xcontext);
         // set reference and language
 
+        // make sure that the attachments are properly loaded in memory for the duplicate to work fine, otherwise it's a
+        // bit impredictable about attachments
+        fromDocument.loadAttachments(xcontext);
         XWikiDocument nextDoc = fromDocument.duplicate(toDocument.getDocumentReference());
         this.cleanUpIrrelevantDataFromDoc(nextDoc, xcontext);
-
-        // copy the attachments from the fromDocument to toDocument
-        for (XWikiAttachment fromAttachment : fromDocument.getAttachmentList()) {
-            // load the content of the fromAttachment
-            fromAttachment.loadContent(xcontext);
-            XWikiAttachment newAttachment = toDocument.getAttachment(fromAttachment.getFilename());
-            if (newAttachment == null) {
-                newAttachment =
-                    toDocument.addAttachment(fromAttachment.getFilename(),
-                        fromAttachment.getContentInputStream(xcontext), xcontext);
-                newAttachment.setAuthor(fromAttachment.getAuthor());
-                // the date setting is not helping, it will be the date of the copy, but put it anyway
-                newAttachment.setDate(fromAttachment.getDate());
-            } else {
-                // compare the contents of the attachment to know if we should update it or not
-                // TODO: figure out how could we do this without using so much memory
-                newAttachment.loadContent(xcontext);
-                boolean isSameAttachmentContent =
-                    Arrays.equals(newAttachment.getAttachment_content().getContent(), fromAttachment
-                        .getAttachment_content().getContent());
-                // unload the content of the newAttachment after comparison, since we don't need it anymore and we don't
-                // want to waste memory
-                newAttachment.setAttachment_content(null);
-                if (!isSameAttachmentContent) {
-                    // update it, the contents are not equal
-                    newAttachment.setContent(fromAttachment.getContentInputStream(xcontext));
-                }
-            }
-            // unload the attachment content of the from attachment so that we don't waste memory
-            fromAttachment.setAttachment_content(null);
-        }
 
         // and now merge. Normally the attachments which are not in the next doc are deleted from the current doc
         MergeResult result = toDocument.merge(previousDoc, nextDoc, new MergeConfiguration(), xcontext);
