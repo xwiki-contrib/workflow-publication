@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xwikidoc version="1.1">
+  <web>PublicationWorkflow</web>
+  <name>Translations</name>
+  <language>en</language>
+  <defaultLanguage/>
+  <translation>1</translation>
+  <parent>Main.SpaceIndex</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1423227662000</creationDate>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1423233465000</date>
+  <contentUpdateDate>1423233465000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Translations</title>
+  <comment/>
+  <minorEdit>true</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <object>
+    <class>
+      <name>XWiki.TranslationDocumentClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>1</number>
+        <prettyName>Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <name>PublicationWorkflow.Translations</name>
+    <number>0</number>
+    <className>XWiki.TranslationDocumentClass</className>
+    <guid>5169bd63-2e30-45b9-862d-24d270c75bcc</guid>
+    <property>
+      <scope>WIKI</scope>
+    </property>
+  </object>
+  <content>meeting.livetable.doc.title = Workflow Name
+meeting.livetable.contributor = Contributors
+meeting.livetable.moderator = Moderators
+meeting.livetable.validator= Webmasters
+
+workflow.start.pagename = Publication page
+workflow.start.spacename = Publication space
+workflow.start.dostart = Start workflow
+workflow.title = Workflow
+workflow.currentStatus = Current status
+workflow.submitformoderation = Submit to moderation
+workflow.submitforvalidation = Validate
+workflow.refusemoderation = Refuse
+workflow.publish = Publish
+workflow.refusevalidation = Refuse
+workflow.unpublish = Unpublish
+workflow.archive = Archive
+workflow.publishfromarchive = Republish
+workflow.valid = Validate without publishing
+workflow.editDraft = Edit draft
+
+workflow.backtodraft = Move back to drafts
+workflow.panel.noContributionRight = You don't have the necessary privileges to contribute this document.
+workflow.panel.noModerationRight = This document has been submitted to moderation and it is not available for the moment.
+workflow.panel.noValidationRight = This document has been validated and sent to Webmasters for publication.
+workflow.panel.thisIsDraft = The current document is a draft. To access the published version, click the link below.
+workflow.panel.thisIsPublished = The current document is the published version. In order to edit it, use the draft version instead.
+workflow.panel.publishedVersion = Published version
+workflow.panel.draftVersion = Go to draft
+workflow.panel.alreadyExist = The published document should be different from the current one.
+
+PublicationWorkflow.PublicationWorkflowClass_status_draft = Draft
+PublicationWorkflow.PublicationWorkflowClass_status_moderating = Currently being moderated
+PublicationWorkflow.PublicationWorkflowClass_status_validating = Currently being validated
+PublicationWorkflow.PublicationWorkflowClass_status_valid = Validated
+PublicationWorkflow.PublicationWorkflowClass_status_published = Published
+PublicationWorkflow.PublicationWorkflowClass_status_archived = Archived
+
+workflow.script.notenoughparams = Not enough parameters.
+workflow.refusal.notenoughparams = Not enough parameters.
+workflow.refusal.message = Motivate your refusal here.
+workflow.refusal.submit = Refuse the document
+workflow.refusal.cancel = Cancel
+
+workflow.unpublish.noDiff = The draft and the published document are identical. Please confirm the unpublication.
+workflow.unpublish.diff = The draft is not identical to the published document. To override the draft, check the case below.
+workflow.unpublish.submit = Unpublish
+
+workflow.unpublish.cancel = Cancel
+workflow.unpublish.crush = Override draft
+
+workflow.overview.listDrafts= List of draft documents :
+workflow.overview.noDraftDoc= There is no draft having you as contributor.
+workflow.overview.noWebmasterDoc = There is no document currently being validated of which you are a Webmaster
+workflow.overview.noModerationDoc = There is no document currently being moderated of which you are a moderator
+workflow.overview.publishAll = Publish all documents
+workflow.overview.validateAll = Validate all documents
+workflow.overview.listValidating = List of documents currently being validated :
+workflow.overview.listModerating = List of documents currently being moderated :
+workflow.overview.successPublish = All documents have been published
+workflow.overview.successValidate = All documents have been validated
+workflow.overview.failValidate = A problem occurred during the validation of document [[{0}]]
+workflow.overview.failPublish = A problem occurred during the publication of document [[{0}]]
+
+workflow.save.start = Start workflow {0} on document {1}.
+workflow.save.submitForModeration = Submit document {0} to moderation.
+workflow.save.refuseModeration = Moderation refused : {0}
+workflow.save.submitForValidation = Submit document {0} to validation.
+workflow.save.refuseValidation = Publication refused : {0}
+workflow.save.validate = Mark document {0} as valid.
+workflow.save.publishNew = Publication of the new version of the document.
+workflow.save.publishDraft = Publication of the document to {0}.
+workflow.save.createDraft= Creating draft for document {0}.
+workflow.save.unpublish =  Creating draft from the published document {0}.
+workflow.save.backToDraft = Change the status to draft to allow editing.
+workflow.save.archive = Archive the document.
+workflow.save.publishFromArchive = Publication of the document from an archive.
+
+workflow.alert.publish = Are you sure you want to publish this document ?
+workflow.alert.archive = Are you sure you want to archive this document ?
+workflow.alert.yes = Yes
+workflow.alert.no = No</content>
+</xwikidoc>
