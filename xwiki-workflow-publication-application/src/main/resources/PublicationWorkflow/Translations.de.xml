@@ -4,7 +4,7 @@
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language>de</language>
-  <defaultLanguage>fr</defaultLanguage>
+  <defaultLanguage/>
   <translation>1</translation>
   <parent>Main.SpaceIndex</parent>
   <creator>xwiki:XWiki.Admin</creator>

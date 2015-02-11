@@ -1,4 +1,5 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc version="1.1">
   <web>PublicationWorkflow</web>
   <name>Translations</name>
@@ -15,7 +16,7 @@
   <version>1.1</version>
   <title>Translations</title>
   <comment/>
-  <minorEdit>true</minorEdit>
+  <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <object>

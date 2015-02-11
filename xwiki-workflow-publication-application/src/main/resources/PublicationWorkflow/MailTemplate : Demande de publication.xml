@@ -1,164 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xwikidoc>
-<web>PublicationWorkflow</web>
-<name>MailTemplate : Demande de publication</name>
-<language></language>
-<defaultLanguage></defaultLanguage>
-<translation>0</translation>
-<parent></parent>
-<creator>xwiki:XWiki.Admin</creator>
-<author>xwiki:XWiki.Admin</author>
-<customClass></customClass>
-<contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-<creationDate>1358173900000</creationDate>
-<date>1423238342000</date>
-<contentUpdateDate>1423237234000</contentUpdateDate>
-<version>1.2</version>
-<title></title>
-<defaultTemplate></defaultTemplate>
-<validationScript></validationScript>
-<comment></comment>
-<minorEdit>false</minorEdit>
-<syntaxId>xwiki/2.1</syntaxId>
-<hidden>true</hidden>
-<object>
-<class>
-<name>XWiki.Mail</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<html>
-<disabled>0</disabled>
-<name>html</name>
-<number>4</number>
-<prettyName>HTML</prettyName>
-<rows>15</rows>
-<size>80</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-</html>
-<language>
-<disabled>0</disabled>
-<name>language</name>
-<number>2</number>
-<prettyName>Language</prettyName>
-<size>5</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-</language>
-<subject>
-<disabled>0</disabled>
-<name>subject</name>
-<number>1</number>
-<prettyName>Subject</prettyName>
-<size>40</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-</subject>
-<text>
-<disabled>0</disabled>
-<name>text</name>
-<number>3</number>
-<prettyName>Text</prettyName>
-<rows>15</rows>
-<size>80</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-</text>
-</class>
-<name>PublicationWorkflow.MailTemplate : Demande de publication</name>
-<number>0</number>
-<className>XWiki.Mail</className>
-<guid>ec130a94-dabf-45a6-9784-a69143784ff8</guid>
-<property>
-<html>Le document $document a été validé par les modérateurs. Vous pouvez consulter sa version actuelle &lt;a href=$url&gt; ici &lt;/a&gt;, et choisir de le publier ou non. &lt;br&gt;&lt;br&gt; 
+  <web>PublicationWorkflow</web>
+  <name>MailTemplate : Demande de publication</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent/>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1358173900000</creationDate>
+  <date>1423238342000</date>
+  <contentUpdateDate>1423237234000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <object>
+    <class>
+      <name>XWiki.Mail</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <html>
+        <disabled>0</disabled>
+        <name>html</name>
+        <number>4</number>
+        <prettyName>HTML</prettyName>
+        <rows>15</rows>
+        <size>80</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </html>
+      <language>
+        <disabled>0</disabled>
+        <name>language</name>
+        <number>2</number>
+        <prettyName>Language</prettyName>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </language>
+      <subject>
+        <disabled>0</disabled>
+        <name>subject</name>
+        <number>1</number>
+        <prettyName>Subject</prettyName>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </subject>
+      <text>
+        <disabled>0</disabled>
+        <name>text</name>
+        <number>3</number>
+        <prettyName>Text</prettyName>
+        <rows>15</rows>
+        <size>80</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </text>
+    </class>
+    <name>PublicationWorkflow.MailTemplate : Demande de publication</name>
+    <number>0</number>
+    <className>XWiki.Mail</className>
+    <guid>ec130a94-dabf-45a6-9784-a69143784ff8</guid>
+    <property>
+      <html>Le document $document a été validé par les modérateurs. Vous pouvez consulter sa version actuelle &lt;a href=$url&gt; ici &lt;/a&gt;, et choisir de le publier ou non. &lt;br&gt;&lt;br&gt; 
 
 Ce courriel a été envoyé automatiquement par XWiki.</html>
-</property>
-<property>
-<language>fr</language>
-</property>
-<property>
-<subject>Demande de publication</subject>
-</property>
-<property>
-<text>Le document $document a été validé par les modérateurs. Vous pouvez consulter sa version actuelle ici : $url, et choisir de le publier ou non. 
+    </property>
+    <property>
+      <language>fr</language>
+    </property>
+    <property>
+      <subject>Demande de publication</subject>
+    </property>
+    <property>
+      <text>Le document $document a été validé par les modérateurs. Vous pouvez consulter sa version actuelle ici : $url, et choisir de le publier ou non. 
 
 Ce courriel a été envoyé automatiquement par XWiki.</text>
-</property>
-</object>
-<object>
-<class>
-<name>XWiki.Mail</name>
-<customClass></customClass>
-<customMapping></customMapping>
-<defaultViewSheet></defaultViewSheet>
-<defaultEditSheet></defaultEditSheet>
-<defaultWeb></defaultWeb>
-<nameField></nameField>
-<validationScript></validationScript>
-<html>
-<disabled>0</disabled>
-<name>html</name>
-<number>4</number>
-<prettyName>HTML</prettyName>
-<rows>15</rows>
-<size>80</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-</html>
-<language>
-<disabled>0</disabled>
-<name>language</name>
-<number>2</number>
-<prettyName>Language</prettyName>
-<size>5</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-</language>
-<subject>
-<disabled>0</disabled>
-<name>subject</name>
-<number>1</number>
-<prettyName>Subject</prettyName>
-<size>40</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-</subject>
-<text>
-<disabled>0</disabled>
-<name>text</name>
-<number>3</number>
-<prettyName>Text</prettyName>
-<rows>15</rows>
-<size>80</size>
-<unmodifiable>0</unmodifiable>
-<classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-</text>
-</class>
-<name>PublicationWorkflow.MailTemplate : Demande de publication</name>
-<number>1</number>
-<className>XWiki.Mail</className>
-<guid>cc22b6db-6790-46f6-a5e4-ca2c98ccc724</guid>
-<property>
-<html>The document $document has been validated by the moderators. You can access the current version &lt;a href=$url&gt;here&lt;/a&gt; and choose whether to publish it or not. &lt;br&gt;&lt;br&gt; 
+    </property>
+  </object>
+  <object>
+    <class>
+      <name>XWiki.Mail</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <html>
+        <disabled>0</disabled>
+        <name>html</name>
+        <number>4</number>
+        <prettyName>HTML</prettyName>
+        <rows>15</rows>
+        <size>80</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </html>
+      <language>
+        <disabled>0</disabled>
+        <name>language</name>
+        <number>2</number>
+        <prettyName>Language</prettyName>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </language>
+      <subject>
+        <disabled>0</disabled>
+        <name>subject</name>
+        <number>1</number>
+        <prettyName>Subject</prettyName>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </subject>
+      <text>
+        <disabled>0</disabled>
+        <name>text</name>
+        <number>3</number>
+        <prettyName>Text</prettyName>
+        <rows>15</rows>
+        <size>80</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </text>
+    </class>
+    <name>PublicationWorkflow.MailTemplate : Demande de publication</name>
+    <number>1</number>
+    <className>XWiki.Mail</className>
+    <guid>cc22b6db-6790-46f6-a5e4-ca2c98ccc724</guid>
+    <property>
+      <html>The document $document has been validated by the moderators. You can access the current version &lt;a href=$url&gt;here&lt;/a&gt; and choose whether to publish it or not. &lt;br&gt;&lt;br&gt; 
 
 This message has been automatically sent by XWiki.</html>
-</property>
-<property>
-<language>en</language>
-</property>
-<property>
-<subject>Publication request</subject>
-</property>
-<property>
-<text>The document $document has been validated by the moderators. You can access the current version by clicking this link : $url and choose whether to publish it or not.
+    </property>
+    <property>
+      <language>en</language>
+    </property>
+    <property>
+      <subject>Publication request</subject>
+    </property>
+    <property>
+      <text>The document $document has been validated by the moderators. You can access the current version by clicking this link : $url and choose whether to publish it or not.
 
 This message has been automatically sent by XWiki.</text>
-</property>
-</object>
-<content></content></xwikidoc>
+    </property>
+  </object>
+  <content/>
+</xwikidoc>
