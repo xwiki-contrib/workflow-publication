@@ -100,6 +100,7 @@ workflow.refusal.cancel = Cancel
 
 workflow.unpublish.noDiff = The draft and the published document are identical. Please confirm the unpublication.
 workflow.unpublish.diff = The draft is not identical to the published document. To override the draft, check the case below.
+workflow.unpublish.noDraft = Please confirm the unpublication.
 workflow.unpublish.submit = Unpublish
 
 workflow.unpublish.cancel = Cancel

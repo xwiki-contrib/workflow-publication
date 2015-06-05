@@ -31,11 +31,15 @@
 #else
   #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
   #set($draft = $services.publicationworkflow.getDraftDocument($workflowDocRef))
-  #set($isModified = $services.publicationworkflow.isModified($draft, $workflowDocRef))
-  #if(!$isModified)
-    $msg.get('workflow.unpublish.noDiff')
+  #if($draft)
+    #set($isModified = $services.publicationworkflow.isModified($draft, $workflowDocRef))
+    #if(!$isModified)
+      $msg.get('workflow.unpublish.noDiff')
+    #else
+      $msg.get('workflow.unpublish.diff')
+    #end
   #else
-    $msg.get('workflow.unpublish.diff')
+    $msg.get('workflow.unpublish.noDraft')
   #end
 
   {{html wiki='true'}}

@@ -107,6 +107,7 @@ workflow.refusal.cancel = Abbrechen
 
 workflow.unpublish.noDiff = Der Entwurf ist identisch mit der veröffentlichten Version. Bitte bestätigen Sie die Depublizierung.
 workflow.unpublish.diff = Der Entwurf ist nicht identisch mit der veröffentlichten Version. Sie können entscheiden, ob Sie den Entwurf überschreiben möchten.
+workflow.unpublish.noDraft = Bitte bestätigen Sie die Depublizierung.
 workflow.unpublish.submit = Depublizieren
 
 workflow.unpublish.cancel = Abbrechen

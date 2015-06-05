@@ -105,6 +105,7 @@ workflow.refusal.cancel = Annuler
 
 workflow.unpublish.noDiff = Le brouillon est identique au document publié. Veuillez confirmer la dépublication. 
 workflow.unpublish.diff = Le brouillon n'est pas identique au document publié. Vous pouvez décider d'écraser le brouillon en cochant la case ci-dessous.
+workflow.unpublish.noDraft = Veuillez confirmer la dépublication.
 workflow.unpublish.submit = Dépublier
 
 workflow.unpublish.cancel = Annuler
