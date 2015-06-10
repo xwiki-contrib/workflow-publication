@@ -2,7 +2,7 @@
 
 <xwikidoc>
   <web>PublicationWorkflow</web>
-  <name>MailTemplate : Refus de validation</name>
+  <name>ValidationRequestMailTemplate</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -11,17 +11,17 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1358174916000</creationDate>
-  <date>1423238477000</date>
-  <contentUpdateDate>1423234782000</contentUpdateDate>
+  <creationDate>1358159178000</creationDate>
+  <date>1433937278000</date>
+  <contentUpdateDate>1433856578000</contentUpdateDate>
   <version>1.1</version>
-  <title>MailTemplate : Refus de validation</title>
+  <title/>
   <defaultTemplate/>
   <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
+  <hidden>true</hidden>
   <object>
     <class>
       <name>XWiki.Mail</name>
@@ -71,25 +71,23 @@
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </text>
     </class>
-    <name>PublicationWorkflow.MailTemplate : Refus de validation</name>
+    <name>PublicationWorkflow.ValidationRequestMailTemplate</name>
     <number>0</number>
     <className>XWiki.Mail</className>
-    <guid>72b63b79-cdb2-48ee-8a3c-d7de78c74183</guid>
+    <guid>8fe0c8f0-9334-467a-8c1c-f8b09e2d40c1</guid>
     <property>
-      <html>Les modérateurs ont refusé de valider le document $document pour les raisons suivantes : $reason &lt;br&gt;
-Vous pouvez revenir au brouillon pour le modifier &lt;a href="$url"&gt;ici&lt;/a&gt;. 
-
+      <html>Le document $document a été soumis à la validation. Vous pouvez consulter sa version actuelle et le valider en suivant le lien qui suit : &lt;a href="$url"&gt;$document&lt;/a&gt;
+&lt;br&gt;&lt;br&gt;
 Ce courriel a été envoyé automatiquement par XWiki.</html>
     </property>
     <property>
       <language>fr</language>
     </property>
     <property>
-      <subject>Refus de validation</subject>
+      <subject>Demande de validation</subject>
     </property>
     <property>
-      <text>Les modérateurs ont refusé de valider le document $document pour les raisons suivantes : $reason
-Vous pouvez revenir au brouillon pour le modifier en suivant le lien : $url. 
+      <text>Le document $document a été soumis à la validation. Vous pouvez consulter sa version actuelle et le valider en suivant le lien qui suit : $url.
 
 Ce courriel a été envoyé automatiquement par XWiki.</text>
     </property>
@@ -143,28 +141,26 @@ Ce courriel a été envoyé automatiquement par XWiki.</text>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </text>
     </class>
-    <name>PublicationWorkflow.MailTemplate : Refus de validation</name>
+    <name>PublicationWorkflow.ValidationRequestMailTemplate</name>
     <number>1</number>
     <className>XWiki.Mail</className>
-    <guid>e459097b-084f-4396-ac32-e711feedaf32</guid>
+    <guid>f182f5b4-56dc-46cd-ad6e-585d9e01bef5</guid>
     <property>
-      <html>The moderators have refused to validate the document $document for the following reasons : $reason &lt;br&gt;
-In order to modify it, you can access the draft by clicking this &lt;a href="$url"&gt;link&lt;/a&gt;.
-
+      <html>The document $document has been submitted to validation. You can access the current version and validate it by clicking on &lt;a href="$url"&gt;$document&lt;/a&gt;.
+&lt;br&gt;&lt;br&gt;
 This message has been automatically sent by XWiki.</html>
     </property>
     <property>
       <language>en</language>
     </property>
     <property>
-      <subject>Validation refusal</subject>
+      <subject>Validation request</subject>
     </property>
     <property>
-      <text>The moderators have refused to validate the document $document for the following reasons : $reason
-In order to modify it, you can access the draft by clicking this link : $url.
+      <text>The document $document has been submitted to validation. You can access the current version and validate it by clicking this link : $url.
 
 This message has been automatically sent by XWiki.</text>
     </property>
   </object>
-  <content>Modèle de mail à envoyer aux contributeurs lorsque les modérateurs ont refusé l'un de leurs documents</content>
+  <content>Modèle du mail envoyé aux modérateurs lorsqu'un article est soumis à la modération</content>
 </xwikidoc>

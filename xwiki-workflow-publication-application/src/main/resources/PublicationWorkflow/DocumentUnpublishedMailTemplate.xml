@@ -2,7 +2,7 @@
 
 <xwikidoc>
   <web>PublicationWorkflow</web>
-  <name>MailTemplate : Demande de validation</name>
+  <name>DocumentUnpublishedMailTemplate</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -11,11 +11,11 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1358159178000</creationDate>
-  <date>1423238388000</date>
-  <contentUpdateDate>1423236079000</contentUpdateDate>
+  <creationDate>1358181201000</creationDate>
+  <date>1433937294000</date>
+  <contentUpdateDate>1433856578000</contentUpdateDate>
   <version>1.1</version>
-  <title/>
+  <title>DocumentUnpublishedMailTemplate</title>
   <defaultTemplate/>
   <validationScript/>
   <comment/>
@@ -71,23 +71,23 @@
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </text>
     </class>
-    <name>PublicationWorkflow.MailTemplate : Demande de validation</name>
+    <name>PublicationWorkflow.DocumentUnpublishedMailTemplate</name>
     <number>0</number>
     <className>XWiki.Mail</className>
-    <guid>607f4c71-1e9e-4520-8096-c0a89ecca00e</guid>
+    <guid>a0bfb340-d714-4d96-9cee-c7b6fe8b97df</guid>
     <property>
-      <html>Le document $document a été soumis à la validation. Vous pouvez consulter sa version actuelle et le valider en suivant le lien qui suit : &lt;a href="$url"&gt;$document&lt;/a&gt;
-&lt;br&gt;&lt;br&gt;
+      <html>Le document $document a été dépublié.&lt;br&gt;&lt;br&gt;
+
 Ce courriel a été envoyé automatiquement par XWiki.</html>
     </property>
     <property>
       <language>fr</language>
     </property>
     <property>
-      <subject>Demande de validation</subject>
+      <subject>Dépublication d'un document</subject>
     </property>
     <property>
-      <text>Le document $document a été soumis à la validation. Vous pouvez consulter sa version actuelle et le valider en suivant le lien qui suit : $url.
+      <text>Le document $document a été dépublié.
 
 Ce courriel a été envoyé automatiquement par XWiki.</text>
     </property>
@@ -141,26 +141,26 @@ Ce courriel a été envoyé automatiquement par XWiki.</text>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </text>
     </class>
-    <name>PublicationWorkflow.MailTemplate : Demande de validation</name>
+    <name>PublicationWorkflow.DocumentUnpublishedMailTemplate</name>
     <number>1</number>
     <className>XWiki.Mail</className>
-    <guid>7e03c364-6544-438f-ac88-45fe397fb864</guid>
+    <guid>38343314-279c-4fcc-bb8a-6a2dce37f9fa</guid>
     <property>
-      <html>The document $document has been submitted to validation. You can access the current version and validate it by clicking on &lt;a href="$url"&gt;$document&lt;/a&gt;.
-&lt;br&gt;&lt;br&gt;
+      <html>The document $document has been unpublished.&lt;br&gt;&lt;br&gt;
+
 This message has been automatically sent by XWiki.</html>
     </property>
     <property>
       <language>en</language>
     </property>
     <property>
-      <subject>Validation request</subject>
+      <subject>Document unpublished</subject>
     </property>
     <property>
-      <text>The document $document has been submitted to validation. You can access the current version and validate it by clicking this link : $url.
+      <text>The document $document has been unpublished.
 
 This message has been automatically sent by XWiki.</text>
     </property>
   </object>
-  <content>Modèle du mail envoyé aux modérateurs lorsqu'un article est soumis à la modération</content>
+  <content>Modèle de mail à envoyer aux webmasters lorsqu'un document est dépublié.</content>
 </xwikidoc>
