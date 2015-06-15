@@ -156,7 +156,7 @@
         #if($action == 'submitforvalidation')
           #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, $xcontext.getLanguage(), "PublicationWorkflow.PublicationRequestMailTemplate", $map))
         #else
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, $xcontext.getLanguage(), "PublicationWorkflow.DocumentUnpublishedMailTemplate", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, $xwiki.null, $xwiki.null, $xcontext.getLanguage(), "PublicationWorkflow.DepublicationMailTemplate", $map))
         #end
       #elseif($action == 'refusemoderation')
         #set($contributors = $group.getProperty('contributor').value)
