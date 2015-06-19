@@ -937,6 +937,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // Author does not seem to be merged anymore in the merge function in newer versions, so we'll do it here
         toDocument.setAuthorReference(fromDocument.getAuthorReference());
 
+        // language is not handled by the merge result at all, let's set default language (TODO: check if language and
+        // translation flag should also be set)
+        toDocument.setDefaultLocale(fromDocument.getDefaultLocale());
+
         List<LogEvent> exception = result.getLog().getLogs(LogLevel.ERROR);
         if (exception.isEmpty()) {
             return true;
