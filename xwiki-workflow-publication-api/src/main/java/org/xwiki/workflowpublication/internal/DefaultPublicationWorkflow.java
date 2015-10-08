@@ -703,7 +703,21 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     + stringSerializer.serialize(doc.getDocumentReference()) + " to document "
                     + stringSerializer.serialize(newDocument.getDocumentReference()), e);
         }
-
+        
+        // use a fake 3 way merge: previous is toDocument without comments, rights and wf object
+        // current version is current toDocument
+        // next version is fromDocument without comments, rights and wf object
+        XWikiDocument previousDoc = newDocument.clone();
+        this.cleanUpIrrelevantDataFromDoc(previousDoc, xcontext);
+		// make sure that the attachments are properly loaded in memory for the duplicate to work fine, otherwise it's a
+        // bit impredictable about attachments
+        doc.loadAttachments(xcontext);
+        XWikiDocument nextDoc = doc.duplicate(newDocument.getDocumentReference());
+		this.cleanUpIrrelevantDataFromDoc(nextDoc, xcontext);
+        // and now merge. Normally the attachments which are not in the next doc are deleted from the current doc
+        MergeResult result = newDocument.merge(previousDoc, nextDoc, new MergeConfiguration(), xcontext);
+        
+        
         // published document is visible
         newDocument.setHidden(false);
         // setup the workflow and target flag, if a workflow doesn't exist already
