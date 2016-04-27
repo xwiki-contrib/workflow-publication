@@ -485,11 +485,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message =
             this.getMessage("workflow.save.startastarget", defaultMessage,
                 Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
-        // make sure the save message is not longer than 255 since that will be throwing exception on save and we
-        // definitely don't want that
-        if (message.length() > 255) {
-            message = message.substring(0, 255);
-        }
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
 
         return true;
@@ -893,7 +888,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save it
         String defaultMessage = "Published document from an archive.";
-        String message = messageTool.get("workflow.save.publishFromArchive", defaultMessage, null);
+        String message = getMessage("workflow.save.publishFromArchive", defaultMessage, null);
         xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
 
         return true;
@@ -1162,9 +1157,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             message = messageTool.get(key);
         }
         if (message.equals(key)) {
-            return defaultMessage;
-        } else {
-            return message;
+            message = defaultMessage;
         }
+        // trim the message, whichever that is, to 255 characters, otherwise we're in trouble
+        if (message.length() > 255) {
+            // add some dots to show that it was trimmed
+            message = message.substring(0, 252) + "...";
+        }
+        return message;
     }
 }
