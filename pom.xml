@@ -32,7 +32,7 @@
   <name>Publication Workflow Application</name>
   <description>Simple publication workflow implementation that allows to push a document through various validation states until it is published.</description>
   <packaging>pom</packaging>
-  <version>1.6-SNAPSHOT</version>
+  <version>1.5.1</version>
   <properties>
     <xwiki.platform.version>${commons.version}</xwiki.platform.version>
   </properties>
@@ -54,7 +54,7 @@
     <connection>scm:git:git://github.com/xwiki-contrib/workflow-publication.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/workflow-publication.git</developerConnection>
     <url>https://github.com/xwiki-contrib/workflow-publication.git</url>
-    <tag>HEAD</tag>
+    <tag>xwiki-workflow-publication-1.5.1</tag>
   </scm>
   <distributionManagement>
     <repository>
