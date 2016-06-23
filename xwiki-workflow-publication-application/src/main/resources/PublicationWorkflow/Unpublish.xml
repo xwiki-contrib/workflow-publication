@@ -45,7 +45,7 @@
   {{html wiki='true'}}
   &lt;form action = $xwiki.getURL('PublicationWorkflow.Script') method='post'&gt;
     &lt;input type='hidden' name='action' value="$action" /&gt;
-    &lt;input type='hidden' name='workflowdoc' value="$workflowdoc" /&gt;
+    &lt;input type='hidden' name='workflowdoc' value="$escapetool.xml($workflowdoc)" /&gt;
     #if($isModified)
       &lt;input type="checkbox" name="crush" value="1"/&gt;$msg.get('workflow.unpublish.crush')&lt;br&gt;&lt;br&gt;
     #end
