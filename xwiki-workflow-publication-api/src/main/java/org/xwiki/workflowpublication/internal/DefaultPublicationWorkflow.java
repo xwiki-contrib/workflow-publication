@@ -96,6 +96,18 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         new EntityReference("XWiki", EntityType.SPACE));
 
     /**
+     * The reference to average ratings class used in the Ratings application
+     */
+    public static final EntityReference AVERAGE_RATINGS_CLASS = new EntityReference("AverageRatingsClass",
+    		EntityType.DOCUMENT, new EntityReference("XWiki", EntityType.SPACE));
+    
+    public static final String AVERAGE_RATINGS_NUMBEROFVOTES = "nbvotes";
+    
+    public static final String AVERAGE_RATINGS_AVERAGEVOTE = "averagevote";
+    
+    public static final String AVERAGE_RATINGS_AVERAGEMETHOD = "method";
+
+    /**
      * The reference to the xwiki rights, relative to the current wiki. <br />
      */
     public static final EntityReference RIGHTS_CLASS = new EntityReference("XWikiRights", EntityType.DOCUMENT,
@@ -710,6 +722,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             newWorkflow.set(WF_TARGET_FIELDNAME, target, xcontext);
             newWorkflow.set(WF_CONFIG_REF_FIELDNAME, workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
         }
+        
+        // We assume that only publishing documents is a centralized action, this is why the average rating
+        // is copied when publishing/unpublishing a document
+        copyAverageRating(doc, newDocument);
 
         // TODO: figure out who should be the author of the published document
         // save the published document prepared like this
@@ -768,6 +784,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 {
                     // make the draft doc draft again
                     makeDocumentDraft(draftDoc, workflow, xcontext);
+                    // We assume that only publishing documents is a centralized action, this is why the average rating
+                    // is copied when publishing/unpublishing a document
+                    copyAverageRating(targetDoc, draftDoc);
                     // save the draft document
                     String defaultMessage =
                         "Created draft from published document" + stringSerializer.serialize(document) + ".";
@@ -810,6 +829,27 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         } else {
             // TODO: put exception on the context
             return null;
+        }
+    }
+    
+    /**
+     * Copy the average ratings that is save in the document itself
+     *
+     * @param fromDocument source document
+     * @param toDocument target document
+     * @throws XWikiException
+     */
+    public void copyAverageRating(XWikiDocument fromDocument, XWikiDocument toDocument)  throws XWikiException {
+    	// In the case there is an average ratings object in the source document, copy it to the target document
+        BaseObject previousAverageRatingsObj = fromDocument.getXObject(AVERAGE_RATINGS_CLASS);
+        if(previousAverageRatingsObj != null) {
+        	BaseObject targetAverageRatingsObj = toDocument.getXObject(AVERAGE_RATINGS_CLASS, true, this.getXContext());
+        	targetAverageRatingsObj.setIntValue(AVERAGE_RATINGS_NUMBEROFVOTES,
+        		previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_NUMBEROFVOTES));
+        	targetAverageRatingsObj.setFloatValue(AVERAGE_RATINGS_AVERAGEVOTE,
+            		previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_AVERAGEVOTE));
+        	targetAverageRatingsObj.setStringValue(AVERAGE_RATINGS_AVERAGEMETHOD,
+            		previousAverageRatingsObj.getStringValue(AVERAGE_RATINGS_AVERAGEMETHOD));
         }
     }
 
