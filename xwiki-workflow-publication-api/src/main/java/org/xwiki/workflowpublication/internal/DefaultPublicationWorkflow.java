@@ -848,7 +848,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             targetAverageRatingsObj.setIntValue(AVERAGE_RATINGS_NUMBEROFVOTES,
                 previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_NUMBEROFVOTES));
             targetAverageRatingsObj.setFloatValue(AVERAGE_RATINGS_AVERAGEVOTE,
-                previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_AVERAGEVOTE));
+                previousAverageRatingsObj.getFloatValue(AVERAGE_RATINGS_AVERAGEVOTE));
             targetAverageRatingsObj.setStringValue(AVERAGE_RATINGS_AVERAGEMETHOD,
                 previousAverageRatingsObj.getStringValue(AVERAGE_RATINGS_AVERAGEMETHOD));
         }
