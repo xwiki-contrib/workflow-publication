@@ -98,13 +98,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     /**
      * The reference to average ratings class used in the Ratings application
      */
-    public static final EntityReference AVERAGE_RATINGS_CLASS = new EntityReference("AverageRatingsClass",
-    		EntityType.DOCUMENT, new EntityReference("XWiki", EntityType.SPACE));
-    
+    public static final EntityReference AVERAGE_RATINGS_CLASS =
+        new EntityReference("AverageRatingsClass", EntityType.DOCUMENT, new EntityReference("XWiki", EntityType.SPACE));
+
     public static final String AVERAGE_RATINGS_NUMBEROFVOTES = "nbvotes";
-    
+
     public static final String AVERAGE_RATINGS_AVERAGEVOTE = "averagevote";
-    
+
     public static final String AVERAGE_RATINGS_AVERAGEMETHOD = "method";
 
     /**
@@ -839,17 +839,18 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param toDocument target document
      * @throws XWikiException
      */
-    public void copyAverageRating(XWikiDocument fromDocument, XWikiDocument toDocument)  throws XWikiException {
-    	// In the case there is an average ratings object in the source document, copy it to the target document
+    public void copyAverageRating(XWikiDocument fromDocument, XWikiDocument toDocument) throws XWikiException
+    {
+        // In the case there is an average ratings object in the source document, copy it to the target document
         BaseObject previousAverageRatingsObj = fromDocument.getXObject(AVERAGE_RATINGS_CLASS);
-        if(previousAverageRatingsObj != null) {
-        	BaseObject targetAverageRatingsObj = toDocument.getXObject(AVERAGE_RATINGS_CLASS, true, this.getXContext());
-        	targetAverageRatingsObj.setIntValue(AVERAGE_RATINGS_NUMBEROFVOTES,
-        		previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_NUMBEROFVOTES));
-        	targetAverageRatingsObj.setFloatValue(AVERAGE_RATINGS_AVERAGEVOTE,
-            		previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_AVERAGEVOTE));
-        	targetAverageRatingsObj.setStringValue(AVERAGE_RATINGS_AVERAGEMETHOD,
-            		previousAverageRatingsObj.getStringValue(AVERAGE_RATINGS_AVERAGEMETHOD));
+        if (previousAverageRatingsObj != null) {
+            BaseObject targetAverageRatingsObj = toDocument.getXObject(AVERAGE_RATINGS_CLASS, true, this.getXContext());
+            targetAverageRatingsObj.setIntValue(AVERAGE_RATINGS_NUMBEROFVOTES,
+                previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_NUMBEROFVOTES));
+            targetAverageRatingsObj.setFloatValue(AVERAGE_RATINGS_AVERAGEVOTE,
+                previousAverageRatingsObj.getIntValue(AVERAGE_RATINGS_AVERAGEVOTE));
+            targetAverageRatingsObj.setStringValue(AVERAGE_RATINGS_AVERAGEMETHOD,
+                previousAverageRatingsObj.getStringValue(AVERAGE_RATINGS_AVERAGEMETHOD));
         }
     }
 
