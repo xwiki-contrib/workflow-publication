@@ -43,7 +43,7 @@
     </developer>
     <developer>
       <id>tdelafosse</id>
-      <name>Thomas Delafossse</name>
+      <name>Thomas Delafosse</name>
     </developer>
   </developers>
   <organization>
@@ -53,7 +53,7 @@
   <scm>
     <connection>scm:git:git://github.com/xwiki-contrib/workflow-publication.git</connection>
     <developerConnection>scm:git:git@github.com:xwiki-contrib/workflow-publication.git</developerConnection>
-    <url>https://github.com/xwiki-contrib/workflow-publication.git</url>
+    <url>https://github.com/xwiki-contrib/workflow-publication/tree/master/</url>
     <tag>HEAD</tag>
   </scm>
   <distributionManagement>
