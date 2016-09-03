@@ -21,7 +21,9 @@ package org.xwiki.workflowpublication.internal;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -194,6 +196,29 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Override
     public boolean isModified(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext xcontext) throws XWikiException
     {
+        List<Locale> fromLocales = fromDoc.getTranslationLocales(xcontext);
+        List<Locale> toLocales = toDoc.getTranslationLocales(xcontext);
+
+        // compare locales first (need to ignore order of locales)
+        if (! new HashSet<Locale>(fromLocales).equals( new HashSet<Locale>(toLocales))) {
+            LOGGER.debug("different locales for {} and {} : {} not equal to {}", fromDoc, toDoc, fromLocales, toLocales);
+            return true;
+        }
+        fromLocales.add(0, Locale.ROOT);
+        for (Locale locale : fromLocales) {
+            // do the same check for every locale; that wastes a bit of performance
+            // as e.g. objects and attachments only need to be checked for the default locale.
+            if (isModifiedSingleLanguage(fromDoc.getTranslatedDocument(locale, xcontext),
+                                         toDoc.getTranslatedDocument(locale, xcontext), xcontext)) {
+                LOGGER.debug("different versions for {} and {} in locale {}", fromDoc, toDoc, locale);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isModifiedSingleLanguage(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext xcontext) throws XWikiException
+    {
         // check if fromDoc is different from toDoc, using the same strategy we use in copyContentsToNewVersion: compare
         // document content, document metadata (besides author), compare objects besides comments, rights and
         // publication workflow class, compare attachments (including attachment content).
@@ -207,6 +232,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         try {
             List<Delta> contentDiffs = previousDoc.getContentDiff(previousDoc, nextDoc, xcontext);
             if (contentDiffs.size() > 0) {
+                LOGGER.debug("different content for {} and {}", previousDoc, nextDoc);
                 // we found content differences, we stop here and return
                 return true;
             }
@@ -220,14 +246,16 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         List<MetaDataDiff> metaDiffs = previousDoc.getMetaDataDiff(previousDoc, nextDoc, xcontext);
         // if there is a change other than author, it's a real change
         for (MetaDataDiff metaDataDiff : metaDiffs) {
-            if (!metaDataDiff.getField().equals("author")) {
+            if (!metaDataDiff.getField().equals("author") && !metaDataDiff.getField().equals("hidden")) {
                 // is modified, return here, don't need to check the rest, we don't care
+                LOGGER.debug("different meta for {} and {}: {}", previousDoc, nextDoc, metaDataDiff);
                 return true;
             }
         }
         // 2. object diffs
         List<List<ObjectDiff>> objectDiffs = previousDoc.getObjectDiff(previousDoc, nextDoc, xcontext);
         if (objectDiffs.size() > 0) {
+            LOGGER.debug("different objects for {} and {}", previousDoc, nextDoc);
             // is modified, return here, don't need to check the rest, we don't care
             return true;
         }
@@ -367,35 +395,45 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         DocumentReference draftDocRef =
             new DocumentReference(targetRef.getWikiReference().getName(), defaultDraftsSpace, draftDocName);
         XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
-        try {
-            // TODO: copy translated documents
-            this.copyContentsToNewVersion(targetDocument, draftDoc, xcontext);
-        } catch (IOException e) {
-            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
-                "Error accessing attachments when copying document " + stringSerializer.serialize(targetRef)
-                    + " to document " + stringSerializer.serialize(draftDocRef), e);
+
+        final Locale origLocale = xcontext.getLocale();
+        XWikiDocument translatedDraftDoc;
+        List<Locale> locales = targetDocument.getTranslationLocales(xcontext);
+        locales.add(0, Locale.ROOT);
+
+        for (Locale locale : locales) {
+            translatedDraftDoc = copyTranslatedDocument(targetDocument, draftDoc, locale, xcontext);
+
+            // workflow object: only needs to be set up for default locale
+            if (locale == Locale.ROOT) {
+                BaseObject draftWfObject =
+                        draftDoc.newXObject(
+                                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
+                                xcontext);
+                draftWfObject.set(WF_CONFIG_REF_FIELDNAME,
+                        compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
+                draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef), xcontext);
+                this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
+            }
+
+            // setup the creator to the current user
+            translatedDraftDoc.setCreatorReference(xcontext.getUserReference());
+            // and save the document
+            String defaultMessage = "Created draft for " + stringSerializer.serialize(targetRef) + ".";
+
+            try {
+                xcontext.setLocale(translatedDraftDoc.getRealLocale());
+                String message =
+                    getMessage("workflow.save.createDraft", defaultMessage,
+                            Arrays.asList(stringSerializer.serialize(targetRef).toString()));
+                xcontext.getWiki().saveDocument(translatedDraftDoc, message, false, xcontext);
+                LOGGER.debug(defaultMessage);
+            } finally {
+                xcontext.setLocale(origLocale);
+            }
         }
 
-        BaseObject draftWfObject =
-            draftDoc.newXObject(
-                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
-                xcontext);
-        draftWfObject.set(WF_CONFIG_REF_FIELDNAME,
-            compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
-        draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef), xcontext);
-        this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
-        // setup the creator to the current user
-        draftDoc.setCreatorReference(xcontext.getUserReference());
-        // and save the document
-        String defaultMessage2 = "Created draft for " + stringSerializer.serialize(targetRef) + ".";
-        String message2 =
-            getMessage("workflow.save.createDraft", defaultMessage2,
-                Arrays.asList(stringSerializer.serialize(targetRef).toString()));
-        xcontext.getWiki().saveDocument(draftDoc, message2, false, xcontext);
-        LOGGER.info(defaultMessage2);
-
         return draftDocRef;
-
     }
 
     @Override
@@ -709,45 +747,60 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return null;
         }
         DocumentReference targetRef = explicitStringDocRefResolver.resolve(target, document);
-        XWikiDocument newDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
+        XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
         // TODO: handle checking if the target document is free...
 
-        // TODO: do this for all the languages of document to copy from, and remove the languages which are not anymore
-        try {
-            this.copyContentsToNewVersion(doc, newDocument, xcontext);
-        } catch (IOException e) {
-            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
-                "Error accessing attachments when copying document "
-                    + stringSerializer.serialize(doc.getDocumentReference()) + " to document "
-                    + stringSerializer.serialize(newDocument.getDocumentReference()), e);
+        final Locale origLocale = xcontext.getLocale();
+        List<Locale> locales = doc.getTranslationLocales(xcontext);
+        List<Locale> publishedLocales = targetDocument.getTranslationLocales(xcontext);
+        locales.add(0, Locale.ROOT);
+
+        for (Locale locale : locales) {
+            XWikiDocument translatedNewDocument = copyTranslatedDocument(doc, targetDocument, locale, xcontext);
+
+            // published document is visible
+            translatedNewDocument.setHidden(false);
+
+            if (locale == Locale.ROOT) {
+                // setup the workflow and target flag, if a workflow doesn't exist already - only needs to be done for default locale
+                BaseObject newWorkflow = targetDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
+                if (newWorkflow == null) {
+                    newWorkflow = targetDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
+                    newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
+                    newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
+                    newWorkflow.set(WF_TARGET_FIELDNAME, target, xcontext);
+                    newWorkflow.set(WF_CONFIG_REF_FIELDNAME, workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
+                }
+            }
+
+            // TODO: figure out who should be the author of the published document
+
+            // save the published document prepared like this
+            String defaultMessage = "Published new version of the document.";
+            try {
+                xcontext.setLocale(translatedNewDocument.getRealLocale());
+                String message = getMessage("workflow.save.publishNew", defaultMessage, null);
+                // setup the context to let events know that they are in the publishing context
+                xcontext.put(CONTEXTKEY_PUBLISHING, true);
+                xcontext.getWiki().saveDocument(translatedNewDocument, message, false, xcontext);
+                LOGGER.debug(defaultMessage);
+            } finally {
+                xcontext.remove(CONTEXTKEY_PUBLISHING);
+                xcontext.setLocale(origLocale);
+            }
+        }
+        // remove the languages which are not anymore
+        publishedLocales.removeAll(locales);
+        for (Locale toRemove: publishedLocales) {
+            XWikiDocument translatedDocumentToRemove = targetDocument.getTranslatedDocument(toRemove, xcontext);
+            if (translatedDocumentToRemove != targetDocument) {
+                xcontext.getWiki().deleteDocument(translatedDocumentToRemove, xcontext);
+                LOGGER.debug("deleted published target {} in locale {}", stringSerializer.serialize(targetRef), toRemove);
+            }
         }
 
-        // published document is visible
-        newDocument.setHidden(false);
-        // setup the workflow and target flag, if a workflow doesn't exist already
-        BaseObject newWorkflow = newDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
-        if (newWorkflow == null) {
-            newWorkflow = newDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
-            newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-            newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
-            newWorkflow.set(WF_TARGET_FIELDNAME, target, xcontext);
-            newWorkflow.set(WF_CONFIG_REF_FIELDNAME, workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
-        }
-
-        // TODO: figure out who should be the author of the published document
-        // save the published document prepared like this
-        String defaultMessage = "Published new version of the document.";
-        String message = getMessage("workflow.save.publishNew", defaultMessage, null);
-        try {
-            // setup the context to let events know that they are in the publishing context
-            xcontext.put(CONTEXTKEY_PUBLISHING, true);
-            xcontext.getWiki().saveDocument(newDocument, message, false, xcontext);
-        } finally {
-            xcontext.remove(CONTEXTKEY_PUBLISHING);
-        }
-
-        // prepare the draft document as well
+        // prepare the draft document as well (objects only, so default locale is good enough)
         // set the status
         workflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
 
@@ -924,6 +977,42 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     /**
+     * copy over the contents in the given locale of the source document to the target document.
+     * All arguments must not be null.
+     * The source document should already have a variant for the given locale.
+     * If the target does not have a variant, it will be created.
+     * This helper does not save the created / changed document variant; this must be done by the caller
+     * (possibly after some modifications).
+     * @return the created / changed target locale variant
+     */
+    private XWikiDocument copyTranslatedDocument(XWikiDocument sourceDocument, XWikiDocument targetDocument,
+            Locale locale, XWikiContext xcontext) throws XWikiException
+    {
+        XWikiDocument translatedTargetDocument;
+        try {
+            XWikiDocument translatedSourceDocument = sourceDocument.getTranslatedDocument(locale, xcontext);
+            translatedTargetDocument = targetDocument.getTranslatedDocument(locale, xcontext);
+            if (locale != Locale.ROOT && translatedTargetDocument == targetDocument) {
+                // the language variant does not exist yet; make a copy ...
+                // TODO: as "copyContentsToNewVersion" might be overwritten by customizations should we still call it later on?
+                translatedTargetDocument = translatedSourceDocument.duplicate(targetDocument.getDocumentReference());
+                // ... and start from version 1.1 (copy from XWiki#copyDocument; feels pretty fishy here but needed to start with version 1.1)
+                translatedTargetDocument.setNew(true);
+                translatedTargetDocument.setVersion("1.1");
+            } else {
+                // the language variant already exists; do a merge
+                this.copyContentsToNewVersion(translatedSourceDocument, translatedTargetDocument, xcontext);
+            }
+        } catch (IOException e) {
+            throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
+                    "Error accessing attachments when copying document " + stringSerializer.serialize(sourceDocument.getDocumentReference())
+                    + " to document " + stringSerializer.serialize(targetDocument.getDocumentReference()), e);
+        }
+        return translatedTargetDocument;
+    }
+
+
+    /**
      * Function that marshalls the contents from ##fromDocument## to ##toDocument##, besides the workflow object, the
      * comment objects, the annotation objects, the rigths and the history. This function does not save the destination
      * document, the caller is responsible of that, so that they can perform additional operations on the destination
@@ -1084,13 +1173,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // to build the string we either need to know the separator, or we need to do this bad workaround to make
         // GroupsClass build the property value
         PropertyClass groupsPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_GROUPS);
-        BaseProperty groupsProperty = groupsPropClass.fromStringArray((String[]) groups.toArray());
+        BaseProperty<?> groupsProperty = groupsPropClass.fromStringArray((String[]) groups.toArray());
         rightsObject.set(RIGHTS_GROUPS, groupsProperty.getValue(), context);
         PropertyClass usersPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_USERS);
-        BaseProperty usersProperty = usersPropClass.fromStringArray((String[]) users.toArray());
+        BaseProperty<?> usersProperty = usersPropClass.fromStringArray((String[]) users.toArray());
         rightsObject.set(RIGHTS_USERS, usersProperty.getValue(), context);
         PropertyClass levelsPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_LEVELS);
-        BaseProperty levelsProperty = levelsPropClass.fromStringArray((String[]) levels.toArray());
+        BaseProperty<?> levelsProperty = levelsPropClass.fromStringArray((String[]) levels.toArray());
         rightsObject.set(RIGHTS_LEVELS, levelsProperty.getValue(), context);
     }
 
