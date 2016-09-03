@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc>
+<xwikidoc version="1.1">
   <web>PublicationWorkflow</web>
   <name>PublicationWorkflowMacro</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent/>
   <creator>xwiki:XWiki.Admin</creator>
-  <author>xwiki:XWiki.Admin</author>
-  <customClass/>
-  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1360256286000</creationDate>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <date>1361306248000</date>
-  <contentUpdateDate>1361306248000</contentUpdateDate>
+  <contentUpdateDate>1360256286000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <template/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
+  <content/>
   <object>
+    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>5f17698a-d08c-4e8d-9025-442f2b477af6</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -91,14 +91,10 @@
         <separators> ,|</separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
-    <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>5f17698a-d08c-4e8d-9025-442f2b477af6</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -157,6 +153,10 @@ document.observe('xwiki:dom:loading', function() {
     </property>
   </object>
   <object>
+    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
+    <number>0</number>
+    <className>XWiki.RequiredRightClass</className>
+    <guid>74be1928-5e7d-481d-a5ec-3a218660951f</guid>
     <class>
       <name>XWiki.RequiredRightClass</name>
       <customClass/>
@@ -187,15 +187,15 @@ document.observe('xwiki:dom:loading', function() {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </level>
     </class>
-    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
-    <number>0</number>
-    <className>XWiki.RequiredRightClass</className>
-    <guid>74be1928-5e7d-481d-a5ec-3a218660951f</guid>
     <property>
       <level>programming</level>
     </property>
   </object>
   <object>
+    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>e2997454-396f-467f-a70c-32a5259f2431</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -231,6 +231,22 @@ document.observe('xwiki:dom:loading', function() {
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
       <name>
         <disabled>0</disabled>
         <name>name</name>
@@ -263,14 +279,10 @@ document.observe('xwiki:dom:loading', function() {
         <separators> ,|</separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
-    <number>0</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>e2997454-396f-467f-a70c-32a5259f2431</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -299,6 +311,9 @@ document.observe('xwiki:dom:loading', function() {
 }</code>
     </property>
     <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
       <name>Workflow StyleSheet</name>
     </property>
     <property>
@@ -309,6 +324,10 @@ document.observe('xwiki:dom:loading', function() {
     </property>
   </object>
   <object>
+    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroClass</className>
+    <guid>f66bfcbe-4169-472f-b589-94f20e91dd09</guid>
     <class>
       <name>XWiki.WikiMacroClass</name>
       <customClass/>
@@ -418,10 +437,6 @@ document.observe('xwiki:dom:loading', function() {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </visibility>
     </class>
-    <name>PublicationWorkflow.PublicationWorkflowMacro</name>
-    <number>0</number>
-    <className>XWiki.WikiMacroClass</className>
-    <guid>f66bfcbe-4169-472f-b589-94f20e91dd09</guid>
     <property>
       <code>{{velocity}}
 #set($discard = $xwiki.ssx.use('PublicationWorkflow.PublicationWorkflowMacro'))
@@ -679,5 +694,4 @@ document.observe('xwiki:dom:loading', function() {
       <visibility>Current Wiki</visibility>
     </property>
   </object>
-  <content/>
 </xwikidoc>

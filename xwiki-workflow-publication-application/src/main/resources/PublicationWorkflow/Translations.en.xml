@@ -6,54 +6,19 @@
   <language>en</language>
   <defaultLanguage/>
   <translation>1</translation>
-  <parent>Main.SpaceIndex</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1423227662000</creationDate>
+  <parent>Main.SpaceIndex</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1423233465000</date>
-  <contentUpdateDate>1423233465000</contentUpdateDate>
+  <date>1423227662000</date>
+  <contentUpdateDate>1423227662000</contentUpdateDate>
   <version>1.1</version>
   <title>Translations</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <object>
-    <class>
-      <name>XWiki.TranslationDocumentClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <scope>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>scope</name>
-        <number>1</number>
-        <prettyName>Scope</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators> ,|</separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </scope>
-    </class>
-    <name>PublicationWorkflow.Translations</name>
-    <number>0</number>
-    <className>XWiki.TranslationDocumentClass</className>
-    <guid>5169bd63-2e30-45b9-862d-24d270c75bcc</guid>
-    <property>
-      <scope>WIKI</scope>
-    </property>
-  </object>
   <content>meeting.livetable.doc.title = Workflow Name
 meeting.livetable.contributor = Contributors
 meeting.livetable.moderator = Moderators
@@ -137,4 +102,39 @@ workflow.alert.publish = Are you sure you want to publish this document ?
 workflow.alert.archive = Are you sure you want to archive this document ?
 workflow.alert.yes = Yes
 workflow.alert.no = No</content>
+  <object>
+    <name>PublicationWorkflow.Translations</name>
+    <number>0</number>
+    <className>XWiki.TranslationDocumentClass</className>
+    <guid>5169bd63-2e30-45b9-862d-24d270c75bcc</guid>
+    <class>
+      <name>XWiki.TranslationDocumentClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>1</number>
+        <prettyName>Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <scope>WIKI</scope>
+    </property>
+  </object>
 </xwikidoc>

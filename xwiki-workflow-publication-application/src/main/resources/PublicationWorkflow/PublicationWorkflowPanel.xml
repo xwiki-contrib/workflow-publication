@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc>
+<xwikidoc version="1.1">
   <web>PublicationWorkflow</web>
   <name>PublicationWorkflowPanel</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent/>
   <creator>xwiki:XWiki.Admin</creator>
-  <author>xwiki:XWiki.Admin</author>
-  <customClass/>
-  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357318493000</creationDate>
-  <date>1360256716000</date>
-  <contentUpdateDate>1360256716000</contentUpdateDate>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1357318493000</date>
+  <contentUpdateDate>1357318493000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <template/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
+  <content>{{include document="Panels.PanelSheet"/}}</content>
   <object>
+    <name>PublicationWorkflow.PublicationWorkflowPanel</name>
+    <number>0</number>
+    <className>Panels.PanelClass</className>
+    <guid>cb815f27-8cb2-4b24-bb42-d4f3770a5f88</guid>
     <class>
       <name>Panels.PanelClass</name>
       <customClass/>
@@ -56,7 +56,7 @@
         <number>4</number>
         <prettyName>Content</prettyName>
         <rows>25</rows>
-        <size>60</size>
+        <size>120</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </content>
@@ -97,10 +97,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </type>
     </class>
-    <name>PublicationWorkflow.PublicationWorkflowPanel</name>
-    <number>0</number>
-    <className>Panels.PanelClass</className>
-    <guid>cb815f27-8cb2-4b24-bb42-d4f3770a5f88</guid>
     <property>
       <category>Information</category>
     </property>
@@ -122,5 +118,4 @@
       <type>view</type>
     </property>
   </object>
-  <content>{{include document="Panels.PanelSheet"/}}</content>
 </xwikidoc>
