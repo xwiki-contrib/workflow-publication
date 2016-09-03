@@ -27,10 +27,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 import org.suigeneris.jrcs.diff.delta.Delta;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.logging.LogLevel;
 import org.xwiki.logging.event.LogEvent;
 import org.xwiki.model.EntityType;
@@ -54,7 +57,6 @@ import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ObjectDiff;
 import com.xpn.xwiki.objects.classes.PropertyClass;
-import com.xpn.xwiki.web.XWikiMessageTool;
 
 /**
  * @version $Id$
@@ -136,7 +138,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     /**
      * For translations.
      */
-    private XWikiMessageTool messageTool;
+    @Inject
+    private ContextualLocalizationManager localizationManager;
 
     /**
      * The execution, to get the context from it.
@@ -167,6 +170,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      */
     @Inject
     protected EntityReferenceSerializer<String> stringSerializer;
+
+    /**
+     * Logging tool.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPublicationWorkflow.class);
 
     /**
      * {@inheritDoc}
@@ -384,6 +392,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             getMessage("workflow.save.createDraft", defaultMessage2,
                 Arrays.asList(stringSerializer.serialize(targetRef).toString()));
         xcontext.getWiki().saveDocument(draftDoc, message2, false, xcontext);
+        LOGGER.info(defaultMessage2);
 
         return draftDocRef;
 
@@ -451,6 +460,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             this.getMessage("workflow.save.start", defaultMessage,
                 Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        LOGGER.info(defaultMessage);
 
         return true;
     }
@@ -498,6 +508,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             this.getMessage("workflow.save.startastarget", defaultMessage,
                 Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        LOGGER.info(defaultMessage);
 
         return true;
     }
@@ -676,6 +687,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             getMessage("workflow.save.validate", defaultMessage,
                 Arrays.asList(stringSerializer.serialize(document).toString()));
         xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        LOGGER.info(defaultMessage);
 
         return true;
     }
@@ -748,6 +760,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             getMessage("workflow.save.publishDraft", defaultMessage2,
                 Arrays.asList(stringSerializer.serialize(targetRef).toString()));
         xcontext.getWiki().saveDocument(doc, message2, false, xcontext);
+        LOGGER.info(defaultMessage2);
 
         return targetRef;
     }
@@ -787,6 +800,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                         getMessage("workflow.save.unpublish", defaultMessage,
                             Arrays.asList(stringSerializer.serialize(document).toString()));
                     xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
+                    LOGGER.info(defaultMessage);
                 }
             } else {
                 // the existing draft is not published and force to draft is required
@@ -810,6 +824,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     getMessage("workflow.save.unpublish", defaultMessage,
                         Arrays.asList(stringSerializer.serialize(document).toString()));
                 xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
+                LOGGER.info(defaultMessage);
             }
         } else {
             draftDocRef = this.createDraftDocument(targetDoc, xcontext);
@@ -867,6 +882,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Archived document.";
         String message = getMessage("workflow.save.archive", defaultMessage, null);
         xcontext.getWiki().saveDocument(publishedDoc, message, true, xcontext);
+        LOGGER.info(defaultMessage + " " + stringSerializer.serialize(document));
 
         return true;
     }
@@ -902,6 +918,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Published document from an archive.";
         String message = getMessage("workflow.save.publishFromArchive", defaultMessage, null);
         xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
+        LOGGER.info(defaultMessage + " " + stringSerializer.serialize(document));
 
         return true;
     }
@@ -1163,15 +1180,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      */
     protected String getMessage(String key, String defaultMessage, List<String> params)
     {
-        if (this.messageTool == null) {
-            this.messageTool = this.getXContext().getMessageTool();
-        }
-        String message = "";
-        if (params != null) {
-            message = messageTool.get(key, params);
-        } else {
-            message = messageTool.get(key);
-        }
+        String message = (params == null)
+                ? localizationManager.getTranslationPlain(key)
+                : localizationManager.getTranslationPlain(key, params.toArray());
         if (message.equals(key)) {
             message = defaultMessage;
         }

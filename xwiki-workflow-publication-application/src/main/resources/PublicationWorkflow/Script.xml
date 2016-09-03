@@ -58,7 +58,7 @@
   #set($redirectdoc = $workflowdoc)
 #end
 #if($workflowdoc == "" || $action == "")
-  {{info}}$msg.get('workflow.script.notenoughparams'){{/info}}
+  {{info}}$services.localization.render('workflow.script.notenoughparams'){{/info}}
 #else
   #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
   #if($request.cancel)  
@@ -181,7 +181,7 @@
       $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', ''))
     #end
   #else
-    $msg.get('workflow.script.failed')
+    $services.localization.render('workflow.script.failed')
   #end
 #end
 {{/velocity}}</content>

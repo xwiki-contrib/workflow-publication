@@ -48,6 +48,8 @@ workflow.panel.thisIsDraft = The current document is a draft. To access the publ
 workflow.panel.thisIsPublished = The current document is the published version. In order to edit it, use the draft version instead.
 workflow.panel.publishedVersion = Published version
 workflow.panel.draftVersion = Go to draft
+workflow.panel.editDraft = If you want to edit the document, click the following button to return to status draft.
+
 workflow.panel.alreadyExist = The published document should be different from the current one.
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Draft

@@ -107,9 +107,9 @@
       $('formPublish').observe('submit', function(event){
         event.stop();
         var params = {
-          confirmationText: "$msg.get('workflow.alert.publish')",
-          yesButtonText: "$msg.get('workflow.alert.yes')",
-          noButtonText: "$msg.get('workflow.alert.no')"
+          confirmationText: "$services.localization.render('workflow.alert.publish')",
+          yesButtonText: "$services.localization.render('workflow.alert.yes')",
+          noButtonText: "$services.localization.render('workflow.alert.no')"
         };
         new XWiki.widgets.ConfirmationBox(
           {
@@ -122,9 +122,9 @@
     $('formArchive').observe('submit', function(event){
       event.stop();
       var params = {
-        confirmationText: "$msg.get('workflow.alert.archive')",
-        yesButtonText: "$msg.get('workflow.alert.yes')",
-        noButtonText: "$msg.get('workflow.alert.no')"
+        confirmationText: "$services.localization.render('workflow.alert.archive')",
+        yesButtonText: "$services.localization.render('workflow.alert.yes')",
+        noButtonText: "$services.localization.render('workflow.alert.no')"
       };
       new XWiki.widgets.ConfirmationBox(
         {
@@ -449,7 +449,7 @@ document.observe('xwiki:dom:loading', function() {
     {{html clean="false"}}
       &lt;div class="publicationworkflow-information"&gt;
         &lt;p&gt;
-          $msg.get('workflow.currentStatus'): $workflowDoc.display('status', $workflow)   
+          $services.localization.render('workflow.currentStatus'): $workflowDoc.display('status', $workflow)
         &lt;/p&gt; 
       &lt;/div&gt;
     {{/html}}
@@ -457,15 +457,15 @@ document.observe('xwiki:dom:loading', function() {
 #elseif(!$isWorkflowDoc)
   ##add a form to start a workflow
   #if($!request.same == 'true')
-    {{error}}$msg.get('workflow.panel.alreadyExist'){{/error}}
+    {{error}}$services.localization.render('workflow.panel.alreadyExist'){{/error}}
   #end 
   {{html clean="false"}}
     &lt;div class="publicationworkflow-information"&gt;
     &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
       &lt;div id="informations"&gt;
-        &lt;label&gt;$msg.get('workflow.start.pagename')&lt;/label&gt;
+        &lt;label&gt;$services.localization.render('workflow.start.pagename')&lt;/label&gt;
         &lt;input type='text' name='page' /&gt;
-        &lt;label&gt;$msg.get('workflow.start.spacename')&lt;/label&gt;
+        &lt;label&gt;$services.localization.render('workflow.start.spacename')&lt;/label&gt;
         &lt;select name='space'&gt;
         #foreach($spaceName in $xwiki.spaces)
           &lt;option&gt;$spaceName&lt;/option&gt;
@@ -482,7 +482,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
       &lt;/div&gt;
       &lt;div class="buttonwrapper"&gt;
-        &lt;input type='submit' value="$msg.get('workflow.start.dostart')" class="button" /&gt;
+        &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.start.dostart'))" class="button" /&gt;
       &lt;/div&gt;
     &lt;/form&gt;
     &lt;/div&gt;
@@ -494,7 +494,7 @@ document.observe('xwiki:dom:loading', function() {
   {{html clean="false"}}
     &lt;div class="publicationworkflow-info"&gt;
       &lt;p&gt;
-        $msg.get('workflow.currentStatus'): $doc.display('status', $workflowObject)
+        $services.localization.render('workflow.currentStatus'): $doc.display('status', $workflowObject)
       &lt;/p&gt;
     #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
     #set($state = $workflowObject.getProperty('status').value)
@@ -508,11 +508,11 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.submitformoderation')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.submitformoderation'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #else
-        $msg.get('workflow.panel.noRightContribution')
+        $services.localization.render('workflow.panel.noRightContribution')
       #end
     #elseif($state == "moderating")
       #if($services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
@@ -522,7 +522,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.submitforvalidation')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.submitforvalidation'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xformInline'&gt;
@@ -531,11 +531,11 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.refusemoderation')" class="secondary button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.refusemoderation'))" class="secondary button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #else
-        $msg.get('workflow.panel.noModerationRight')
+        $services.localization.render('workflow.panel.noModerationRight')
       #end
     #elseif($state == "validating")
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
@@ -545,7 +545,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.publish')" class="button" /&gt; 
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publish'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
@@ -554,7 +554,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.valid')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.valid'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
 
@@ -564,11 +564,11 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.refusevalidation')" class="button secondary" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.refusevalidation'))" class="button secondary" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #else
-        $msg.get('workflow.panel.noValidationRight')
+        $services.localization.render('workflow.panel.noValidationRight')
       #end
     #elseif($state == "valid") 
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
@@ -578,7 +578,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.publish')" class='button' /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publish'))" class='button' /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #end
@@ -586,11 +586,11 @@ document.observe('xwiki:dom:loading', function() {
       #if($isTarget == '0')
         #set($url = $xwiki.getURL("$target"))
         &lt;p&gt;
-          $msg.get('workflow.panel.thisIsDraft') &lt;br /&gt;
-          &lt;a href="$url"&gt; $msg.get('workflow.panel.publishedVersion') &lt;/a&gt;
+          $services.localization.render('workflow.panel.thisIsDraft') &lt;br /&gt;
+          &lt;a href="$url"&gt; $services.localization.render('workflow.panel.publishedVersion') &lt;/a&gt;
         &lt;/p&gt;
         &lt;p&gt;
-          Si vous voulez éditer ce brouillon, cliquez sur le bouton suivant pour repasser en status brouillon. 
+          $services.localization.render('workflow.panel.editDraft')
         &lt;/p&gt;
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
           &lt;div&gt;
@@ -598,7 +598,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.editDraft')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.editDraft'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #else
@@ -608,7 +608,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' class="button" value="$msg.get('workflow.archive')"/&gt;
+            &lt;input type='submit' class="button" value="$escapetool.xml($services.localization.render('workflow.archive'))"/&gt;
           &lt;/div&gt;
         &lt;/form&gt;
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;
@@ -617,13 +617,13 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.unpublish')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.unpublish'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
         ## display actions related to the draft document
         #set($draft = $services.publicationworkflow.getDraftDocument($doc.getDocumentReference()))
         &lt;p&gt;
-          $msg.get('workflow.panel.thisIsPublished')
+          $services.localization.render('workflow.panel.thisIsPublished')
         &lt;/p&gt;
         &lt;div&gt;
           #if ($draft &amp;&amp; $xwiki.getDocument($draft).getObject('PublicationWorkflow.PublicationWorkflowClass').getProperty('status').value != "published")
@@ -636,7 +636,7 @@ document.observe('xwiki:dom:loading', function() {
               &lt;/div&gt;
           #end
               &lt;div class="buttonwrapper"&gt;
-                &lt;input type='submit' class="button" value="$msg.get('workflow.panel.draftVersion')" /&gt;
+                &lt;input type='submit' class="button" value="$escapetool.xml($services.localization.render('workflow.panel.draftVersion'))" /&gt;
               &lt;/div&gt;
             &lt;/form&gt;
         &lt;/div&gt;
@@ -649,7 +649,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.publishfromarchive')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publishfromarchive'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
       #elseif($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName) &amp;&amp; !$services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
@@ -659,7 +659,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$msg.get('workflow.backtodraft')" class="button" /&gt;
+            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.backtodraft'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;       
       #end

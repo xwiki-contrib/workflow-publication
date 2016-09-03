@@ -50,6 +50,7 @@ workflow.panel.thisIsDraft2 = Um diesen Entwurf zu bearbeiten, klicken Sie bitte
 workflow.panel.thisIsPublished = Dieses ist ein ver­öffent­lichtes Dokument. Um Änderungen vorzu­nehmen, wechseln Sie bitte zum Entwurf.
 workflow.panel.publishedVersion = Veröffentlichte Version
 workflow.panel.draftVersion = Zum Entwurf
+workflow.panel.editDraft = Dieses Dokument ist veröffentlicht. Um in den Entwurfszustand zu wechseln, bitte den folgenden Button drücken.
 
 workflow.panel.alreadyExist = Das veröffentlichte Dokument muss sich vom Entwurf unterscheiden.
 

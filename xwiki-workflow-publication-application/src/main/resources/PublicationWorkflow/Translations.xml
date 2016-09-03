@@ -48,6 +48,7 @@ workflow.panel.thisIsDraft = Le document actuel est un brouillon. Pour consulter
 workflow.panel.thisIsPublished = Le document actuel est la version publiée. Utilisez la version brouillon de ce document pour y apporter des modifications.
 workflow.panel.publishedVersion = Version publiée
 workflow.panel.draftVersion = Accéder au brouillon
+workflow.panel.editDraft = Si vous voulez éditer ce brouillon, cliquez sur le bouton suivant pour repasser en status brouillon.
 
 workflow.panel.alreadyExist = Le document de publication doit être différent du document actuel.
 

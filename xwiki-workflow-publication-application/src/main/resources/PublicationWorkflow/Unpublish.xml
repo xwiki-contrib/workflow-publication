@@ -34,26 +34,26 @@
   #if($draft)
     #set($isModified = $services.publicationworkflow.isModified($draft, $workflowDocRef))
     #if(!$isModified)
-      $msg.get('workflow.unpublish.noDiff')
+      $services.localization.render('workflow.unpublish.noDiff')
     #else
-      $msg.get('workflow.unpublish.diff')
+      $services.localization.render('workflow.unpublish.diff')
     #end
   #else
-    $msg.get('workflow.unpublish.noDraft')
+    $services.localization.render('workflow.unpublish.noDraft')
   #end
 
   {{html wiki='true'}}
   &lt;form action = $xwiki.getURL('PublicationWorkflow.Script') method='post'&gt;
-    &lt;input type='hidden' name='action' value="$action" /&gt;
+    &lt;input type='hidden' name='action' value="$escapetool.xml($action)" /&gt;
     &lt;input type='hidden' name='workflowdoc' value="$escapetool.xml($workflowdoc)" /&gt;
     #if($isModified)
-      &lt;input type="checkbox" name="crush" value="1"/&gt;$msg.get('workflow.unpublish.crush')&lt;br&gt;&lt;br&gt;
+      &lt;input type="checkbox" name="crush" value="1"/&gt;$services.localization.render('workflow.unpublish.crush')&lt;br&gt;&lt;br&gt;
     #end
     &lt;div class="buttonwrapper"&gt;
-      &lt;input type='submit' class='button' value=$msg.get('workflow.unpublish.submit') /&gt;
+      &lt;input type='submit' class='button' value="$escapetool.xml($services.localization.render('workflow.unpublish.submit'))" /&gt;
     &lt;/div&gt;
     &lt;div class="buttonwrapper"&gt;
-      &lt;input type='submit' class='button' name="cancel" value=$msg.get('workflow.unpublish.cancel') /&gt;
+      &lt;input type='submit' class='button' name="cancel" value="$escapetool.xml($services.localization.render('workflow.unpublish.cancel'))" /&gt;
     &lt;/div&gt;
   &lt;/form&gt;
   {{/html}}

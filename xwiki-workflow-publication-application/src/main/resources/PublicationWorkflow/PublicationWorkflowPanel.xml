@@ -102,7 +102,7 @@
     </property>
     <property>
       <content>{{velocity}}
-  #panelheader($msg.get('workflow.title'))
+  #panelheader($services.localization.render('workflow.title'))
 
   {{publicationworkflow /}}
   #panelfooter()
