@@ -23,20 +23,20 @@
 #set($action = "$!request.action")
 #set($workflowdoc = "$!request.workflowdoc")
 #if($workflowdoc == "" || $action == "")
-  {{info}}$msg.get('workflow.refusal.notenoughparams'){{/info}}
+  {{info}}$services.localization.render('workflow.refusal.notenoughparams'){{/info}}
 #else
 
   {{html wiki='true'}}
   &lt;form action = $xwiki.getURL('PublicationWorkflow.Script') method='post'&gt;
     &lt;input type='hidden' name='action' value="$action" /&gt;
     &lt;input type='hidden' name='workflowdoc' value="$workflowdoc" /&gt;
-    &lt;textarea name='reason' placeholder="$msg.get('workflow.refusal.message')" cols='40', rows='5'&gt;&lt;/textarea&gt;
+    &lt;textarea name='reason' placeholder="$escapetool.xml($services.localization.render('workflow.refusal.message'))" cols='40', rows='5'&gt;&lt;/textarea&gt;
     &lt;br&gt;&lt;br&gt;
     &lt;div class="buttonwrapper"&gt;
-      &lt;input type='submit' class='button' value=$msg.get('workflow.refusal.submit') /&gt;
+      &lt;input type='submit' class='button' value="$escapetool.xml($services.localization.render('workflow.refusal.submit'))" /&gt;
     &lt;/div&gt;
     &lt;div class="buttonwrapper"&gt;
-      &lt;input type='submit' class='button' name="cancel" value=$msg.get('workflow.refusal.cancel') /&gt;
+      &lt;input type='submit' class='button' name="cancel" value="$escapetool.xml($services.localization.render('workflow.refusal.cancel'))" /&gt;
     &lt;/div&gt;
   &lt;/form&gt;
   {{/html}}
