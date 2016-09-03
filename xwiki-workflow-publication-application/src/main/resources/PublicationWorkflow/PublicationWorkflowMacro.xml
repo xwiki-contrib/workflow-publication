@@ -442,6 +442,11 @@ document.observe('xwiki:dom:loading', function() {
 #set($discard = $xwiki.ssx.use('PublicationWorkflow.PublicationWorkflowMacro'))
 #set($discard = $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowMacro'))
 #set($isWorkflowDoc = $services.publicationworkflow.isWorkflowDocument($doc.prefixedFullName))
+#macro(publicationHint)
+  #if(!${doc.getTranslationList().isEmpty()})
+    &lt;p class="xHint"&gt;$services.localization.render('workflow.panel.publish.hintLanguages')&lt;/p&gt;
+  #end
+#end
 #if($doc.equals($xwiki.getDocument("PublicationWorkflow.Refusal")) || $doc.equals($xwiki.getDocument("PublicationWorkflow.Unpublish")))
   #if($request.workflowdoc)
     #set($workflowDoc = $xwiki.getDocument($request.workflowdoc))
@@ -502,7 +507,7 @@ document.observe('xwiki:dom:loading', function() {
     #set($target = $workflowObject.getProperty('target').value)
     #if($state == "draft")
       #if($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="submitformoderation" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -516,7 +521,7 @@ document.observe('xwiki:dom:loading', function() {
       #end
     #elseif($state == "moderating")
       #if($services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="submitforvalidation" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -525,7 +530,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.submitforvalidation'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="refusemoderation" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -539,7 +544,7 @@ document.observe('xwiki:dom:loading', function() {
       #end
     #elseif($state == "validating")
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline' id='formPublish'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline' id='formPublish'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="publish" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
@@ -548,7 +553,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publish'))" class="button" /&gt;
           &lt;/div&gt;
         &lt;/form&gt;
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="validate" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -558,7 +563,7 @@ document.observe('xwiki:dom:loading', function() {
           &lt;/div&gt;
         &lt;/form&gt;
 
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Refusal')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="refusevalidation" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -566,13 +571,14 @@ document.observe('xwiki:dom:loading', function() {
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.refusevalidation'))" class="button secondary" /&gt;
           &lt;/div&gt;
+          #publicationHint()
         &lt;/form&gt;
       #else
         $services.localization.render('workflow.panel.noValidationRight')
       #end
     #elseif($state == "valid") 
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline' id="formPublish"&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline' id="formPublish"&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="publish" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -580,6 +586,7 @@ document.observe('xwiki:dom:loading', function() {
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publish'))" class='button' /&gt;
           &lt;/div&gt;
+          #publicationHint()
         &lt;/form&gt;
       #end
     #elseif($state == "published" &amp;&amp; $services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName))
@@ -602,7 +609,7 @@ document.observe('xwiki:dom:loading', function() {
           &lt;/div&gt;
         &lt;/form&gt;
       #else
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' id='formArchive' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' id='formArchive' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="archive" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -611,7 +618,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type='submit' class="button" value="$escapetool.xml($services.localization.render('workflow.archive'))"/&gt;
           &lt;/div&gt;
         &lt;/form&gt;
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="unpublish" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -629,7 +636,7 @@ document.observe('xwiki:dom:loading', function() {
           #if ($draft &amp;&amp; $xwiki.getDocument($draft).getObject('PublicationWorkflow.PublicationWorkflowClass').getProperty('status').value != "published")
             &lt;form action="$xwiki.getURL($draft)" method='get' class='xformInline'&gt;
           #else
-            &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
+            &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
               &lt;div&gt;
                 &lt;input type="hidden" name="action" value="getEditableDraft" /&gt;
                 &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -643,7 +650,7 @@ document.observe('xwiki:dom:loading', function() {
       #end
     #elseif($state == "archived")
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xformInline'&gt;
+        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="publishfromarchive" /&gt;
             &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
@@ -651,6 +658,7 @@ document.observe('xwiki:dom:loading', function() {
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publishfromarchive'))" class="button" /&gt;
           &lt;/div&gt;
+          #publicationHint()
         &lt;/form&gt;
       #elseif($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName) &amp;&amp; !$services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
          &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;

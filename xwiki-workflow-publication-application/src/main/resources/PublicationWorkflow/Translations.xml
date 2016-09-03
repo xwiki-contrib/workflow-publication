@@ -51,6 +51,8 @@ workflow.panel.draftVersion = Accéder au brouillon
 workflow.panel.editDraft = Si vous voulez éditer ce brouillon, cliquez sur le bouton suivant pour repasser en status brouillon.
 
 workflow.panel.alreadyExist = Le document de publication doit être différent du document actuel.
+workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
+
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Brouillon
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = En cours de modération

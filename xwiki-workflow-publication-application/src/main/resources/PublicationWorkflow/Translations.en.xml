@@ -51,6 +51,7 @@ workflow.panel.draftVersion = Go to draft
 workflow.panel.editDraft = If you want to edit the document, click the following button to return to status draft.
 
 workflow.panel.alreadyExist = The published document should be different from the current one.
+workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Draft
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = Currently being moderated
