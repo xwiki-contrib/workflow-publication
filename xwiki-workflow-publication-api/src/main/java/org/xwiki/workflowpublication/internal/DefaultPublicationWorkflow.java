@@ -20,6 +20,7 @@
 package org.xwiki.workflowpublication.internal;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.Locale;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -285,16 +287,30 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         for (XWikiAttachment fromAttachment : previousDoc.getAttachmentList()) {
             XWikiAttachment toAttachment = nextDoc.getAttachment(fromAttachment.getFilename());
             if (toAttachment == null) {
-                continue;
+                // this should not happen because of the code above checks this - anyway, bail out is not case
+                return true;
             }
-            // load the content of the fromAttachment
-            fromAttachment.loadContent(xcontext);
+
+            // quick exit: if file sizes differ, we do not need to check contents to be sure they differ
+            if (fromAttachment.getFilesize() != toAttachment.getFilesize()) {
+                return true;
+            }
+            LOGGER.debug("compare {} with {}", fromAttachment.getFilename(), toAttachment.getFilename());
             // compare the contents of the attachment to know if we should update it or not
             // TODO: figure out how could we do this without using so much memory
-            toAttachment.loadContent(xcontext);
-            boolean isSameAttachmentContent =
-                Arrays.equals(toAttachment.getAttachment_content().getContent(), fromAttachment.getAttachment_content()
-                    .getContent());
+            boolean isSameAttachmentContent = false;
+            try {
+                InputStream fromInputStream = fromAttachment.getContentInputStream(xcontext);
+                InputStream toInputStream = toAttachment.getContentInputStream(xcontext);
+                try {
+                    isSameAttachmentContent = IOUtils.contentEquals(fromInputStream, toInputStream);
+                } finally {
+                    IOUtils.closeQuietly(fromInputStream);
+                    IOUtils.closeQuietly(toInputStream);
+                }
+            } catch (IOException ioe) {
+                LOGGER.warn("could not load attachment " + fromAttachment.getFilename() + "; assume they differ in contents", ioe);
+            }
             // unload the content of the attachments after comparison, since we don't need it anymore and we don't
             // want to waste memory
             toAttachment.setAttachment_content(null);
@@ -784,7 +800,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // setup the context to let events know that they are in the publishing context
                 xcontext.put(CONTEXTKEY_PUBLISHING, true);
                 xcontext.getWiki().saveDocument(translatedNewDocument, message, false, xcontext);
-                LOGGER.debug(defaultMessage);
+                LOGGER.debug(defaultMessage + ((locale == Locale.ROOT) ? "" : " (in locale "+locale+")"));
             } finally {
                 xcontext.remove(CONTEXTKEY_PUBLISHING);
                 xcontext.setLocale(origLocale);
