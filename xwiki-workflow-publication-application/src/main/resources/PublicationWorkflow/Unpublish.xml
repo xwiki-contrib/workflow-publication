@@ -1,24 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc>
+<xwikidoc version="1.1">
   <web>PublicationWorkflow</web>
   <name>Unpublish</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>PublicationWorkflow.PublicationWorkflowPanel</parent>
   <creator>xwiki:XWiki.Admin</creator>
-  <author>xwiki:XWiki.Admin</author>
-  <customClass/>
-  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1357839341000</creationDate>
-  <date>1358275064000</date>
-  <contentUpdateDate>1358275064000</contentUpdateDate>
+  <parent>PublicationWorkflow.PublicationWorkflowPanel</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1357839341000</date>
+  <contentUpdateDate>1357839341000</contentUpdateDate>
   <version>1.1</version>
   <title>Dépublier</title>
-  <template/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>

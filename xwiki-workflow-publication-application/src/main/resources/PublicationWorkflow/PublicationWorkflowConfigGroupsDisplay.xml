@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc>
+<xwikidoc version="1.1">
   <web>PublicationWorkflow</web>
   <name>PublicationWorkflowConfigGroupsDisplay</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent/>
   <creator>xwiki:XWiki.Admin</creator>
-  <author>xwiki:XWiki.Admin</author>
-  <customClass/>
-  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1361370502000</creationDate>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <date>1361371552000</date>
   <contentUpdateDate>1361371552000</contentUpdateDate>
   <version>1.1</version>
   <title>PublicationWorkflowConfigGroupsDisplay</title>
-  <template/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
+  <content>{{velocity}}
+{{html wiki="false" clean="false"}}
+#set($property = $object.getxWikiClass().get($name))
+#if($type == 'edit')
+  #set($discard = $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay', {'minify': false}))
+  &lt;span class="groupssuggest"&gt;$doc.displayEdit($property, $prefix, $object)
+  &lt;input type="hidden" name="groupssuggesturl" value="$escapetool.xml($doc.getURL('view', 'xpage=uorgsuggest&amp;amp;classname=XWiki.XWikiUsers&amp;amp;uorg=group&amp;amp;wiki=global'))&amp;amp;" disabled="disabled" /&gt;&lt;/span&gt;
+#else
+  $doc.displayView($property, $prefix, $object)
+#end
+{{/html}}
+{{/velocity}}</content>
   <object>
+    <name>PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>67c4160b-04c6-4af6-ab95-bd2d65088ca8</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -91,14 +102,10 @@
         <separators> ,|</separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay</name>
-    <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>67c4160b-04c6-4af6-ab95-bd2d65088ca8</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -168,16 +175,4 @@ function init() {
       <use>onDemand</use>
     </property>
   </object>
-  <content>{{velocity}}
-{{html wiki="false" clean="false"}}
-#set($property = $object.getxWikiClass().get($name))
-#if($type == 'edit')
-  #set($discard = $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay', {'minify': false}))
-  &lt;span class="groupssuggest"&gt;$doc.displayEdit($property, $prefix, $object)
-  &lt;input type="hidden" name="groupssuggesturl" value="$escapetool.xml($doc.getURL('view', 'xpage=uorgsuggest&amp;amp;classname=XWiki.XWikiUsers&amp;amp;uorg=group&amp;amp;wiki=global'))&amp;amp;" disabled="disabled" /&gt;&lt;/span&gt;
-#else
-  $doc.displayView($property, $prefix, $object)
-#end
-{{/html}}
-{{/velocity}}</content>
 </xwikidoc>
