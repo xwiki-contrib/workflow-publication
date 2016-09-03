@@ -22,7 +22,7 @@
   <content>{{velocity output="false"}}
 #macro(displayGroupEditLink $groupFullName)
   #if("$!groupFullName" != '')
-    [[[[image:icon:group_edit||alt="$msg.get('edit')"]]&gt;&gt;path:$xwiki.getURL($groupFullName, 'inline', "xredirect=$escapetool.url($doc.getURL())")||title="$msg.get('PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint')"]]
+    [[[[image:icon:group_edit||alt="$services.localization.render('edit')"]]&gt;&gt;path:$xwiki.getURL($groupFullName, 'inline', "xredirect=$escapetool.url($doc.getURL())")||title="$services.localization.render('PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint')"]]
   #end
 #end
 {{/velocity}}

@@ -51,7 +51,7 @@
     #set($docRef = $xdoc.getDocumentReference())
     #set($result = $services.publicationworkflow.submitForValidation($docRef))
     #if(!$result)
-      {{warning}}$msg.get('workflow.overview.failValidate',[$xdoc]){{/warning}}
+      {{warning}}$services.localization.render('workflow.overview.failValidate',[$xdoc]){{/warning}}
       #set($fail = 1) 
       #set($discard = $newModerating.add($document))
     #else
@@ -59,7 +59,7 @@
     #end
   #end
   #if($fail == 0)
-    {{info}}$msg.get('workflow.overview.successValidate'){{/info}}
+    {{info}}$services.localization.render('workflow.overview.successValidate'){{/info}}
   #end
   #set($moderating = $newModerating)
 #elseif($request.publishAll == 'true')
@@ -70,28 +70,28 @@
     #set($docRef = $xdoc.getDocumentReference())
     #set($result = $services.publicationworkflow.publish($docRef))
     #if(!$result)
-      {{warning}}$msg.get('workflow.overview.failPublish',[$xdoc]){{/warning}}
+      {{warning}}$services.localization.render('workflow.overview.failPublish',[$xdoc]){{/warning}}
       #set($fail = 1) 
       #set($discard = $newValidating.add($document))
     #end
   #end
   #if($fail == 0)
-    {{info}}$msg.get('workflow.overview.successPublish'){{/info}}
+    {{info}}$services.localization.render('workflow.overview.successPublish'){{/info}}
   #end
   #set($validating = $newValidating)
 #end
 
 #if($drafts.size() &gt; 0)
-  $msg.get('workflow.overview.listDrafts')
+  $services.localization.render('workflow.overview.listDrafts')
   #foreach($document in $drafts.entrySet())
     * [[$document.value&gt;&gt;$document.key]]
   #end
 #else
-  //$msg.get('workflow.overview.noDraftDoc')//
+  //$services.localization.render('workflow.overview.noDraftDoc')//
 #end 
 
-#if($listtool.size($moderating) &gt; 0)
-  $msg.get('workflow.overview.listModerating')
+#if($moderating.size() &gt; 0)
+  $services.localization.render('workflow.overview.listModerating')
   #foreach($document in $moderating)
     * [[$document]]
   #end
@@ -100,17 +100,17 @@
     &lt;form action='' method='post'&gt;
       &lt;input type='hidden' name='moderateAll' value='true'/&gt;
       &lt;div class='buttonwrapper'&gt;
-        &lt;input type='submit' class='button' value="$msg.get('workflow.overview.validateAll')"/&gt;
+        &lt;input type='submit' class='button' value="$services.localization.render('workflow.overview.validateAll')"/&gt;
       &lt;/div&gt;
     &lt;/form&gt;
   {{/html}}
 
 #else
-  //$msg.get('workflow.overview.noModerationDoc')//
+  //$services.localization.render('workflow.overview.noModerationDoc')//
 #end 
 
-#if($listtool.size($validating) &gt; 0)
-  $msg.get('workflow.overview.listValidating')
+#if($validating.size() &gt; 0)
+  $services.localization.render('workflow.overview.listValidating')
   #foreach($document in $validating)
     * [[$document]]
   #end
@@ -119,13 +119,13 @@
     &lt;form action='' method='post'&gt;
       &lt;input type='hidden' name='publishAll' value='true'/&gt; 
       &lt;div class='buttonwrapper'&gt;
-        &lt;input type='submit' class='button' value="$msg.get('workflow.overview.publishAll')"/&gt;
+        &lt;input type='submit' class='button' value="$services.localization.render('workflow.overview.publishAll')"/&gt;
       &lt;/div&gt;
     &lt;/form&gt;
   {{/html}}
 
 #else
-  //$msg.get('workflow.overview.noWebmasterDoc')//
+  //$services.localization.render('workflow.overview.noWebmasterDoc')//
 #end
 {{/velocity}}</content>
 </xwikidoc>

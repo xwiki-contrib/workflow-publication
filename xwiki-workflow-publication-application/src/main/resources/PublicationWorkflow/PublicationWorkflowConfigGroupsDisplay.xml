@@ -129,8 +129,8 @@
 
     // create a select to the right of the input to allow to change from local groups to global groups
     var localGlobalSelect = new Element('select');
-    localGlobalSelect.insert(new Element('option', {'value' : 'local', 'selected' : 'selected'}).insert("$msg.get('xe.admin.local')"));
-    localGlobalSelect.insert(new Element('option', {'value' : 'global'}).insert("$msg.get('xe.admin.global')"));
+    localGlobalSelect.insert(new Element('option', {'value' : 'local', 'selected' : 'selected'}).insert("$services.localization.render('xe.admin.local')"));
+    localGlobalSelect.insert(new Element('option', {'value' : 'global'}).insert("$services.localization.render('xe.admin.global')"));
     // add it right after the input
     this.input.insert({before : localGlobalSelect});
     // listen to the change

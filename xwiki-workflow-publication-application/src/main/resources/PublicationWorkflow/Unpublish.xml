@@ -23,7 +23,7 @@
 #set($action = "$!request.action")
 #set($workflowdoc = "$!request.workflowdoc")
 #if($workflowdoc == "" || $action == "")
-  {{info}}$msg.get('workflow.refusal.notenoughparams'){{/info}}
+  {{info}}$services.localization.render('workflow.refusal.notenoughparams'){{/info}}
 #else
   #set($workflowDocRef = $services.model.resolveDocument($workflowdoc))
   #set($draft = $services.publicationworkflow.getDraftDocument($workflowDocRef))

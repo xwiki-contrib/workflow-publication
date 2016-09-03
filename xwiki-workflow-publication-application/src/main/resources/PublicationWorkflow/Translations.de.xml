@@ -61,6 +61,7 @@ PublicationWorkflow.PublicationWorkflowClass_status_validating = In Freigabe
 PublicationWorkflow.PublicationWorkflowClass_status_valid = Freigegeben
 PublicationWorkflow.PublicationWorkflowClass_status_published = Veröffentlicht
 PublicationWorkflow.PublicationWorkflowClass_status_archived = Archiviert
+PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint = Workflowgruppe bearbeiten
 
 workflow.script.notenoughparams = Nicht genügend Parameter.
 workflow.refusal.notenoughparams = Nicht genügend Parameter.
