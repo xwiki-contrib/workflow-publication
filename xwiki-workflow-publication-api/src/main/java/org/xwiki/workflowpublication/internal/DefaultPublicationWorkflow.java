@@ -206,7 +206,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             LOGGER.debug("different locales for {} and {} : {} not equal to {}", fromDoc, toDoc, fromLocales, toLocales);
             return true;
         }
-        fromLocales.add(0, Locale.ROOT);
+        if (!fromDoc.getDefaultLocale().equals(toDoc.getDefaultLocale())) {
+            LOGGER.debug("different locales for {} and {} : {} not equal to {}", fromDoc, toDoc, fromDoc.getDefaultLocale(), toDoc.getDefaultLocale());
+        }
+
+        fromLocales.add(0, fromDoc.getDefaultLocale());
         for (Locale locale : fromLocales) {
             // do the same check for every locale; that wastes a bit of performance
             // as e.g. objects and attachments only need to be checked for the default locale.
@@ -415,13 +419,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         final Locale origLocale = xcontext.getLocale();
         XWikiDocument translatedDraftDoc;
         List<Locale> locales = targetDocument.getTranslationLocales(xcontext);
-        locales.add(0, Locale.ROOT);
+        locales.add(0, targetDocument.getDefaultLocale());
 
         for (Locale locale : locales) {
             translatedDraftDoc = copyTranslatedDocument(targetDocument, draftDoc, locale, xcontext);
 
             // workflow object: only needs to be set up for default locale
-            if (locale == Locale.ROOT) {
+            if (locale.equals(targetDocument.getDefaultLocale())) {
                 BaseObject draftWfObject =
                         draftDoc.newXObject(
                                 explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
@@ -770,7 +774,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         final Locale origLocale = xcontext.getLocale();
         List<Locale> locales = doc.getTranslationLocales(xcontext);
         List<Locale> publishedLocales = targetDocument.getTranslationLocales(xcontext);
-        locales.add(0, Locale.ROOT);
+        locales.add(0, doc.getDefaultLocale());
 
         for (Locale locale : locales) {
             XWikiDocument translatedNewDocument = copyTranslatedDocument(doc, targetDocument, locale, xcontext);
@@ -778,7 +782,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // published document is visible
             translatedNewDocument.setHidden(false);
 
-            if (locale == Locale.ROOT) {
+            if (locale.equals(doc.getDefaultLocale())) {
                 // setup the workflow and target flag, if a workflow doesn't exist already - only needs to be done for default locale
                 BaseObject newWorkflow = targetDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
                 if (newWorkflow == null) {
@@ -800,7 +804,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // setup the context to let events know that they are in the publishing context
                 xcontext.put(CONTEXTKEY_PUBLISHING, true);
                 xcontext.getWiki().saveDocument(translatedNewDocument, message, false, xcontext);
-                LOGGER.debug(defaultMessage + ((locale == Locale.ROOT) ? "" : " (in locale "+locale+")"));
+                LOGGER.debug(defaultMessage + (locale.equals(doc.getDefaultLocale()) ? "" : " (in locale "+locale+")"));
             } finally {
                 xcontext.remove(CONTEXTKEY_PUBLISHING);
                 xcontext.setLocale(origLocale);
@@ -1008,17 +1012,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         try {
             XWikiDocument translatedSourceDocument = sourceDocument.getTranslatedDocument(locale, xcontext);
             translatedTargetDocument = targetDocument.getTranslatedDocument(locale, xcontext);
-            if (locale != Locale.ROOT && translatedTargetDocument == targetDocument) {
+            if (!locale.equals(sourceDocument.getDefaultLocale()) && translatedTargetDocument == targetDocument) {
                 // the language variant does not exist yet; make a copy ...
-                // TODO: as "copyContentsToNewVersion" might be overwritten by customizations should we still call it later on?
                 translatedTargetDocument = translatedSourceDocument.duplicate(targetDocument.getDocumentReference());
                 // ... and start from version 1.1 (copy from XWiki#copyDocument; feels pretty fishy here but needed to start with version 1.1)
                 translatedTargetDocument.setNew(true);
                 translatedTargetDocument.setVersion("1.1");
-            } else {
-                // the language variant already exists; do a merge
-                this.copyContentsToNewVersion(translatedSourceDocument, translatedTargetDocument, xcontext);
             }
+            // now the language variant exists; do a merge
+            this.copyContentsToNewVersion(translatedSourceDocument, translatedTargetDocument, xcontext);
         } catch (IOException e) {
             throw new XWikiException(XWikiException.MODULE_XWIKI_DOC, XWikiException.ERROR_XWIKI_UNKNOWN,
                     "Error accessing attachments when copying document " + stringSerializer.serialize(sourceDocument.getDocumentReference())
