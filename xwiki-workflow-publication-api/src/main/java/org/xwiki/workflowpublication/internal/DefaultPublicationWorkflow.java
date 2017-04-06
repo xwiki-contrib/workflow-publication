@@ -1290,7 +1290,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message = (params == null)
                 ? localizationManager.getTranslationPlain(key)
                 : localizationManager.getTranslationPlain(key, params.toArray());
-        if (message.equals(key)) {
+        if (message == null || message.equals(key)) {
             message = defaultMessage;
         }
         // trim the message, whichever that is, to 255 characters, otherwise we're in trouble
