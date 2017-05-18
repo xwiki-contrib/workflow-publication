@@ -93,7 +93,7 @@ select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullNa
       <idField/>
       <multiSelect>0</multiSelect>
       <name>defaultDraftSpace</name>
-      <number>4</number>
+      <number>6</number>
       <picker>1</picker>
       <prettyName>defaultDraftSpace</prettyName>
       <relationalStorage>0</relationalStorage>
