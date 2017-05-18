@@ -475,12 +475,18 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             String contributors = publicationRoles.getContributors(wfConfig, xcontext);
             String moderators = publicationRoles.getModerators(wfConfig, xcontext);
             String validators = publicationRoles.getValidators(wfConfig, xcontext);
+            String viewers = publicationRoles.getViewers(wfConfig, xcontext);
+            String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
             // give the view and edit right to contributors, moderators and validators
             fillRightsObject(document, Arrays.asList("edit", "comment", "view"),
                 Arrays.asList(contributors, moderators, validators), Arrays.<String> asList(), true, 0, xcontext);
+            fillRightsObject(document, Arrays.asList("view"),
+                Arrays.asList(viewers), Arrays.<String> asList(), true, 1, xcontext);
+            fillRightsObject(document, Arrays.asList("comment", "view"),
+                Arrays.asList(commenters), Arrays.<String> asList(), true, 2, xcontext);
             // and remove the rest of the rights
-            removeRestOfRights(document, 1, xcontext);
+            removeRestOfRights(document, 3, xcontext);
         }
     }
 
@@ -597,6 +603,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // and put the rights
         String validators = publicationRoles.getValidators(wfConfig, xcontext);
         String contributors = publicationRoles.getContributors(wfConfig, xcontext);
+        String viewers = publicationRoles.getViewers(wfConfig, xcontext);
+        String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
         // give the view and edit right to moderators and validators ...
         fillRightsObject(doc, Arrays.asList("edit", "comment", "view"), Arrays.asList(moderators, validators),
@@ -604,8 +612,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // ... and only view for contributors
         fillRightsObject(doc, Arrays.asList("view"), Arrays.asList(contributors), Arrays.<String> asList(), true, 1,
             xcontext);
+        fillRightsObject(doc, Arrays.asList("view"),
+            Arrays.asList(viewers), Arrays.<String> asList(), true, 2, xcontext);
+        fillRightsObject(doc, Arrays.asList("comment", "view"),
+            Arrays.asList(commenters), Arrays.<String> asList(), true, 3, xcontext);
         // and remove the rest of the rights
-        removeRestOfRights(doc, 2, xcontext);
+        removeRestOfRights(doc, 4, xcontext);
         
         // Add the author in order to keep track of the person who change the status
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
@@ -671,6 +683,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String validators = publicationRoles.getValidators(wfConfig, xcontext);
         String contributors = publicationRoles.getContributors(wfConfig, xcontext);
         String moderators = publicationRoles.getModerators(wfConfig, xcontext);
+        String viewers = publicationRoles.getViewers(wfConfig, xcontext);
+        String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
         // give the view and edit right to validators ...
         fillRightsObject(doc, Arrays.asList("edit", "comment", "view"), Arrays.asList(validators),
@@ -678,8 +692,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // ... and only view for contributors and moderators
         fillRightsObject(doc, Arrays.asList("view"), Arrays.asList(moderators, contributors), Arrays.<String> asList(),
             true, 1, xcontext);
+        fillRightsObject(doc, Arrays.asList("view"),
+            Arrays.asList(viewers), Arrays.<String> asList(), true, 2, xcontext);
+        fillRightsObject(doc, Arrays.asList("comment", "view"),
+            Arrays.asList(commenters), Arrays.<String> asList(), true, 3, xcontext);
         // remove the rest of the rights, if any
-        removeRestOfRights(doc, 2, xcontext);
+        removeRestOfRights(doc, 4, xcontext);
 
         // save the doc.
         // TODO: prevent the save protection from being executed.

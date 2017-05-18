@@ -51,12 +51,16 @@ public interface PublicationRoles
     boolean canValidate(DocumentReference userRef, XWikiDocument document, XWikiContext context);
     
     boolean canContribute(DocumentReference userRef, XWikiDocument document, XWikiContext context);
-    
+
     String getContributors(BaseObject workflowConfig, XWikiContext context);
     
     String getModerators(BaseObject workflowConfig, XWikiContext context);
     
     String getValidators(BaseObject workflowConfig, XWikiContext context);
+
+    String getViewers(BaseObject workflowConfig, XWikiContext context);
+
+    String getCommenters(BaseObject workflowConfig, XWikiContext context);
 
     /**
      * Gets all the groups for the passed user of group, depending on the configuration passed in the parameters. If all

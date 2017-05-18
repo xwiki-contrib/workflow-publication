@@ -54,6 +54,10 @@ public class DefaultPublicationRoles implements PublicationRoles
     public static final String WF_CONFIG_CONTRIBUTOR = "contributor";
 
     public static final String WF_CONFIG_VALIDATOR = "validator";
+ 
+    public static final String WF_CONFIG_VIEWER = "viewer";
+
+    public static final String WF_CONFIG_COMMENTER = "commenter";
 
     /**
      * The logger to log.
@@ -334,6 +338,26 @@ public class DefaultPublicationRoles implements PublicationRoles
         }
 
         return workflowConfig.getStringValue(WF_CONFIG_VALIDATOR);
+    }
+
+    @Override
+    public String getViewers(BaseObject workflowConfig, XWikiContext context)
+    {
+        if (workflowConfig == null) {
+            return null;
+        }
+
+        return workflowConfig.getStringValue(WF_CONFIG_VIEWER);
+    }
+
+    @Override
+    public String getCommenters(BaseObject workflowConfig, XWikiContext context)
+    {
+        if (workflowConfig == null) {
+            return null;
+        }
+
+        return workflowConfig.getStringValue(WF_CONFIG_COMMENTER);
     }
 
     @Override
