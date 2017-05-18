@@ -32,6 +32,34 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <commenter>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>
+{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}
+</customDisplay>
+      <disabled>0</disabled>
+      <displayType>input</displayType>
+      <idField/>
+      <multiSelect>0</multiSelect>
+      <name>commenter</name>
+      <number>5</number>
+      <picker>1</picker>
+      <prettyName>commenter</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator/>
+      <separators/>
+      <size>40</size>
+      <sort>none</sort>
+      <sql>
+select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'
+</sql>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </commenter>
     <contributor>
       <cache>0</cache>
       <classname/>
@@ -128,6 +156,34 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </validator>
+    <viewer>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>
+{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}
+</customDisplay>
+      <disabled>0</disabled>
+      <displayType>input</displayType>
+      <idField/>
+      <multiSelect>0</multiSelect>
+      <name>viewer</name>
+      <number>4</number>
+      <picker>1</picker>
+      <prettyName>viewer</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator/>
+      <separators/>
+      <size>40</size>
+      <sort>none</sort>
+      <sql>
+select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'
+</sql>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </viewer>
   </class>
   <object>
     <class>
