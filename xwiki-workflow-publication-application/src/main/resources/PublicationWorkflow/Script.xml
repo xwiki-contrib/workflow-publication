@@ -110,6 +110,7 @@
   #elseif ($action == 'unpublish' &amp;&amp; !$request.cancel)
     #set($erase = ($request.crush == '1'))
     #set($result = $services.publicationworkflow.unpublish($workflowDocRef, $erase))
+    #set($workflowDocRef = $services.publicationworkflow.getDraftDocument($workflowDocRef))
   #elseif ($action == 'archive')
     #set($result = $services.publicationworkflow.archive($workflowDocRef))
   #elseif ($action == 'publishfromarchive')
@@ -163,8 +164,7 @@
     #end
 
     #if($action == 'unpublish' || $action=='backtodraft')          ##If the document is being unpublished or unarchived we redirect to the draft
-      #set($draft = $services.publicationworkflow.getDraftDocument($workflowDocRef))
-      $response.sendRedirect($xwiki.getURL($draft, 'view', ''))
+      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
     #elseif($action == 'publish')        ##If the document is being published we redirect to the final doc
       #set($workflowDoc = $xwiki.getDocument($workflowDocRef))
       #set($workflowObject = $workflowDoc.getObject("PublicationWorkflow.PublicationWorkflowClass"))
