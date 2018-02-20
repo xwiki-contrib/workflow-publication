@@ -119,7 +119,7 @@
   #end       
   
   #if ($result)
-    #if($action == 'submitformoderation' || $action == 'submitforvalidation' || $action == 'refusemoderation' || $action=='refusevalidation')
+    #if($action == 'submitformoderation' || $action == 'submitforvalidation' || $action == 'refusemoderation' || $action=='refusevalidation' || $action=='unpublish')
       #set($recipients = '')
       #set($document = $xwiki.getDocument($workflowDocRef))
       #set($workflowObj = $document.getObject("PublicationWorkflow.PublicationWorkflowClass"))
