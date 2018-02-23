@@ -45,6 +45,10 @@
       <id>tdelafosse</id>
       <name>Thomas Delafosse</name>
     </developer>
+    <developer>
+      <id>rstavro</id>
+      <name>Raluca Stavro</name>
+    </developer>    
   </developers>
   <organization>
     <name>XWiki SAS</name>
