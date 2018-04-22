@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.WorkflowConfigManager;
 
@@ -41,7 +43,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.plugin.rightsmanager.RightsManagerPluginApi;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 
 /**
@@ -88,6 +89,9 @@ public class DefaultPublicationRoles implements PublicationRoles
     @Inject
     @Named("default")
     protected DocumentReferenceResolver<String> defaultStringDocRefResolver;
+
+    @Inject
+    private AuthorizationManager authManager;
 
     /**
      * Checks if the passed member is in the passed group.
@@ -142,20 +146,13 @@ public class DefaultPublicationRoles implements PublicationRoles
             BaseObject workflowConfig = configManager.getWorkflowConfigForWorkflowDoc(document, context);
             // if there is no workflow config, all that can edit can moderate
             if (workflowConfig == null) {
-                return context
-                    .getWiki()
-                    .getRightService()
-                    .hasAccessLevel("edit", localStringSerializer.serialize(userRef),
-                        localStringSerializer.serialize(document.getDocumentReference()), context);
+                return authManager.hasAccess(Right.EDIT, userRef, document.getDocumentReference());
             }
 
             // xwiki admins can moderate
-            if (hasXWikiAdmin(stringSerializer.serialize(userRef), context)) {
+            if (hasXWikiAdmin(userRef, context)) {
                 return true;
             }
-
-            RightsManagerPluginApi rightsManager =
-                (RightsManagerPluginApi) context.getWiki().getPluginApi("rightsmanager", context);
 
             // if is moderator or validator, can moderate
             // check if user is moderator
@@ -197,20 +194,13 @@ public class DefaultPublicationRoles implements PublicationRoles
             BaseObject workflowConfig = configManager.getWorkflowConfigForWorkflowDoc(document, context);
             // if there is no workflow config, all that can edit can validate
             if (workflowConfig == null) {
-                return context
-                    .getWiki()
-                    .getRightService()
-                    .hasAccessLevel("edit", localStringSerializer.serialize(userRef),
-                        localStringSerializer.serialize(document.getDocumentReference()), context);
+                return authManager.hasAccess(Right.EDIT, userRef, document.getDocumentReference());
             }
 
             // xwiki admins can validate
-            if (hasXWikiAdmin(stringSerializer.serialize(userRef), context)) {
+            if (hasXWikiAdmin(userRef, context)) {
                 return true;
             }
-
-            RightsManagerPluginApi rightsManager =
-                (RightsManagerPluginApi) context.getWiki().getPluginApi("rightsmanager", context);
 
             // check if user is validator
             boolean isValidator = false;
@@ -238,20 +228,13 @@ public class DefaultPublicationRoles implements PublicationRoles
             BaseObject workflowConfig = configManager.getWorkflowConfigForWorkflowDoc(document, context);
             // if there is no workflow config, all that can edit can contribute
             if (workflowConfig == null) {
-                return context
-                    .getWiki()
-                    .getRightService()
-                    .hasAccessLevel("edit", localStringSerializer.serialize(userRef),
-                        localStringSerializer.serialize(document.getDocumentReference()), context);
+                return authManager.hasAccess(Right.EDIT, userRef, document.getDocumentReference());
             }
 
             // xwiki admins can contribute
-            if (hasXWikiAdmin(stringSerializer.serialize(userRef), context)) {
+            if (hasXWikiAdmin(userRef, context)) {
                 return true;
             }
-
-            RightsManagerPluginApi rightsManager =
-                (RightsManagerPluginApi) context.getWiki().getPluginApi("rightsmanager", context);
 
             // check if user is contributor or moderator or validator
             boolean isContributor = false;
@@ -300,11 +283,11 @@ public class DefaultPublicationRoles implements PublicationRoles
      * @param context the xwiki context of the current request
      * @return true if the user has admin rights on the wiki, false otherwise
      */
-    private boolean hasXWikiAdmin(String user, XWikiContext context)
+    private boolean hasXWikiAdmin(DocumentReference user, XWikiContext context)
     {
         try {
-            return context.getWiki().getRightService().hasAccessLevel("admin", user, "XWiki.XWikiPreferences", context);
-        } catch (Exception e) {
+            return authManager.hasAccess(Right.ADMIN, user, explicitStringDocRefResolver.resolve(context.getWikiId() + ":XWiki.XWikiPreferences"));
+        } catch (RuntimeException e) {
             logger.error("Failed to check wiki admin right for user [" + user + "]", e);
             return false;
         }
@@ -366,7 +349,7 @@ public class DefaultPublicationRoles implements PublicationRoles
     {
         // use a set as a collection to make sure duplicates are not added
         Collection<String> allGroups = new HashSet<String>();
-        String localWiki = xcontext.getDatabase();
+        String localWiki = xcontext.getWikiId();
         String userWiki = userOrGroup.getWikiReference().getName();
 
         if (localGroups) {
@@ -403,6 +386,7 @@ public class DefaultPublicationRoles implements PublicationRoles
     {
         XWikiGroupService groupService = context.getWiki().getGroupService(context);
 
+        @SuppressWarnings("unchecked")
         Map<String, Collection<String>> grouplistcache = (Map<String, Collection<String>>) context.get("grouplist");
         if (grouplistcache == null) {
             grouplistcache = new HashMap<String, Collection<String>>();
@@ -414,9 +398,9 @@ public class DefaultPublicationRoles implements PublicationRoles
 
         Collection<String> tmpGroupList = grouplistcache.get(key);
         if (tmpGroupList == null) {
-            String currentWiki = context.getDatabase();
+            String currentWiki = context.getWikiId();
             try {
-                context.setDatabase(wiki);
+                context.setWikiId(wiki);
 
                 Collection<DocumentReference> groupReferences =
                     groupService.getAllGroupsReferencesForMember(memberReference, 0, 0, context);
@@ -431,7 +415,7 @@ public class DefaultPublicationRoles implements PublicationRoles
 
                 tmpGroupList = Collections.emptyList();
             } finally {
-                context.setDatabase(currentWiki);
+                context.setWikiId(currentWiki);
             }
 
             grouplistcache.put(key, tmpGroupList);

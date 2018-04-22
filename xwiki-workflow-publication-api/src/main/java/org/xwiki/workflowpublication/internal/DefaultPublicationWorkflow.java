@@ -352,12 +352,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 serializedTargetName, WF_IS_TARGET_FIELDNAME);
         List<String> results = null;
         // query on the passed database
-        String originalDatabase = xcontext.getDatabase();
+        String originalDatabase = xcontext.getWikiId();
         try {
-            xcontext.setDatabase(wiki);
+            xcontext.setWikiId(wiki);
             results = xcontext.getWiki().getStore().search(workflowsQuery, 0, 0, params, xcontext);
         } finally {
-            xcontext.setDatabase(originalDatabase);
+            xcontext.setWikiId(originalDatabase);
         }
 
         if (results == null || results.size() <= 0) {

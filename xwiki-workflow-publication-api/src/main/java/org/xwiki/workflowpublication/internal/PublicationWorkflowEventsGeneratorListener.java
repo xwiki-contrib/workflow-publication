@@ -37,7 +37,6 @@ import org.xwiki.workflowpublication.PublicationWorkflow;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.web.Utils;
 
 /**
  * @version $Id$
@@ -52,6 +51,9 @@ public class PublicationWorkflowEventsGeneratorListener implements EventListener
 
     @Inject
     private Logger logger;
+
+    @Inject
+    private ObservationManager observation;
 
     /**
      * {@inheritDoc}
@@ -91,7 +93,6 @@ public class PublicationWorkflowEventsGeneratorListener implements EventListener
         try {
             if (publishingContextKey != null && Boolean.parseBoolean(publishingContextKey.toString())
                 && publicationWorkflow.isWorkflowDocument(doc, xcontext)) {
-                ObservationManager observation = Utils.getComponent(ObservationManager.class);
                 observation.notify(new DocumentPublishingEvent(doc.getDocumentReference()), doc, xcontext);
             }
         } catch (XWikiException e) {

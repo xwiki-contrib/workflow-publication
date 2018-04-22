@@ -31,6 +31,8 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 
@@ -77,6 +79,9 @@ public class PublicationWorkflowService implements ScriptService
     @Named("current")
     protected DocumentReferenceResolver<String> referenceResolver;
 
+    @Inject
+    private AuthorizationManager authManager;
+
     public boolean isWorkflowDocument(String document)
     {
         try {
@@ -115,11 +120,7 @@ public class PublicationWorkflowService implements ScriptService
     {
         XWikiContext xcontext = getXContext();
         try {
-            if (xcontext
-                .getWiki()
-                .getRightService()
-                .hasAccessLevel("edit", stringSerializer.serialize(xcontext.getUserReference()),
-                    stringSerializer.serialize(doc), xcontext)) {
+            if (authManager.hasAccess(Right.EDIT, xcontext.getUserReference(), doc)) {
                 return this.publicationWorkflow.startWorkflow(doc, workflowConfig, target, xcontext);
             } else {
                 // TODO: put error on context
@@ -137,11 +138,7 @@ public class PublicationWorkflowService implements ScriptService
     {
         XWikiContext xcontext = getXContext();
         try {
-            if (xcontext
-                .getWiki()
-                .getRightService()
-                .hasAccessLevel("edit", stringSerializer.serialize(xcontext.getUserReference()),
-                    stringSerializer.serialize(doc), xcontext)) {
+            if (authManager.hasAccess(Right.EDIT, xcontext.getUserReference(), doc)) {
                 return this.publicationWorkflow.startWorkflowAsTarget(doc, workflowConfig, xcontext);
             } else {
                 // TODO: put error on context
