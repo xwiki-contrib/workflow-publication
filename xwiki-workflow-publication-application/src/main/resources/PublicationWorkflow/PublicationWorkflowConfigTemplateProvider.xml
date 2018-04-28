@@ -241,7 +241,7 @@
       <description/>
     </property>
     <property>
-      <icon/>
+      <icon>control_equalizer</icon>
     </property>
     <property>
       <name>Publication Workflow Config Template</name>
