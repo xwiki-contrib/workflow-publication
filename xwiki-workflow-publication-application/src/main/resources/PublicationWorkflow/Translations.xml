@@ -24,7 +24,7 @@
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language/>
-  <defaultLanguage>en</defaultLanguage>
+  <defaultLanguage>fr</defaultLanguage>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1357828638000</creationDate>
@@ -72,7 +72,7 @@ workflow.panel.editDraft = Si vous voulez éditer ce brouillon, cliquez sur le b
 
 workflow.panel.alreadyExist = Le document de publication doit être différent du document actuel.
 workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
-
+workflow.panel.applications.label = Workflow
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Brouillon
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = En cours de modération

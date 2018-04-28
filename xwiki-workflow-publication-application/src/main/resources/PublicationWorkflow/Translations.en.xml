@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc version="1.2" reference="PublicationWorkflow.Translations" locale="en">
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language>en</language>
@@ -72,6 +72,7 @@ workflow.panel.editDraft = If you want to edit the document, click the following
 
 workflow.panel.alreadyExist = The published document should be different from the current one.
 workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
+workflow.panel.applications.label = Workflow
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Draft
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = Currently being moderated
@@ -150,7 +151,7 @@ workflow.alert.no = No</content>
         <prettyName>Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>GLOBAL|WIKI|USER|ON_DEMAND</values>

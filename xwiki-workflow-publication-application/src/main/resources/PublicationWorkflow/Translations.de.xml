@@ -74,6 +74,7 @@ workflow.panel.editDraft = Dieses Dokument ist veröffentlicht. Um in den Entwur
 
 workflow.panel.alreadyExist = Das veröffentlichte Dokument muss sich vom Entwurf unterscheiden.
 workflow.panel.publish.hintLanguages = Veröffentlichen wirkt sich nicht nur auf die Sprachvariante aus, die Sie gerade sehen, sondern veröffentlicht alle Sprachvarianten des Dokumentes.
+workflow.panel.applications.label = Workflow
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = In Bearbeitung
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = In Vorprüfung
