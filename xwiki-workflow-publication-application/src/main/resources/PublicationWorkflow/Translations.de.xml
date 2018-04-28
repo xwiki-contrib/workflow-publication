@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc version="1.2" reference="PublicationWorkflow.Translations" locale="de">
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language>de</language>
@@ -155,7 +155,7 @@ workflow.script.failed = Beim Ausführen der Workflow-Aktion ist ein Fehler aufg
         <prettyName>Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
