@@ -117,13 +117,13 @@ workflow.save.refuseModeration = Vorprüfung abgelehnt : {0}
 workflow.save.submitForValidation = Das Dokument {0} wurde zur Freigabe übermittelt.
 workflow.save.refuseValidation = Freigabe abgelehnt : {0}
 workflow.save.validate = Das Dokument {0} wurde als gültig markiert.
-workflow.save.publishNew = Es wurde eine neue Version des Dokuments veröffentlicht.
+workflow.save.publishNew = {0} hat eine neue Version des Dokuments veröffentlicht.
 workflow.save.publishDraft = Das Dokument wurde veröffentlicht als {0}.
 workflow.save.createDraft = Entwurf für Dokument {0} erzeugt.
 workflow.save.unpublish = Entwurf aus zuvor veröffentlichtem Dokument {0} erzeugt.
 workflow.save.backToDraft = Status wurde auf Entwurf zurückgesetzt.
-workflow.save.archive = Dokument wurde archiviert.
-workflow.save.publishFromArchive = Aus Archiv veröffentlicht.
+workflow.save.archive = Das Dokument wurde archiviert von {0}.
+workflow.save.publishFromArchive = Aus dem Archiv veröffentlicht vom {0}.
 
 workflow.alert.publish = Wollen Sie dieses Dokument wirklich veröffentlichen?
 workflow.alert.publishDirectly = Wollen Sie dieses Dokument wirklich ohne weitere Prüfung veröffentlichen?

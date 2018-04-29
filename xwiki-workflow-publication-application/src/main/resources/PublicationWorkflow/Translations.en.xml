@@ -115,13 +115,13 @@ workflow.save.refuseModeration = Moderation refused : {0}
 workflow.save.submitForValidation = Submit document {0} to validation.
 workflow.save.refuseValidation = Publication refused : {0}
 workflow.save.validate = Mark document {0} as valid.
-workflow.save.publishNew = Publication of the new version of the document.
+workflow.save.publishNew = Publication of the new version of the document by {0}.
 workflow.save.publishDraft = Publication of the document to {0}.
 workflow.save.createDraft= Creating draft for document {0}.
 workflow.save.unpublish =  Creating draft from the published document {0}.
 workflow.save.backToDraft = Change the status to draft to allow editing.
-workflow.save.archive = Archive the document.
-workflow.save.publishFromArchive = Publication of the document from an archive.
+workflow.save.archive = Archive the document by {0}.
+workflow.save.publishFromArchive = Publication of the document from an archive by {0}.
 
 workflow.alert.publish = Are you sure you want to publish this document ?
 workflow.alert.archive = Are you sure you want to archive this document ?
