@@ -45,6 +45,8 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.SpaceReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
@@ -154,6 +156,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Inject
     @Named("explicit")
     protected DocumentReferenceResolver<String> explicitStringDocRefResolver;
+
+    @Inject
+    @Named("current")
+    protected SpaceReferenceResolver<String> explicitStringSpaceRefResolver;
 
     @Inject
     @Named("explicit")
@@ -392,6 +398,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         throws XWikiException
     {
         DocumentReference targetRef = targetDocument.getDocumentReference();
+        boolean isNonTerminalPage = targetRef.getName().equals(
+            xcontext.getWiki().getXWikiPreference("xwiki.defaultpage","WebHome", xcontext));
 
         // if this document is not a workflow document, return nothing
         if (!this.isWorkflowDocument(targetDocument, xcontext)) {
@@ -410,10 +418,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return null;
         }
         defaultDraftsSpace = defaultDraftsSpace.trim();
+        SpaceReference defaultDraftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
+        if (isNonTerminalPage) {
+            defaultDraftSpaceRef = new SpaceReference(targetRef.getParent().getName(), defaultDraftSpaceRef);
+        }
+
         // get a new document in the drafts space, starting with the name of the target document
-        String draftDocName = xcontext.getWiki().getUniquePageName(defaultDraftsSpace, targetRef.getName(), xcontext);
+        String draftDocName = xcontext.getWiki().getUniquePageName(stringSerializer.serialize(defaultDraftSpaceRef), targetRef.getName(), xcontext);
         DocumentReference draftDocRef =
-            new DocumentReference(targetRef.getWikiReference().getName(), defaultDraftsSpace, draftDocName);
+            new DocumentReference(draftDocName, defaultDraftSpaceRef);
         XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
 
         final Locale origLocale = xcontext.getLocale();
