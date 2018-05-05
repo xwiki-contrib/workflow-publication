@@ -75,12 +75,12 @@ public class PublicationRolesService implements ScriptService
     {
         try {
             // resolve userReference
-            DocumentReference userRef = (DocumentReference) referenceResolver.resolve(user);
+            DocumentReference userRef = referenceResolver.resolve(user);
             XWikiContext context = getXContext();
             // resolve document reference if any is specified
             XWikiDocument documentObject = null;
             if (!StringUtils.isEmpty(document)) {
-                DocumentReference documentRef = (DocumentReference) referenceResolver.resolve(document);
+                DocumentReference documentRef = referenceResolver.resolve(document);
                 documentObject = context.getWiki().getDocument(documentRef, context);
             }
 
@@ -96,12 +96,12 @@ public class PublicationRolesService implements ScriptService
     {
         try {
             // resolve userReference
-            DocumentReference userRef = (DocumentReference) referenceResolver.resolve(user);
+            DocumentReference userRef = referenceResolver.resolve(user);
             XWikiContext context = getXContext();
             // resolve document reference if any is specified
             XWikiDocument documentObject = null;
             if (!StringUtils.isEmpty(document)) {
-                DocumentReference documentRef = (DocumentReference) referenceResolver.resolve(document);
+                DocumentReference documentRef = referenceResolver.resolve(document);
                 documentObject = context.getWiki().getDocument(documentRef, context);
             }
 
@@ -117,12 +117,12 @@ public class PublicationRolesService implements ScriptService
     {
         try {
             // resolve userReference
-            DocumentReference userRef = (DocumentReference) referenceResolver.resolve(user);
+            DocumentReference userRef = referenceResolver.resolve(user);
             XWikiContext context = getXContext();
             // resolve document reference if any is specified
             XWikiDocument documentObject = null;
             if (!StringUtils.isEmpty(document)) {
-                DocumentReference documentRef = (DocumentReference) referenceResolver.resolve(document);
+                DocumentReference documentRef = referenceResolver.resolve(document);
                 documentObject = context.getWiki().getDocument(documentRef, context);
             }
 
@@ -150,7 +150,7 @@ public class PublicationRolesService implements ScriptService
     public Collection<String> getGroups(String userOrGroup, boolean recursive, boolean localGroups,
         boolean userWikiGroups)
     {
-        DocumentReference userRef = (DocumentReference) referenceResolver.resolve(userOrGroup);
+        DocumentReference userRef = referenceResolver.resolve(userOrGroup);
         return this.getGroups(userRef, recursive, localGroups, userWikiGroups);
     }
 

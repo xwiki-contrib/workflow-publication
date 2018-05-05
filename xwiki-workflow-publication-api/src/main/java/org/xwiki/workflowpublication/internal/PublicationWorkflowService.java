@@ -90,7 +90,7 @@ public class PublicationWorkflowService implements ScriptService
             // resolve document reference if any is specified
             XWikiDocument documentObject = null;
             if (!StringUtils.isEmpty(document)) {
-                DocumentReference documentRef = (DocumentReference) referenceResolver.resolve(document);
+                DocumentReference documentRef = referenceResolver.resolve(document);
                 documentObject = context.getWiki().getDocument(documentRef, context);
             }
 
