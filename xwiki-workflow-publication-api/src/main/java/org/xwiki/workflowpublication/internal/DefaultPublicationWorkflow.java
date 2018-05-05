@@ -861,7 +861,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
         
         // save the the draft document prepared like this
-        String defaultMessage2 = "Published this document to " + stringSerializer.serialize(document) + ".";
+        String defaultMessage2 = "Published this document to " + stringSerializer.serialize(targetRef) + ".";
         String message2 =
             getMessage("workflow.save.publishDraft", defaultMessage2,
                 Arrays.asList(stringSerializer.serialize(targetRef).toString()));
