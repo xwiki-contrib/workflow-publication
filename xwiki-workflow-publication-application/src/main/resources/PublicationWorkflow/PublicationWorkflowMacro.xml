@@ -30,7 +30,7 @@
   <creationDate>1360256286000</creationDate>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1361306248000</date>
+  <date>1360256286000</date>
   <contentUpdateDate>1360256286000</contentUpdateDate>
   <version>1.1</version>
   <title/>
@@ -491,11 +491,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;label&gt;$services.localization.render('workflow.start.pagename')&lt;/label&gt;
         &lt;input type='text' name='page' /&gt;
         &lt;label&gt;$services.localization.render('workflow.start.spacename')&lt;/label&gt;
-        &lt;select name='space'&gt;
-        #foreach($spaceName in $xwiki.spaces)
-          &lt;option&gt;$spaceName&lt;/option&gt;
-        #end
-        &lt;/select&gt;
+        &lt;input type='text' name='space' class='suggestSpaces' /&gt;
         #set($workflows = $services.query.xwql("from doc.object(PublicationWorkflow.PublicationWorkflowConfigClass) as wfConfig where doc.name &lt;&gt; 'PublicationWorkflowConfigTemplate'").execute())
         Workflow: &lt;select name='workflow'&gt;
         #foreach($wf in $workflows)
