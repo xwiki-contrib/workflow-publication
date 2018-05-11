@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc version="1.1">
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.2" reference="PublicationWorkflow.Script" locale="">
   <web>PublicationWorkflow</web>
   <name>Script</name>
   <language/>
@@ -11,7 +31,7 @@
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <date>1433937572000</date>
-  <contentUpdateDate>1433937572000</contentUpdateDate>
+  <contentUpdateDate>1524434369000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -60,12 +80,29 @@
   #if($request.cancel)  
     $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
   #end
-  workflow doc ref: $workflowDocRef
-  Action : $action
+  ## workflow doc ref: $workflowDocRef
+  ## Action : $action
   #if($action == "start")
-    #set($targetReference = $services.model.createDocumentReference("", "$!request.space", "$!request.page"))
+    #set($targetSpaceReference = $services.model.resolveSpace("$!request.space", 'default'))
+    ## the target reference should be a terminal document only if the worflow document is one
+    #set ($isTerminal = $workflowDocRef.getName() != $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
+    #if ($isTerminal)
+      ## if no page name is given, use the target document name
+      #set ($targetDocName = "$!request.page")
+      #if ($targetDocName == "")
+        #set ($targetDocName = $workflowDocRef.getName())
+      #end
+    #else
+      #set ($targetDocSpaceName = "$!request.page")
+      #if ($targetDocSpaceName == "")
+         #set ($targetDocSpaceName = $workflowDocRef.getLastSpaceReference().getName())
+      #end
+      #set ($targetSpaceReference = $services.model.createSpaceReference($targetDocSpaceName, $targetSpaceReference))
+      #set ($targetDocName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
+    #end
+    #set($targetReference = $services.model.createDocumentReference($targetDocName, $targetSpaceReference))
     #set($workflowConfig = "$request.workflow")
-    ##TODO : Check that the target and the existing doc are differents
+    ##TODO : Check that the target and the existing doc are different
     #if($targetReference.equals($workflowDocRef))
       $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
     #else
@@ -141,25 +178,25 @@
         #end
         #if($action=='submitformoderation')
           #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLanguage(), "PublicationWorkflow.ValidationRequestMailTemplate", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLocale().toString(), "PublicationWorkflow.ValidationRequestMailTemplate", $map))
         #else
           #set($map= {'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLanguage(), "PublicationWorkflow.PublicationRefusalMailTemplate", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLocale().toString(), "PublicationWorkflow.PublicationRefusalMailTemplate", $map))
         #end
       #elseif($action == 'submitforvalidation' || $action=='unpublish')
         #set($webmasters = $group.getProperty('validator').value)
         #getUsersFromGroup($webmasters)
         #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()"})
         #if($action == 'submitforvalidation')
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLanguage(), "PublicationWorkflow.PublicationRequestMailTemplate", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLocale().toString(), "PublicationWorkflow.PublicationRequestMailTemplate", $map))
         #else
-          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLanguage(), "PublicationWorkflow.DepublicationMailTemplate", $map))
+          #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLocale().toString(), "PublicationWorkflow.DepublicationMailTemplate", $map))
         #end
       #elseif($action == 'refusemoderation')
         #set($contributors = $group.getProperty('contributor').value)
         #getUsersFromGroup($contributors)
         #set($map={'document':"$xwiki.getDocument($workflowdoc).getDisplayTitle()", 'url':"$xwiki.getDocument($workflowDocRef).getExternalURL()", 'reason':"$!request.reason"})
-        #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLanguage(), "PublicationWorkflow.ValidationRefusalMailTemplate", $map))
+        #set($discard = $xwiki.mailsender.sendMessageFromTemplate($defaultMail, $recipients, null, null, $xcontext.getLocale().toString(), "PublicationWorkflow.ValidationRefusalMailTemplate", $map))
       #end
     #end
 

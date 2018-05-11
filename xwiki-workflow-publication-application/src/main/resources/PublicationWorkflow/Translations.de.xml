@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc version="1.1">
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.2" reference="PublicationWorkflow.Translations" locale="de">
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language>de</language>
-  <defaultLanguage/>
+  <defaultLanguage>en</defaultLanguage>
   <translation>1</translation>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1357828638000</creationDate>
@@ -54,6 +74,7 @@ workflow.panel.editDraft = Dieses Dokument ist veröffentlicht. Um in den Entwur
 
 workflow.panel.alreadyExist = Das veröffentlichte Dokument muss sich vom Entwurf unterscheiden.
 workflow.panel.publish.hintLanguages = Veröffentlichen wirkt sich nicht nur auf die Sprachvariante aus, die Sie gerade sehen, sondern veröffentlicht alle Sprachvarianten des Dokumentes.
+workflow.panel.applications.label = Workflow
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = In Bearbeitung
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = In Vorprüfung
@@ -96,13 +117,13 @@ workflow.save.refuseModeration = Vorprüfung abgelehnt : {0}
 workflow.save.submitForValidation = Das Dokument {0} wurde zur Freigabe übermittelt.
 workflow.save.refuseValidation = Freigabe abgelehnt : {0}
 workflow.save.validate = Das Dokument {0} wurde als gültig markiert.
-workflow.save.publishNew = Es wurde eine neue Version des Dokuments veröffentlicht.
+workflow.save.publishNew = {0} hat eine neue Version des Dokuments veröffentlicht.
 workflow.save.publishDraft = Das Dokument wurde veröffentlicht als {0}.
 workflow.save.createDraft = Entwurf für Dokument {0} erzeugt.
 workflow.save.unpublish = Entwurf aus zuvor veröffentlichtem Dokument {0} erzeugt.
 workflow.save.backToDraft = Status wurde auf Entwurf zurückgesetzt.
-workflow.save.archive = Dokument wurde archiviert.
-workflow.save.publishFromArchive = Aus Archiv veröffentlicht.
+workflow.save.archive = Das Dokument wurde archiviert von {0}.
+workflow.save.publishFromArchive = Aus dem Archiv veröffentlicht vom {0}.
 
 workflow.alert.publish = Wollen Sie dieses Dokument wirklich veröffentlichen?
 workflow.alert.publishDirectly = Wollen Sie dieses Dokument wirklich ohne weitere Prüfung veröffentlichen?
@@ -135,7 +156,7 @@ workflow.script.failed = Beim Ausführen der Workflow-Aktion ist ein Fehler aufg
         <prettyName>Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>GLOBAL|WIKI|USER|ON_DEMAND</values>

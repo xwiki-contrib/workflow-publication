@@ -45,6 +45,8 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.SpaceReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
@@ -154,6 +156,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Inject
     @Named("explicit")
     protected DocumentReferenceResolver<String> explicitStringDocRefResolver;
+
+    @Inject
+    @Named("current")
+    protected SpaceReferenceResolver<String> explicitStringSpaceRefResolver;
 
     @Inject
     @Named("explicit")
@@ -352,12 +358,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 serializedTargetName, WF_IS_TARGET_FIELDNAME);
         List<String> results = null;
         // query on the passed database
-        String originalDatabase = xcontext.getDatabase();
+        String originalDatabase = xcontext.getWikiId();
         try {
-            xcontext.setDatabase(wiki);
+            xcontext.setWikiId(wiki);
             results = xcontext.getWiki().getStore().search(workflowsQuery, 0, 0, params, xcontext);
         } finally {
-            xcontext.setDatabase(originalDatabase);
+            xcontext.setWikiId(originalDatabase);
         }
 
         if (results == null || results.size() <= 0) {
@@ -392,6 +398,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         throws XWikiException
     {
         DocumentReference targetRef = targetDocument.getDocumentReference();
+        boolean isNonTerminalPage = targetRef.getName().equals(
+            xcontext.getWiki().getXWikiPreference("xwiki.defaultpage","WebHome", xcontext));
 
         // if this document is not a workflow document, return nothing
         if (!this.isWorkflowDocument(targetDocument, xcontext)) {
@@ -410,10 +418,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return null;
         }
         defaultDraftsSpace = defaultDraftsSpace.trim();
+        SpaceReference defaultDraftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
+        if (isNonTerminalPage) {
+            defaultDraftSpaceRef = new SpaceReference(targetRef.getParent().getName(), defaultDraftSpaceRef);
+        }
+
         // get a new document in the drafts space, starting with the name of the target document
-        String draftDocName = xcontext.getWiki().getUniquePageName(defaultDraftsSpace, targetRef.getName(), xcontext);
+        String draftDocName = xcontext.getWiki().getUniquePageName(stringSerializer.serialize(defaultDraftSpaceRef), targetRef.getName(), xcontext);
         DocumentReference draftDocRef =
-            new DocumentReference(targetRef.getWikiReference().getName(), defaultDraftsSpace, draftDocName);
+            new DocumentReference(draftDocName, defaultDraftSpaceRef);
         XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
 
         final Locale origLocale = xcontext.getLocale();
@@ -784,6 +797,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         if (StringUtils.isEmpty(target)) {
             return null;
         }
+        DocumentReference publisher = xcontext.getUserReference();
         DocumentReference targetRef = explicitStringDocRefResolver.resolve(target, document);
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
@@ -815,14 +829,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: figure out who should be the author of the published document
 
             // save the published document prepared like this
-            String defaultMessage = "Published new version of the document.";
+            String defaultMessage = "Published new version of the document by {0}.";
             try {
                 xcontext.setLocale(translatedNewDocument.getRealLocale());
-                String message = getMessage("workflow.save.publishNew", defaultMessage, null);
+                String message = getMessage("workflow.save.publishNew", defaultMessage,
+                    Arrays.asList(stringSerializer.serialize(publisher)));
                 // setup the context to let events know that they are in the publishing context
                 xcontext.put(CONTEXTKEY_PUBLISHING, true);
                 xcontext.getWiki().saveDocument(translatedNewDocument, message, false, xcontext);
-                LOGGER.debug(defaultMessage + (locale.equals(doc.getDefaultLocale()) ? "" : " (in locale "+locale+")"));
+                LOGGER.debug(message + (locale.equals(doc.getDefaultLocale()) ? "" : " (in locale "+locale+")"));
             } finally {
                 xcontext.remove(CONTEXTKEY_PUBLISHING);
                 xcontext.setLocale(origLocale);
@@ -846,7 +861,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
         
         // save the the draft document prepared like this
-        String defaultMessage2 = "Published this document to " + stringSerializer.serialize(document) + ".";
+        String defaultMessage2 = "Published this document to " + stringSerializer.serialize(targetRef) + ".";
         String message2 =
             getMessage("workflow.save.publishDraft", defaultMessage2,
                 Arrays.asList(stringSerializer.serialize(targetRef).toString()));
@@ -953,6 +968,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     {
         XWikiContext xcontext = getXContext();
         XWikiDocument publishedDoc = xcontext.getWiki().getDocument(document, xcontext);
+        DocumentReference publisher = xcontext.getUserReference();
 
         BaseObject publishedWorkflow =
             validateWorkflow(publishedDoc, Arrays.asList(STATUS_PUBLISHED), PUBLISHED, xcontext);
@@ -970,10 +986,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         publishedDoc.setHidden(true);
 
         // save it
-        String defaultMessage = "Archived document.";
-        String message = getMessage("workflow.save.archive", defaultMessage, null);
+        String defaultMessage = "Archived document by {0}.";
+        String message = getMessage("workflow.save.archive", defaultMessage,
+            Arrays.asList(stringSerializer.serialize(publisher)));
         xcontext.getWiki().saveDocument(publishedDoc, message, true, xcontext);
-        LOGGER.info(defaultMessage + " " + stringSerializer.serialize(document));
+        LOGGER.info(message + " " + stringSerializer.serialize(document));
 
         return true;
     }
@@ -989,6 +1006,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     {
         XWikiContext xcontext = getXContext();
         XWikiDocument archivedDoc = xcontext.getWiki().getDocument(document, xcontext);
+        DocumentReference publisher = xcontext.getUserReference();
 
         BaseObject archivedWorkflow =
             validateWorkflow(archivedDoc, Arrays.asList(STATUS_ARCHIVED), PUBLISHED, xcontext);
@@ -1006,10 +1024,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         archivedDoc.setHidden(false);
 
         // save it
-        String defaultMessage = "Published document from an archive.";
-        String message = getMessage("workflow.save.publishFromArchive", defaultMessage, null);
+        String defaultMessage = "Published document from an archive by {0}.";
+        String message = getMessage("workflow.save.publishFromArchive", defaultMessage,
+            Arrays.asList(stringSerializer.serialize(publisher)));
         xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
-        LOGGER.info(defaultMessage + " " + stringSerializer.serialize(document));
+        LOGGER.info(message + " " + stringSerializer.serialize(document));
 
         return true;
     }

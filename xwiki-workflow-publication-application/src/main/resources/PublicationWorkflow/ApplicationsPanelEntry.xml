@@ -20,32 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc version="1.2" reference="PublicationWorkflow.ApplicationsPanelEntry" locale="">
   <web>PublicationWorkflow</web>
-  <name>PublicationWorkflowPanel</name>
+  <name>ApplicationsPanelEntry</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1357318493000</creationDate>
+  <creationDate>1346774793000</creationDate>
+  <parent>Blog.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1357318493000</date>
-  <contentUpdateDate>1357318493000</contentUpdateDate>
+  <date>1524953210000</date>
+  <contentUpdateDate>1458059553000</contentUpdateDate>
   <version>1.1</version>
-  <title/>
+  <title>Applications Panel Entry</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include document="Panels.PanelSheet"/}}</content>
+  <content>{{include reference="XWiki.UIExtensionSheet" /}}</content>
   <object>
-    <name>PublicationWorkflow.PublicationWorkflowPanel</name>
+    <name>PublicationWorkflow.ApplicationsPanelEntry</name>
     <number>0</number>
-    <className>Panels.PanelClass</className>
-    <guid>cb815f27-8cb2-4b24-bb42-d4f3770a5f88</guid>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>14855b9c-dd39-4037-8cfe-ee6912630d69</guid>
     <class>
-      <name>Panels.PanelClass</name>
+      <name>XWiki.UIExtensionClass</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -53,89 +54,77 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <category>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>category</name>
-        <number>5</number>
-        <prettyName>Category</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators> ,|</separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>Information|Navigation|Tools|Administration|Other</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </category>
       <content>
         <disabled>0</disabled>
-        <editor>Text</editor>
         <name>content</name>
-        <number>4</number>
-        <prettyName>Content</prettyName>
-        <rows>25</rows>
-        <size>120</size>
+        <number>3</number>
+        <prettyName>Extension Content</prettyName>
+        <rows>10</rows>
+        <size>40</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </content>
-      <description>
+      <extensionPointId>
         <disabled>0</disabled>
-        <editor>Text</editor>
-        <name>description</name>
-        <number>3</number>
-        <prettyName>Description</prettyName>
-        <rows>5</rows>
-        <size>40</size>
+        <name>extensionPointId</name>
+        <number>1</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
         <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </description>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
       <name>
         <disabled>0</disabled>
         <name>name</name>
-        <number>1</number>
-        <prettyName>Name</prettyName>
-        <size>40</size>
+        <number>2</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
-      <type>
+      <parameters>
+        <disabled>0</disabled>
+        <name>parameters</name>
+        <number>4</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
         <cache>0</cache>
         <disabled>0</disabled>
         <displayType>select</displayType>
         <multiSelect>0</multiSelect>
-        <name>type</name>
-        <number>2</number>
-        <prettyName>Panel type</prettyName>
+        <name>scope</name>
+        <number>5</number>
+        <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>view|edit</values>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </type>
+      </scope>
     </class>
     <property>
-      <category>Information</category>
+      <content/>
     </property>
     <property>
-      <content>{{velocity}}
-  #panelheader($services.localization.render('workflow.title'))
-
-  {{publicationworkflow /}}
-  #panelfooter()
-{{/velocity}}</content>
+      <extensionPointId>org.xwiki.platform.panels.Applications</extensionPointId>
     </property>
     <property>
-      <description/>
+      <name>platform.panels.workflowApplication</name>
     </property>
     <property>
-      <name/>
+      <parameters>label=$services.localization.render('workflow.panel.applications.label')
+target=PublicationWorkflow.WebHome
+icon=icon:control_equalizer</parameters>
     </property>
     <property>
-      <type>view</type>
+      <scope>wiki</scope>
     </property>
   </object>
 </xwikidoc>

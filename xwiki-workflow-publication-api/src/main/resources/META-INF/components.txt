@@ -4,3 +4,4 @@ org.xwiki.workflowpublication.internal.PublicationRolesService
 org.xwiki.workflowpublication.internal.DefaultPublicationRoles
 org.xwiki.workflowpublication.internal.DefaultWorkflowConfigManager
 org.xwiki.workflowpublication.internal.PublicationWorkflowEventsGeneratorListener
+org.xwiki.workflowpublication.internal.ReferencesTransformDocPublishingEventListener

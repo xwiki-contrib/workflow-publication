@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc version="1.1">
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.2" reference="PublicationWorkflow.Translations" locale="">
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language/>
-  <defaultLanguage/>
+  <defaultLanguage>fr</defaultLanguage>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1357828638000</creationDate>
@@ -52,7 +72,7 @@ workflow.panel.editDraft = Si vous voulez éditer ce brouillon, cliquez sur le b
 
 workflow.panel.alreadyExist = Le document de publication doit être différent du document actuel.
 workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
-
+workflow.panel.applications.label = Workflow
 
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Brouillon
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = En cours de modération
@@ -95,13 +115,13 @@ workflow.save.refuseModeration = Modération refusée : {0}
 workflow.save.submitForValidation = Soumission du document {0} à la validation.
 workflow.save.refuseValidation = Publication refusée : {0}
 workflow.save.validate = Marque le document {0} comme étant valide.
-workflow.save.publishNew = Publication de la nouvelle version du document.
+workflow.save.publishNew = Publication de la nouvelle version du document par {0}.
 workflow.save.publishDraft = Publication de ce document vers {0}.
 workflow.save.createDraft=Création du brouillon du document {0}.
 workflow.save.unpublish = Création d'un brouillon depuis le document publié {0}.
 workflow.save.backToDraft = Retour en statut brouillon pour permettre l'édition.
-workflow.save.archive = Archivation du document.
-workflow.save.publishFromArchive = Publication du document depuis une archive.
+workflow.save.archive = Archivation du document par {0}.
+workflow.save.publishFromArchive = Publication du document depuis une archive par {0}.
 
 workflow.alert.publish = Etes vous sûr de vouloir publier ce document ?
 workflow.alert.archive = Etes vous sûr de vouloir archiver ce document ?
@@ -131,7 +151,7 @@ workflow.alert.no = Non</content>
         <prettyName>Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
