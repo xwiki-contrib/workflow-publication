@@ -52,7 +52,7 @@
 #set($class = $object.xWikiClass)
 #foreach($prop in $class.properties)
   ; $doc.displayPrettyName($prop.name, $object)
-  : $doc.display($prop.getName()) #if ("!$xcontext.action" != 'edit' &amp;&amp; "$!xcontext.action" != 'inline' &amp;&amp; ($prop.name == 'contributor' || $prop.name == 'validator' || $prop.name == 'moderator'))#displayGroupEditLink($object.getProperty($prop.name).value)#end
+  : $doc.display($prop.getName()) #if ("!$xcontext.action" != 'edit' &amp;&amp; "$!xcontext.action" != 'inline' &amp;&amp; ($prop.name != 'defaultDraftSpace'))#displayGroupEditLink($object.getProperty($prop.name).value)#end
 
 #end
 {{/velocity}}</content>
