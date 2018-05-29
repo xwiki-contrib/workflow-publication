@@ -57,7 +57,7 @@
     #end
   #end
   #foreach($group in $groups)
-    #set($person = $group.getProperty('member').value)  
+    #set($person = $group.getProperty('member').value)
     #if($person &amp;&amp; $!person != '')
       #getUsersFromGroup("$person", $targetDoc.getWiki())
     #end
@@ -83,7 +83,7 @@
   ## workflow doc ref: $workflowDocRef
   ## Action : $action
   #if($action == "start")
-    #set($targetSpaceReference = $services.model.resolveSpace("$!request.space", 'default'))
+    #set($targetSpaceReference = $services.model.resolveSpace("$!request.space"))
     ## the target reference should be a terminal document only if the worflow document is one
     #set ($isTerminal = $workflowDocRef.getName() != $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
     #if ($isTerminal)
