@@ -139,20 +139,22 @@
           )
       }.bind(this));
     }
-    $('formArchive').observe('submit', function(event){
-      event.stop();
-      var params = {
-        confirmationText: "$services.localization.render('workflow.alert.archive')",
-        yesButtonText: "$services.localization.render('workflow.alert.yes')",
-        noButtonText: "$services.localization.render('workflow.alert.no')"
-      };
-      new XWiki.widgets.ConfirmationBox(
-        {
-          onYes : function() {$('formArchive').submit();},
-        },
-        params
-        )
-    }.bind(this));
+    if($('formArchive') != undefined) {
+      $('formArchive').observe('submit', function(event){
+        event.stop();
+        var params = {
+          confirmationText: "$services.localization.render('workflow.alert.archive')",
+          yesButtonText: "$services.localization.render('workflow.alert.yes')",
+          noButtonText: "$services.localization.render('workflow.alert.no')"
+        };
+        new XWiki.widgets.ConfirmationBox(
+          {
+            onYes : function() {$('formArchive').submit();},
+          },
+          params
+          )
+      }.bind(this));
+    }
   }  
 });
   return XWiki;
@@ -307,9 +309,14 @@ document.observe('xwiki:dom:loading', function() {
       <cache>long</cache>
     </property>
     <property>
-      <code>.xwikipanelcontents #informations
+      <code>#template('colorThemeInit.vm')
+
+.xwikipanelcontents #informations
 {
   margin-bottom: 11px;
+  border-color: $theme.borderColor;
+  border-radius: 4px;
+  padding: 5px;
 }
 
 .xwikipanelcontents .button
@@ -328,6 +335,29 @@ document.observe('xwiki:dom:loading', function() {
 
 .publicationworkflow-info form.xformInline div {
   display: inline;
+}
+
+.publicationworkflow-information .breadcrumb {
+  padding: 8px 0;
+}
+.publicationworkflow-information .location-edit {
+  margin: 0.5em 0 1em 0;
+  padding: 0;
+}
+.publicationworkflow-information dl dt {
+  margin-top: 1em;
+}
+#workflow-options {
+  text-decoration: none;
+  display: block;
+  padding-top: 0.5em;
+}
+#workflow-options-container {
+  padding-top: 1em;
+}
+.targetexists{
+  padding: 10px;
+  margin-bottom: 1em;
 }</code>
     </property>
     <property>
@@ -467,6 +497,18 @@ document.observe('xwiki:dom:loading', function() {
     &lt;p class="xHint"&gt;$services.localization.render('workflow.panel.publish.hintLanguages')&lt;/p&gt;
   #end
 #end
+## ---------------------------------------------------------------------------------------------------------
+## Macro used to extract a wiki's homepage reference.
+## ---------------------------------------------------------------------------------------------------------
+#macro (getWikiHomePageReference $wiki $return)
+  #set ($_wikiHomePageReference = $services.wiki.getById($wiki).mainPageReference)
+  #if (!$_wikiHomePageReference)
+    #set ($wikiReference = $services.model.createWikiReference($wiki))
+    #set ($_wikiHomePageReference = $services.model.resolveDocument('', 'default', $wikiReference))
+  #end
+  #set ($return = $NULL)
+  #setVariable("$return" $_wikiHomePageReference)
+#end
 #if($doc.equals($xwiki.getDocument("PublicationWorkflow.Refusal")) || $doc.equals($xwiki.getDocument("PublicationWorkflow.Unpublish")))
   #if($request.workflowdoc)
     #set($workflowDoc = $xwiki.getDocument($request.workflowdoc))
@@ -488,19 +530,111 @@ document.observe('xwiki:dom:loading', function() {
     &lt;div class="publicationworkflow-information"&gt;
     &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
       &lt;div id="informations"&gt;
-        &lt;label&gt;$services.localization.render('workflow.start.pagename')&lt;/label&gt;
-        &lt;input type='text' name='page' /&gt;
-        &lt;label&gt;$services.localization.render('workflow.start.spacename')&lt;/label&gt;
-        &lt;input type='text' name='space' class='suggestSpaces' /&gt;
-        #set($workflows = $services.query.xwql("from doc.object(PublicationWorkflow.PublicationWorkflowConfigClass) as wfConfig where doc.name &lt;&gt; 'PublicationWorkflowConfigTemplate'").execute())
-        Workflow: &lt;select name='workflow'&gt;
-        #foreach($wf in $workflows)
-          #set($wfDoc = $xwiki.getDocument($wf))
-          &lt;option value='$services.model.serialize($wfDoc.documentReference, 'default')'&gt;$wfDoc.displayTitle&lt;/option&gt;
+        ## Search for a parent page that is a workflow configuration
+        ## In case it exists, it will be selected in the list of available workflow configurations
+        #set($defaultPageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
+        #set($wfDocSelectedID = $NULL)
+        ## The variable workflowStartConfigurationDocumentID is not defined by default.
+        ## It is used to define a workflow configuration to be used in the current document.
+        #if($workflowStartConfigurationDocumentID)
+          #set($wfDocSelectedID = $workflowStartConfigurationDocumentID)
+        #else
+          #if($path &amp;&amp; $path.size() > 1)
+            #set($pathLength = $path.size() - 1)
+            #foreach($index in [${pathLength}..1])
+              #set($wfPathDocRef = $services.model.createDocumentReference($defaultPageName, $path[$index]))
+              #set($wfPathDoc = $xwiki.getDocument($wfPathDocRef))
+              #if($wfPathDoc &amp;&amp; $wfPathDoc.getObject('PublicationWorkflow.PublicationWorkflowConfigClass'))
+                #set($wfDocSelectedID = $wfPathDoc.fullName)
+                #break
+              #end
+            #end
+          #end
         #end
-        &lt;/select&gt;
-        &lt;input type="hidden" name="action" value="start" /&gt;
-        &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
+        #set($targetAlreadyExists = "$!request.targetexists" == 'true')
+        #if($targetAlreadyExists)
+          &lt;div class="xHint warningmessage targetexists"&gt;&lt;div class="warning"&gt;$services.localization.render('workflow.start.targetExists')&lt;/div&gt;&lt;/div&gt;
+        #end
+        ## Advanced options link
+        ## The variable hideWorkflowAdvancedOptions is not defined by default.
+        ## It is used to decide if the advanced options should be diplayed or not.
+        #if(!$hideWorkflowAdvancedOptions)
+          &lt;div class="xHint"&gt;$services.localization.render('workflow.start.advancedoptions.text')&lt;/div&gt;
+          &lt;a id="workflow-options" href="#workflow-options-container" data-toggle="collapse"&gt;$services.localization.render('workflow.start.advancedoptions.button')&lt;/a&gt;
+        #end
+
+        &lt;div id="workflow-options-container" class="collapse"&gt;
+          #getWikiHomePageReference($doc.wiki $homeReference)
+          #if($doc.name == $defaultPageName)
+            #set($targetDocName = $doc.documentReference.lastSpaceReference.name)
+          #else
+            #set($targetDocName = $doc.name)
+          #end
+          ## Build the target document location based on the type of the draft document and some variables
+          ## The variable workflowStartPublishedParentReference is not defined by default
+          ## It is used for setting a default space where to publish the current draft document.
+          #if($workflowStartPublishedParentReference)
+            #set ($parentReference = $workflowStartPublishedParentReference)
+          #elseif ($doc.documentReference.equals($homeReference))
+            ## Encourage the user to create top level documents from the home page.
+            #set ($parentReference = $doc.documentReference.wikiReference)
+          #else
+            ## Encourage the user to create a child or sibling of the current document.
+            #set ($parentReference = $services.model.resolveDocument($doc.documentReference.lastSpaceReference).lastSpaceReference)
+            #if(!$parentReference || $doc.name != $defaultPageName || $doc.documentReference.spaceReferences.size() &lt;= 1)
+              #set ($parentReference = $doc.documentReference.lastSpaceReference)
+              #set ($targetDocName = $doc.name)
+            #end
+          #end
+          ## Display the location picker.
+          #template('locationPicker_macros.vm')
+          #locationPicker({
+            'id': 'target',
+            'preview': {
+              'label': 'workflow.start.locationPreview.label',
+              'hint': 'workflow.start.locationPreview.hint'
+            },
+            'parent': {
+              'label': 'workflow.start.spaceReference.label',
+              'hint': 'workflow.start.spaceReference.hint',
+              'name': 'targetSpace',
+              'reference': $parentReference,
+              'placeholder': 'core.create.spaceReference.placeholder'
+            },
+            'name': {
+              'label': 'workflow.start.name.label',
+              'hint': 'workflow.start.name.hint',
+              'name': 'targetName',
+              'value': $targetDocName,
+              'placeholder': 'workflow.start.name.placeholder'
+            }
+          })
+          &lt;dl&gt;
+            &lt;dt&gt;&lt;label for="workflow"&gt;$services.localization.render('workflow.start.template')&lt;/label&gt;&lt;/dt&gt;
+            &lt;dd&gt;
+              &lt;span class="xHint"&gt;$services.localization.render('workflow.start.template.hint')&lt;/span&gt;
+              ## List the available workflow configurations
+              &lt;select name='workflow'&gt;
+                #set($workflows = $services.query.xwql("from doc.object(PublicationWorkflow.PublicationWorkflowConfigClass) as wfConfig where doc.name &lt;&gt; 'PublicationWorkflowConfigTemplate' order by lower(doc.title) asc").execute())
+                #foreach($wf in $workflows)
+                  #set($wfDoc = $xwiki.getDocument($wf))
+                  &lt;option value="${wfDoc.fullName}" #if($wfDoc.fullName == $wfDocSelectedID) selected="selected"#end&gt;$wfDoc.displayTitle&lt;/option&gt;
+                #end
+              &lt;/select&gt;
+            &lt;/dd&gt;
+            ## Terminal page - Advanced users
+            #set ($hidden = '')
+            #if (!($isAdvancedUser || $isSuperAdmin) || $deprecatedSpaceCreate)
+              #set ($hidden = 'hidden')
+            #end
+            &lt;dt class="$hidden"&gt;
+              &lt;input type="checkbox" id="targetIsTerminal" name="targetIsTerminal" #if($doc.name != $defaultPageName)checked="checked" #end/&gt;
+              &lt;label for="terminal"&gt;$services.localization.render('core.create.terminal.label')&lt;/label&gt;
+            &lt;/dt&gt;
+          &lt;/dl&gt;
+          &lt;input type="hidden" name="action" value="start" /&gt;
+          &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
+        &lt;/div&gt;
       &lt;/div&gt;
       &lt;div class="buttonwrapper"&gt;
         &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.start.dostart'))" class="button" /&gt;
@@ -563,7 +697,7 @@ document.observe('xwiki:dom:loading', function() {
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline' id='formPublish'&gt;
           &lt;div&gt;
             &lt;input type="hidden" name="action" value="publish" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$services.model.serialize($doc.documentReference, 'default')" /&gt;
+            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
           &lt;/div&gt;
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publish'))" class="button" /&gt;

@@ -44,9 +44,19 @@ meeting.livetable.contributor = Contributors
 meeting.livetable.moderator = Moderators
 meeting.livetable.validator= Webmasters
 
-workflow.start.pagename = Publication page
-workflow.start.spacename = Publication space
 workflow.start.dostart = Start workflow
+workflow.start.template = Workflow
+workflow.start.template.hint = Workflow configuration to be used for the current page.
+workflow.start.locationPreview.label = Location
+workflow.start.locationPreview.hint = Location in the page hierarchy where the published page will be created.
+workflow.start.spaceReference.label = Parent
+workflow.start.spaceReference.hint = Parent of the published page. Leave empty for top level page.
+workflow.start.name.label = Name
+workflow.start.name.hint = Name of the published page
+workflow.start.name.placeholder=TargetPage
+workflow.start.advancedoptions.text=Use the advanced options to select the location of the published page and the workflow configuration associated to this page.
+workflow.start.advancedoptions.button=Advanced options
+
 workflow.title = Workflow
 workflow.currentStatus = Current status
 workflow.submitformoderation = Submit to moderation
