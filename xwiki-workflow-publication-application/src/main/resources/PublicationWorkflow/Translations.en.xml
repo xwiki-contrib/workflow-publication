@@ -48,7 +48,7 @@ workflow.start.dostart = Start workflow
 workflow.start.template = Workflow
 workflow.start.template.hint = Workflow configuration to be used for the current page.
 workflow.start.locationPreview.label = Location
-workflow.start.locationPreview.hint = Location in the page hierarchy where the published page will be created.
+workflow.start.locationPreview.hint = Location in the page hierarchy where the published page will be created. &lt;div class="warningmessage"&gt;The location of the published page must be different from the location of the current page.&lt;/div&gt;
 workflow.start.spaceReference.label = Parent
 workflow.start.spaceReference.hint = Parent of the published page. Leave empty for top level page.
 workflow.start.name.label = Name
@@ -80,7 +80,7 @@ workflow.panel.publishedVersion = Published version
 workflow.panel.draftVersion = Go to draft
 workflow.panel.editDraft = If you want to edit the document, click the following button to return to status draft.
 
-workflow.panel.alreadyExist = The published document should be different from the current one.
+workflow.panel.alreadyExist = The location of the published document should be different from the current one. Use the advanced options to select a different location.
 workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
 workflow.panel.applications.label = Workflow
 

@@ -350,7 +350,7 @@ document.observe('xwiki:dom:loading', function() {
 #workflow-options {
   text-decoration: none;
   display: block;
-  padding-top: 0.5em;
+  padding: 0.5em 0;
 }
 #workflow-options-container {
   padding-top: 1em;
@@ -524,14 +524,14 @@ document.observe('xwiki:dom:loading', function() {
 #elseif(!$isWorkflowDoc)
   ##add a form to start a workflow
   #if($!request.same == 'true')
-    {{error}}$services.localization.render('workflow.panel.alreadyExist'){{/error}}
+    ((({{error}}$services.localization.render('workflow.panel.alreadyExist'){{/error}})))
   #end 
   {{html clean="false"}}
     &lt;div class="publicationworkflow-information"&gt;
     &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
       &lt;div id="informations"&gt;
-        ## Search for a parent page that is a workflow configuration
-        ## In case it exists, it will be selected in the list of available workflow configurations
+        ## Search for a parent page that is a workflow configuration.
+        ## In case it exists, it will be selected in the list of available workflow configurations.
         #set($defaultPageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
         #set($wfDocSelectedID = $NULL)
         ## The variable workflowStartConfigurationDocumentID is not defined by default.
@@ -555,7 +555,7 @@ document.observe('xwiki:dom:loading', function() {
         #if($targetAlreadyExists)
           &lt;div class="xHint warningmessage targetexists"&gt;&lt;div class="warning"&gt;$services.localization.render('workflow.start.targetExists')&lt;/div&gt;&lt;/div&gt;
         #end
-        ## Advanced options link
+        ## Advanced options link.
         ## The variable hideWorkflowAdvancedOptions is not defined by default.
         ## It is used to decide if the advanced options should be diplayed or not.
         #if(!$hideWorkflowAdvancedOptions)
@@ -570,8 +570,8 @@ document.observe('xwiki:dom:loading', function() {
           #else
             #set($targetDocName = $doc.name)
           #end
-          ## Build the target document location based on the type of the draft document and some variables
-          ## The variable workflowStartPublishedParentReference is not defined by default
+          ## Build the target document location based on the type of the draft document and some variables.
+          ## The variable workflowStartPublishedParentReference is not defined by default.
           ## It is used for setting a default space where to publish the current draft document.
           #if($workflowStartPublishedParentReference)
             #set ($parentReference = $workflowStartPublishedParentReference)
@@ -579,10 +579,18 @@ document.observe('xwiki:dom:loading', function() {
             ## Encourage the user to create top level documents from the home page.
             #set ($parentReference = $doc.documentReference.wikiReference)
           #else
-            ## Encourage the user to create a child or sibling of the current document.
-            #set ($parentReference = $services.model.resolveDocument($doc.documentReference.lastSpaceReference).lastSpaceReference)
-            #if(!$parentReference || $doc.name != $defaultPageName || $doc.documentReference.spaceReferences.size() &lt;= 1)
-              #set ($parentReference = $doc.documentReference.lastSpaceReference)
+            ## Encourage the user to create a sibling of the current document.
+            #set($spaceReferences = $currentDocRef.spaceReferences)
+            #set($spaceRefencesNb = $spaceReferences.size())
+            ## In case the current page is nested and it is placed at least on the second level.
+            ## in the documents tree, the parent of the target page as the is set to be
+            ## the current parent space.
+            #if($doc.name == $defaultPageName &amp;&amp; $spaceRefencesNb &gt; 1)
+              #set($previousSpaceIndex = $spaceRefencesNb - 2)
+              #set ($parentReference = $currentDocRef.spaceReferences[$previousSpaceIndex])
+            #end
+            #if(!$parentReference || $doc.name != $defaultPageName || $spaceRefencesNb &lt;= 1)
+              #set ($parentReference = $currentDocRef.lastSpaceReference)
               #set ($targetDocName = $doc.name)
             #end
           #end
@@ -622,7 +630,7 @@ document.observe('xwiki:dom:loading', function() {
                 #end
               &lt;/select&gt;
             &lt;/dd&gt;
-            ## Terminal page - Advanced users
+            ## Terminal page - Advanced users.
             #set ($hidden = '')
             #if (!($isAdvancedUser || $isSuperAdmin) || $deprecatedSpaceCreate)
               #set ($hidden = 'hidden')

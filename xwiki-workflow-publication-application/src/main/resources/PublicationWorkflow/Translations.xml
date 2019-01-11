@@ -48,7 +48,7 @@ workflow.start.dostart = Start workflow
 workflow.start.template = Workflow
 workflow.start.template.hint = Configuration du workflow à utiliser pour la page en cours.
 workflow.start.locationPreview.label = Emplacement
-workflow.start.locationPreview.hint = Emplacement dans la hi\u00E9rarchie des pages o\u00F9 la page publiée sera cr\u00E9\u00E9e.
+workflow.start.locationPreview.hint = Emplacement dans la hi\u00E9rarchie des pages o\u00F9 la page publiée sera cr\u00E9\u00E9e. &lt;div class="warningmessage"&gt;L'mplacement de la page publi\u00E9e doit \u00eatre diff\u00E9rent de celui de la page actuelle.&lt;/div&gt;
 workflow.start.spaceReference.label = Parent
 workflow.start.spaceReference.hint = Parent de la page publiée (laissez vide pour une page de 1ier niveau).
 workflow.start.name.label = Nom
@@ -81,7 +81,7 @@ workflow.panel.publishedVersion = Version publiée
 workflow.panel.draftVersion = Accéder au brouillon
 workflow.panel.editDraft = Si vous voulez éditer ce brouillon, cliquez sur le bouton suivant pour repasser en status brouillon.
 
-workflow.panel.alreadyExist = Le document de publication doit être différent du document actuel.
+workflow.panel.alreadyExist = L'emplacement du document publié doit être différent de celui actuel. Utilisez les options avancées pour sélectionner un emplacement différent.
 workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
 workflow.panel.applications.label = Workflow
 
