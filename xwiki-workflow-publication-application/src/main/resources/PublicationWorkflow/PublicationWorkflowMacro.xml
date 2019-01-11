@@ -565,8 +565,9 @@ document.observe('xwiki:dom:loading', function() {
 
         &lt;div id="workflow-options-container" class="collapse"&gt;
           #getWikiHomePageReference($doc.wiki $homeReference)
+          #set($currentDocRef = $doc.documentReference)
           #if($doc.name == $defaultPageName)
-            #set($targetDocName = $doc.documentReference.lastSpaceReference.name)
+            #set($targetDocName = $currentDocRef.lastSpaceReference.name)
           #else
             #set($targetDocName = $doc.name)
           #end
