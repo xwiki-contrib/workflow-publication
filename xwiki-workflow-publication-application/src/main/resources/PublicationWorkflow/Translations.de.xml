@@ -40,9 +40,9 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>meeting.livetable.doc.title = Name des Workflows
-meeting.livetable.contributor = Autor
-meeting.livetable.moderator = Vorprüfer
-meeting.livetable.validator = Freigeber
+meeting.livetable.contributor = Autoren
+meeting.livetable.moderator = Vorprüfende
+meeting.livetable.validator = Freigebende
 
 workflow.start.pagename = Öffentlicher Seitenname
 workflow.start.spacename = Öffentlicher Bereich
@@ -83,6 +83,10 @@ PublicationWorkflow.PublicationWorkflowClass_status_valid = Freigegeben
 PublicationWorkflow.PublicationWorkflowClass_status_published = Veröffentlicht
 PublicationWorkflow.PublicationWorkflowClass_status_archived = Archiviert
 PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint = Workflowgruppe bearbeiten
+PublicationWorkflow.PublicationWorkflowConfigClass_contributor = Autoren
+PublicationWorkflow.PublicationWorkflowConfigClass_moderator = Vorprüfende
+PublicationWorkflow.PublicationWorkflowConfigClass_validator = Freigebende
+PublicationWorkflow.PublicationWorkflowConfigClass_defaultDraftSpace = Vorgesehener Entwurfsbereich
 
 workflow.script.notenoughparams = Nicht genügend Parameter.
 workflow.refusal.notenoughparams = Nicht genügend Parameter.
@@ -98,6 +102,7 @@ workflow.unpublish.submit = Depublizieren
 workflow.unpublish.cancel = Abbrechen
 workflow.unpublish.crush = Entwurf überschreiben
 
+workflow.overview.title=Übersicht
 workflow.overview.listDrafts = Liste der Dokumente in Bearbeitung:
 workflow.overview.noDraftDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Bearbeiten haben.
 workflow.overview.noWebmasterDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Freigeben haben.
