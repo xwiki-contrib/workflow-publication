@@ -576,9 +576,9 @@ document.observe('xwiki:dom:loading', function() {
           ## It is used for setting a default space where to publish the current draft document.
           #if($workflowStartPublishedParentReference)
             #set ($parentReference = $workflowStartPublishedParentReference)
-          #elseif ($doc.documentReference.equals($homeReference))
+          #elseif ($currentDocRef.equals($homeReference))
             ## Encourage the user to create top level documents from the home page.
-            #set ($parentReference = $doc.documentReference.wikiReference)
+            #set ($parentReference = $currentDocRef.wikiReference)
           #else
             ## Encourage the user to create a sibling of the current document.
             #set($spaceReferences = $currentDocRef.spaceReferences)
@@ -642,7 +642,7 @@ document.observe('xwiki:dom:loading', function() {
             &lt;/dt&gt;
           &lt;/dl&gt;
           &lt;input type="hidden" name="action" value="start" /&gt;
-          &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
+          &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($currentDocRef, 'default'))" /&gt;
         &lt;/div&gt;
       &lt;/div&gt;
       &lt;div class="buttonwrapper"&gt;
