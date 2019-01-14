@@ -91,10 +91,6 @@ PublicationWorkflow.PublicationWorkflowClass_status_valid = Validated
 PublicationWorkflow.PublicationWorkflowClass_status_published = Published
 PublicationWorkflow.PublicationWorkflowClass_status_archived = Archived
 PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint = Edit Workflow Group
-PublicationWorkflow.PublicationWorkflowConfigClass_contributor = Contributors
-PublicationWorkflow.PublicationWorkflowConfigClass_moderator = Moderators
-PublicationWorkflow.PublicationWorkflowConfigClass_validator = Publishers
-PublicationWorkflow.PublicationWorkflowConfigClass_defaultDraftSpace = Default Draft Space
 
 workflow.script.notenoughparams = Not enough parameters.
 workflow.refusal.notenoughparams = Not enough parameters.
@@ -110,7 +106,6 @@ workflow.unpublish.submit = Unpublish
 workflow.unpublish.cancel = Cancel
 workflow.unpublish.crush = Override draft
 
-workflow.overview.title=Overview
 workflow.overview.listDrafts= List of draft documents :
 workflow.overview.noDraftDoc= There is no draft having you as contributor.
 workflow.overview.noWebmasterDoc = There is no document currently being validated of which you are a Webmaster
