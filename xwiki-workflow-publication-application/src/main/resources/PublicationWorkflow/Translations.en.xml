@@ -47,7 +47,7 @@ meeting.livetable.validator= Webmasters
 workflow.start.dostart = Start workflow
 workflow.start.template = Workflow
 workflow.start.template.hint = Workflow configuration to be used for the current page.
-workflow.start.locationPreview.label = Location
+workflow.start.locationPreview.label = Publish Location
 workflow.start.locationPreview.hint = Location in the page hierarchy where the published page will be created. &lt;div class="warningmessage"&gt;The location of the published page must be different from the location of the current page.&lt;/div&gt;
 workflow.start.spaceReference.label = Parent
 workflow.start.spaceReference.hint = Parent of the published page. Leave empty for top level page.

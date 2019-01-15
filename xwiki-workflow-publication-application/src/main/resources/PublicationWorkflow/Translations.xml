@@ -47,7 +47,7 @@ meeting.livetable.validator= Webmasters
 workflow.start.dostart = Start workflow
 workflow.start.template = Workflow
 workflow.start.template.hint = Configuration du workflow à utiliser pour la page en cours.
-workflow.start.locationPreview.label = Emplacement
+workflow.start.locationPreview.label = Emplacement de publication
 workflow.start.locationPreview.hint = Emplacement dans la hi\u00E9rarchie des pages o\u00F9 la page publiée sera cr\u00E9\u00E9e. &lt;div class="warningmessage"&gt;L'mplacement de la page publi\u00E9e doit \u00eatre diff\u00E9rent de celui de la page actuelle.&lt;/div&gt;
 workflow.start.spaceReference.label = Parent
 workflow.start.spaceReference.hint = Parent de la page publiée (laissez vide pour une page de 1ier niveau).
