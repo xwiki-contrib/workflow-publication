@@ -141,7 +141,9 @@ workflow.save.publishFromArchive = Publication of the document from an archive b
 workflow.alert.publish = Are you sure you want to publish this document ?
 workflow.alert.archive = Are you sure you want to archive this document ?
 workflow.alert.yes = Yes
-workflow.alert.no = No</content>
+workflow.alert.no = No
+
+workflow.move.updateDraft=The target was moved / renamed. Set the new location to {0}.</content>
   <object>
     <name>PublicationWorkflow.Translations</name>
     <number>0</number>

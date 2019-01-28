@@ -138,7 +138,9 @@ workflow.save.publishFromArchive = Publication du document depuis une archive pa
 workflow.alert.publish = Etes vous sûr de vouloir publier ce document ?
 workflow.alert.archive = Etes vous sûr de vouloir archiver ce document ?
 workflow.alert.yes = Oui
-workflow.alert.no = Non</content>
+workflow.alert.no = Non
+
+workflow.move.updateDraft=La page publiée a été déplacée / renommée. Le nouvel emplacement a été défini sur {0}.</content>
   <object>
     <name>PublicationWorkflow.Translations</name>
     <number>0</number>
