@@ -67,13 +67,6 @@ public class DefaultPublicationRoles implements PublicationRoles
     private Logger logger;
 
     /**
-     * Local reference string serializer.
-     */
-    @Inject
-    @Named("local")
-    protected EntityReferenceSerializer<String> localStringSerializer;
-
-    /**
      * Reference string serializer.
      */
     @Inject
@@ -360,13 +353,14 @@ public class DefaultPublicationRoles implements PublicationRoles
         }
 
         if (recursive) {
-            // use a set for a collection to make sure duplicates are not added
-            Collection<String> parentGroups = new HashSet<String>();
-            for (String group : allGroups) {
-                DocumentReference groupRef = defaultStringDocRefResolver.resolve(group);
-                parentGroups.addAll(getGroups(groupRef, recursive, localGroups, userWikiGroups, xcontext));
-            }
-            allGroups.addAll(parentGroups);
+            Collection<String> parentGroups;
+	    do {
+                parentGroups = new HashSet<String>();
+                for (String group : allGroups) {
+                    DocumentReference groupRef = defaultStringDocRefResolver.resolve(group);
+                    parentGroups.addAll(getGroups(groupRef, false, localGroups, userWikiGroups, xcontext));
+                }
+            } while (allGroups.addAll(parentGroups));
         }
 
         return allGroups;
