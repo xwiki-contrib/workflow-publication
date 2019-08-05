@@ -539,7 +539,7 @@ document.observe('xwiki:dom:loading', function() {
         #if($workflowStartConfigurationDocumentID)
           #set($wfDocSelectedID = $workflowStartConfigurationDocumentID)
         #else
-          #if($path &amp;&amp; $path.size() > 1)
+          #if($path &amp;&amp; $path.size() &gt; 1)
             #set($pathLength = $path.size() - 1)
             #foreach($index in [${pathLength}..1])
               #set($wfPathDocRef = $services.model.createDocumentReference($defaultPageName, $path[$index]))
