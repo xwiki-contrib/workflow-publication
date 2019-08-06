@@ -111,14 +111,14 @@ workflow.unpublish.cancel = Cancel
 workflow.unpublish.crush = Override draft
 
 workflow.overview.title=Overview
-workflow.overview.listDrafts= List of draft documents :
+workflow.overview.listDrafts= List of draft documents
 workflow.overview.noDraftDoc= There is no draft having you as contributor.
 workflow.overview.noWebmasterDoc = There is no document currently being validated of which you are a Webmaster
 workflow.overview.noModerationDoc = There is no document currently being moderated of which you are a moderator
 workflow.overview.publishAll = Publish all documents
 workflow.overview.validateAll = Validate all documents
-workflow.overview.listValidating = List of documents currently being validated :
-workflow.overview.listModerating = List of documents currently being moderated :
+workflow.overview.listValidating = List of documents currently being validated
+workflow.overview.listModerating = List of documents currently being moderated
 workflow.overview.successPublish = All documents have been published
 workflow.overview.successValidate = All documents have been validated
 workflow.overview.failValidate = A problem occurred during the validation of document [[{0}]]
@@ -143,7 +143,13 @@ workflow.alert.archive = Are you sure you want to archive this document ?
 workflow.alert.yes = Yes
 workflow.alert.no = No
 
-workflow.move.updateDraft=The target was moved / renamed. Set the new location to {0}.</content>
+workflow.move.updateDraft=The target was moved / renamed. Set the new location to {0}.
+
+workflow.overview.evenIfNotShown=(even if not shown)
+workflow.overview.doc.title=Title
+workflow.overview.doc.location=Location
+workflow.overview.doc.author=Last Author
+workflow.overview.doc.date=Date</content>
   <object>
     <name>PublicationWorkflow.Translations</name>
     <number>0</number>

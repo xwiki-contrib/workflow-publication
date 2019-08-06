@@ -103,14 +103,14 @@ workflow.unpublish.cancel = Abbrechen
 workflow.unpublish.crush = Entwurf überschreiben
 
 workflow.overview.title=Übersicht
-workflow.overview.listDrafts = Liste der Dokumente in Bearbeitung:
+workflow.overview.listDrafts = Liste der Dokumente in Bearbeitung
 workflow.overview.noDraftDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Bearbeiten haben.
 workflow.overview.noWebmasterDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Freigeben haben.
 workflow.overview.noModerationDoc = Es gibt derzeit keine Dokumente, für die Sie die Rechte zum Vorprüfen haben.
 workflow.overview.publishAll = Alle veröffentlichen
 workflow.overview.validateAll = Für alle Freigabe beantragen
-workflow.overview.listValidating = Liste der Dokumente in der Freigabe:
-workflow.overview.listModerating = Liste der Dokumente in der Vorprüfung:
+workflow.overview.listValidating = Liste der Dokumente in der Freigabe
+workflow.overview.listModerating = Liste der Dokumente in der Vorprüfung
 workflow.overview.successPublish = Alle Dokumente wurden veröffentlicht
 workflow.overview.successValidate = Für alle Dokumente wurde eine Freigabe beantragt
 workflow.overview.failValidate = Bei der Übermittlung zur Freigabe ist bei folgendem Dokument ein Problem aufgetreten [[{0}]]
@@ -136,7 +136,13 @@ workflow.alert.archive = Wollen Sie dieses Dokument wirklich archivieren?
 workflow.alert.yes = Ja
 workflow.alert.no = Nein
 
-workflow.script.failed = Beim Ausführen der Workflow-Aktion ist ein Fehler aufgetreten.</content>
+workflow.script.failed = Beim Ausführen der Workflow-Aktion ist ein Fehler aufgetreten.
+
+workflow.overview.evenIfNotShown=(auch nicht angezeigte)
+workflow.overview.doc.title=Titel
+workflow.overview.doc.location=Ort
+workflow.overview.doc.author=Letzter Autor
+workflow.overview.doc.date=Datum</content>
   <object>
     <name>PublicationWorkflow.Translations</name>
     <number>0</number>

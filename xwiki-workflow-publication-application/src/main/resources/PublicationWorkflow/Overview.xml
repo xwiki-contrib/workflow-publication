@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc version="1.2" reference="PublicationWorkflow.Overview" locale="">
   <web>PublicationWorkflow</web>
   <name>Overview</name>
   <language/>
@@ -40,112 +40,245 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{velocity}}
-
-#set($xwqlstatement = "from doc.object('PublicationWorkflow.PublicationWorkflowClass') as workflow")
-#set($moderating = [])
-#set($validating = [])
-#set($drafts = {})
-## Return all the results from the current wiki
-#set($result = $services.query.xwql("$xwqlstatement").addFilter("unique").execute())
-#foreach($item in $result)
-  #set($workflowDoc = $xwiki.getDocument($item))
-  #set($workflowObject = $workflowDoc.getObject('PublicationWorkflow.PublicationWorkflowClass'))
-  #set($isTarget = $workflowObject.getProperty('istarget').value)
-  #set($status = $workflowObject.getProperty('status').value)
-  #if($isTarget == '0')
-    #if($status == 'moderating' &amp;&amp; $services.publicationroles.canModerate($xcontext.user, $workflowDoc.prefixedFullName)) ##If the status is moderating and the current user has moderating rights
-      #set($discard = $moderating.add($item))
-    #elseif($status == 'validating' &amp;&amp; $services.publicationroles.canValidate($xcontext.user, $workflowDoc.prefixedFullName))
-      #set($discard = $validating.add($item))
-    #elseif($status == 'draft' &amp;&amp; $services.publicationroles.canContribute($xcontext.user, $workflowDoc.prefixedFullName))
-      #set($discard = $drafts.put($item, $workflowDoc.displayTitle))
-    #end
-  #end
+#* display all documents in a given workflow state.
+ * @param $status the status in which the displayed workflow documents should be
+*#
+#macro(documentsForStatus $status)
+#set($cols = ['doc.title', 'doc.location', 'status', 'doc.author', 'doc.date' ])
+#set($colProperties = {
+  'doc.title' : {'link' : 'auto' },
+  'doc.location' : {'html' : true, 'sortable' : true, 'filterable' : true},
+  'doc.author' : {'link' : 'author', 'sortable' : true, 'filterable' : true},
+  'doc.date' : {'sortable' : true, 'filterable' : true},
+  'status' : {'type' : 'hidden'}
+})
+#set($options = {
+  'className' : 'PublicationWorkflow.PublicationWorkflowClass',
+  'extraParams' : "status=$escapetool.url($status)",
+  'translationPrefix' : 'workflow.overview.',
+  'queryFilters' : 'unique'
+})
+#livetable("${status}docs" $cols $colProperties $options)
 #end
 
+#set($xwqlstatement = "from doc.object('PublicationWorkflow.PublicationWorkflowClass') as workflow where workflow.istarget=0 and workflow.status = :status")
+
 #if($request.moderateAll == 'true')
+  #set($moderating = $request.getParameterValues('docNames'))
+  #if($request.get('evenIfNotShown'))
+     #set($moderating = $services.query.xwql($xwqlstatement).bindValue('status','moderating').addFilter("unique").execute())
+  #end
   #set($fail = 0)
-  #set($newModerating = [])
   #foreach($document in $moderating)
     #set($xdoc = $xwiki.getDocument($document))
     #set($docRef = $xdoc.getDocumentReference())
     #set($result = $services.publicationworkflow.submitForValidation($docRef))
     #if(!$result)
-      {{warning}}$services.localization.render('workflow.overview.failValidate',[$xdoc]){{/warning}}
-      #set($fail = 1) 
-      #set($discard = $newModerating.add($document))
-    #else
-      #set($discard = $validating.add($document))
+      * {{warning}}$services.localization.render('workflow.overview.failValidate',[$xdoc]){{/warning}}
+      #set($fail = 1)
     #end
   #end
   #if($fail == 0)
+
     {{info}}$services.localization.render('workflow.overview.successValidate'){{/info}}
   #end
-  #set($moderating = $newModerating)
 #elseif($request.publishAll == 'true')
+  #set($validating = $request.getParameterValues('docNames'))
+  #if($request.get('evenIfNotShown'))
+     #set($validating = $services.query.xwql($xwqlstatement).bindValue('status','validating').addFilter("unique").execute())
+  #end
   #set($fail = 0)
-  #set($newValidating = [])
   #foreach($document in $validating)
     #set($xdoc = $xwiki.getDocument($document))
     #set($docRef = $xdoc.getDocumentReference())
     #set($result = $services.publicationworkflow.publish($docRef))
     #if(!$result)
-      {{warning}}$services.localization.render('workflow.overview.failPublish',[$xdoc]){{/warning}}
-      #set($fail = 1) 
-      #set($discard = $newValidating.add($document))
+      * {{warning}}$services.localization.render('workflow.overview.failPublish',[$xdoc]){{/warning}}
+      #set($fail = 1)
     #end
   #end
   #if($fail == 0)
+
     {{info}}$services.localization.render('workflow.overview.successPublish'){{/info}}
   #end
-  #set($validating = $newValidating)
 #end
 
-#if($drafts.size() &gt; 0)
-  $services.localization.render('workflow.overview.listDrafts')
-  #foreach($document in $drafts.entrySet())
-    * [[$document.value&gt;&gt;$document.key]]
-  #end
-#else
-  //$services.localization.render('workflow.overview.noDraftDoc')//
-#end 
+== $services.localization.render('workflow.overview.listDrafts') ==
+#documentsForStatus("draft")
 
-#if($moderating.size() &gt; 0)
-  $services.localization.render('workflow.overview.listModerating')
-  #foreach($document in $moderating)
-    * [[$document]]
-  #end
-
-  {{html}}
-    &lt;form action='' method='post'&gt;
-      &lt;input type='hidden' name='moderateAll' value='true'/&gt;
-      &lt;div class='buttonwrapper'&gt;
+== $services.localization.render('workflow.overview.listModerating') ==
+#documentsForStatus("moderating")
+{{html}}
+    &lt;form action='' method='post' class="xFormInline" id="validationForm" style='float:right; display:none'&gt;
+      &lt;input type='hidden' name='moderateAll' value='true'/&gt;&lt;span class="hidden"&gt;&lt;/span&gt;
+      &lt;span class='buttonwrapper'&gt;
         &lt;input type='submit' class='button' value="$services.localization.render('workflow.overview.validateAll')"/&gt;
-      &lt;/div&gt;
+      &lt;/span&gt;
+      &lt;label for='evenIfNotShown'&gt;&lt;input type='checkbox' id='evenIfNotShown' name='evenIfNotShown' /&gt;$services.localization.render('workflow.overview.evenIfNotShown')&lt;/label&gt;
     &lt;/form&gt;
-  {{/html}}
+{{/html}}
+(% id="moderatingNone" style="display:none" %)
+//$services.localization.render('workflow.overview.noModerationDoc')//
 
-#else
-  //$services.localization.render('workflow.overview.noModerationDoc')//
-#end 
+(% class='clearfloats' %)
 
-#if($validating.size() &gt; 0)
-  $services.localization.render('workflow.overview.listValidating')
-  #foreach($document in $validating)
-    * [[$document]]
-  #end
-
-  {{html}}
-    &lt;form action='' method='post'&gt;
-      &lt;input type='hidden' name='publishAll' value='true'/&gt; 
-      &lt;div class='buttonwrapper'&gt;
+== $services.localization.render('workflow.overview.listValidating') ==
+#documentsForStatus("validating")
+{{html}}
+    &lt;form action='' method='post' class="xFormInline" id="publishForm" style='float:right; display:none'&gt;
+      &lt;input type='hidden' name='publishAll' value='true'/&gt;&lt;span class="hidden"&gt;&lt;/span&gt;
+      &lt;span class='buttonwrapper'&gt;
         &lt;input type='submit' class='button' value="$services.localization.render('workflow.overview.publishAll')"/&gt;
-      &lt;/div&gt;
+      &lt;/span&gt;
+      &lt;label for='evenIfNotShown'&gt;&lt;input type='checkbox' id='evenIfNotShown' name='evenIfNotShown' /&gt;$services.localization.render('workflow.overview.evenIfNotShown')&lt;/label&gt;
     &lt;/form&gt;
-  {{/html}}
+{{/html}}
+(% id="validatingNone" style="display:none" %)
+//$services.localization.render('workflow.overview.noWebmasterDoc')//
 
-#else
-  //$services.localization.render('workflow.overview.noWebmasterDoc')//
-#end
 {{/velocity}}</content>
+  <object>
+    <name>PublicationWorkflow.Overview</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>baacdf83-e926-409f-9166-d253cf558f83</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>(function(XWiki) {
+  TableHook = Class.create({
+    initialize : function(status, formId) {
+      this.tableId = status + 'docs'
+      this.$form = $(formId)
+      if (!this.$form) {
+        console.log('nix', formId)
+        return;
+      }
+      this.$table = $(this.tableId)
+      this.$empty = $(status+'None') || { 'show': function() {}, 'hide':function() {} }
+      this.livetable = window['livetable_' + this.tableId ]
+      this.docs = [];
+      this.$extraFields = this.$form.down('span.hidden')
+      var self = this;
+      document.observe("xwiki:livetable:receivedEntries", function(event) {
+        if (event.memo.tableId != self.tableId) {
+          // console.log('not my table')
+          return;
+        }
+        self.$extraFields.childElements().each(function(it) { it.remove() })
+        self.docs = [];
+        if (event.memo.data.totalrows == 0) {
+          self.$empty.show()
+          self.$form.hide()
+        } else {
+          self.$empty.hide()
+          self.$form.show()
+        }
+        // FIXME: better rights check?
+        event.memo.data.rows.each(function(row) { if (row.doc_viewable) self.docs.push(row.doc_fullName) })
+        // handle non-js submit
+        self.docs.each(function(fullName){
+          var docInput = new Element('input',{type:'hidden', name:'docNames', value:fullName})
+          self.$extraFields.appendChild(docInput);
+        })
+      })
+      // js / ajax handling  - not yet done
+      this.$form.on('submit', function(event) {
+        console.log('form submit', self.$form.serialize(), event)
+        // event.stop();
+        // self.livetable.refresh();
+      });
+
+    }
+  })
+
+  function initLivetables() {
+    new TableHook('moderating','validationForm');
+    new TableHook('validating','publishForm');
+  }
+  (XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; initLivetables()) || document.observe("xwiki:dom:loaded", initLivetables);
+})(XWiki || {})</code>
+    </property>
+    <property>
+      <name>handle bulk actions</name>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
 </xwikidoc>

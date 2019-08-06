@@ -108,14 +108,14 @@ workflow.unpublish.cancel = Annuler
 workflow.unpublish.crush = Ecraser le brouillon
 
 workflow.overview.title=Vue d'ensemble
-workflow.overview.listDrafts=Liste de documents en etat brouillon :
+workflow.overview.listDrafts=Liste de documents en etat brouillon
 workflow.overview.noDraftDoc=Il n'y a aucun document brouillon pour lequel vous avez le status de contributeur.
 workflow.overview.noWebmasterDoc = Il n'y a aucun document en cours de validation pour lequel vous avez le status de Webmaster
 workflow.overview.noModerationDoc = Il n'y a aucun document en cours de modération pour lequel vous avez le status de modérateur
 workflow.overview.publishAll = Publier tous ces documents
 workflow.overview.validateAll = Valider tous ces documents
-workflow.overview.listValidating = Liste des documents en cours de validation :
-workflow.overview.listModerating = Liste des documents en cours de modération :
+workflow.overview.listValidating = Liste des documents en cours de validation
+workflow.overview.listModerating = Liste des documents en cours de modération
 workflow.overview.successPublish = Tous les documents ont été publiés
 workflow.overview.successValidate = Tous les documents ont été validés
 workflow.overview.failValidate = Un problème a été rencontré lors de la validation du document [[{0}]]
@@ -140,7 +140,13 @@ workflow.alert.archive = Etes vous sûr de vouloir archiver ce document ?
 workflow.alert.yes = Oui
 workflow.alert.no = Non
 
-workflow.move.updateDraft=La page publiée a été déplacée / renommée. Le nouvel emplacement a été défini sur {0}.</content>
+workflow.move.updateDraft=La page publiée a été déplacée / renommée. Le nouvel emplacement a été défini sur {0}.
+
+## missing: workflow.overview.evenIfNotShown
+workflow.overview.doc.title=Titre
+workflow.overview.doc.location=Emplacement
+workflow.overview.doc.author=Dernier auteur
+workflow.overview.doc.date=Date</content>
   <object>
     <name>PublicationWorkflow.Translations</name>
     <number>0</number>
