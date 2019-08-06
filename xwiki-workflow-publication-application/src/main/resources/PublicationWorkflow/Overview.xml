@@ -136,6 +136,9 @@
 (% id="validatingNone" style="display:none" %)
 //$services.localization.render('workflow.overview.noWebmasterDoc')//
 
+== $services.localization.render('workflow.overview.listValid') ==
+#documentsForStatus("valid")
+
 {{/velocity}}</content>
   <object>
     <name>PublicationWorkflow.Overview</name>

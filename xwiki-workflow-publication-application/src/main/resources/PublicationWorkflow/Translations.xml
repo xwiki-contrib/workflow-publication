@@ -119,6 +119,7 @@ workflow.overview.publishAll = Publish all documents
 workflow.overview.validateAll = Validate all documents
 workflow.overview.listValidating = List of documents currently being validated
 workflow.overview.listModerating = List of documents currently being moderated
+workflow.overview.listValid = List of documents being valid but not published
 workflow.overview.successPublish = All documents have been published
 workflow.overview.successValidate = All documents have been validated
 workflow.overview.failValidate = A problem occurred during the validation of document [[{0}]]
