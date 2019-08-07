@@ -114,7 +114,7 @@
       &lt;span class='buttonwrapper'&gt;
         &lt;input type='submit' class='button' value="$services.localization.render('workflow.overview.validateAll')"/&gt;
       &lt;/span&gt;
-      &lt;label for='evenIfNotShown'&gt;&lt;input type='checkbox' id='evenIfNotShown' name='evenIfNotShown' /&gt;$services.localization.render('workflow.overview.evenIfNotShown')&lt;/label&gt;
+      &lt;label for='validateEvenIfNotShown'&gt;&lt;input type='checkbox' id='validateEvenIfNotShown' name='evenIfNotShown' /&gt;$services.localization.render('workflow.overview.evenIfNotShown')&lt;/label&gt;
     &lt;/form&gt;
 {{/html}}
 (% id="moderatingNone" style="display:none" %)
@@ -130,7 +130,7 @@
       &lt;span class='buttonwrapper'&gt;
         &lt;input type='submit' class='button' value="$services.localization.render('workflow.overview.publishAll')"/&gt;
       &lt;/span&gt;
-      &lt;label for='evenIfNotShown'&gt;&lt;input type='checkbox' id='evenIfNotShown' name='evenIfNotShown' /&gt;$services.localization.render('workflow.overview.evenIfNotShown')&lt;/label&gt;
+      &lt;label for='publishEvenIfNotShown'&gt;&lt;input type='checkbox' id='publishEvenIfNotShown' name='evenIfNotShown' /&gt;$services.localization.render('workflow.overview.evenIfNotShown')&lt;/label&gt;
     &lt;/form&gt;
 {{/html}}
 (% id="validatingNone" style="display:none" %)
@@ -258,11 +258,10 @@
         })
       })
       // js / ajax handling  - not yet done
-      this.$form.on('submit', function(event) {
-        console.log('form submit', self.$form.serialize(), event)
+      // this.$form.on('submit', function(event) {
         // event.stop();
         // self.livetable.refresh();
-      });
+      // });
 
     }
   })
