@@ -1228,13 +1228,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // to build the string we either need to know the separator, or we need to do this bad workaround to make
         // GroupsClass build the property value
         PropertyClass groupsPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_GROUPS);
-        BaseProperty<?> groupsProperty = groupsPropClass.fromStringArray((String[]) groups.toArray());
+        BaseProperty<?> groupsProperty = groupsPropClass.fromStringArray(groups.toArray(new String[groups.size()]));
         rightsObject.set(RIGHTS_GROUPS, groupsProperty.getValue(), context);
         PropertyClass usersPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_USERS);
-        BaseProperty<?> usersProperty = usersPropClass.fromStringArray((String[]) users.toArray());
+        BaseProperty<?> usersProperty = usersPropClass.fromStringArray(users.toArray(new String[users.size()]));
         rightsObject.set(RIGHTS_USERS, usersProperty.getValue(), context);
         PropertyClass levelsPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_LEVELS);
-        BaseProperty<?> levelsProperty = levelsPropClass.fromStringArray((String[]) levels.toArray());
+        BaseProperty<?> levelsProperty = levelsPropClass.fromStringArray(levels.toArray(new String[levels.size()]));
         rightsObject.set(RIGHTS_LEVELS, levelsProperty.getValue(), context);
     }
 
