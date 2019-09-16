@@ -155,7 +155,7 @@
           )
       }.bind(this));
     }
-  }  
+  }
 });
   return XWiki;
 }(XWiki || {}));
@@ -517,7 +517,7 @@ document.observe('xwiki:dom:loading', function() {
       &lt;div class="publicationworkflow-information"&gt;
         &lt;p&gt;
           $services.localization.render('workflow.currentStatus'): $workflowDoc.display('status', $workflow)
-        &lt;/p&gt; 
+        &lt;/p&gt;
       &lt;/div&gt;
     {{/html}}
   #end
@@ -525,33 +525,53 @@ document.observe('xwiki:dom:loading', function() {
   ##add a form to start a workflow
   #if($!request.same == 'true')
     ((({{error}}$services.localization.render('workflow.panel.alreadyExist'){{/error}})))
-  #end 
+  #end
   {{html clean="false"}}
     &lt;div class="publicationworkflow-information"&gt;
     &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform full'&gt;
       &lt;div id="informations"&gt;
+        #set($defaultPageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
+        #set($currentDocRef = $doc.documentReference)
         ## Search for a parent page that is a workflow configuration.
         ## In case it exists, it will be selected in the list of available workflow configurations.
-        #set($defaultPageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
         #set($wfDocSelectedID = $NULL)
         ## The variable workflowStartConfigurationDocumentID is not defined by default.
         ## It is used to define a workflow configuration to be used in the current document.
         #if($workflowStartConfigurationDocumentID)
           #set($wfDocSelectedID = $workflowStartConfigurationDocumentID)
         #else
-          #if($path &amp;&amp; $path.size() &gt; 1)
-            #set($pathLength = $path.size() - 1)
-            #foreach($index in [${pathLength}..1])
-              #set($wfPathDocRef = $services.model.createDocumentReference($defaultPageName, $path[$index]))
+          #set($spaceRefs = $doc.documentReference.spaceReferences)
+          #if($spaceRefs &amp;&amp; $spaceRefs.size() &gt; 1)
+            #set($pathLength = $spaceRefs.size() - 1)
+            #set($remainingPathLength = -1)
+            #foreach($index in [${pathLength}..0])
+              #set($wfPathDocRef = $services.model.createDocumentReference($defaultPageName, $spaceRefs[$index]))
               #set($wfPathDoc = $xwiki.getDocument($wfPathDocRef))
-              #if($wfPathDoc &amp;&amp; $wfPathDoc.getObject('PublicationWorkflow.PublicationWorkflowConfigClass'))
-                #set($wfDocSelectedID = $wfPathDoc.fullName)
+              #if($wfPathDoc &amp;&amp; $wfPathDoc.getObject('PublicationWorkflow.PublicationWorkflowClass'))
+                #set($wfDocSelectedID = $wfPathDoc.getObject('PublicationWorkflow.PublicationWorkflowClass').getValue('workflow'))
+                #set($targetRef = $services.model.resolveDocument($wfPathDoc.getObject('PublicationWorkflow.PublicationWorkflowClass').getValue('target'), 'default'))
+                #set($targetSpaceRef = $targetRef.lastSpaceReference)
+                #set($remainingPathLength = $index)
                 #break
+              #end
+            #end
+            ## build the a proposal for the target page
+            ## by appending all the spaces missing between the page with the workflow object and the current page
+            #if($remainingPathLength &gt;=0 &amp;&amp; $targetSpaceRef)
+              #set($remainingPathLength = $remainingPathLength + 1)
+              #foreach($index in [${remainingPathLength}..${pathLength}])
+                #set($targetSpaceRef = $services.model.createSpaceReference($spaceRefs[$index].name, $targetSpaceRef))
+              #end
+              #set($targetRef = $services.model.createDocumentReference($doc.documentReference.name, $targetSpaceRef))
+              #if($currentDocRef.name == $defaultPageName)
+                #set($workflowStartPublishedParentReference = $targetSpaceRef.parent)
+              #else
+                #set($workflowStartPublishedParentReference = $targetSpaceRef)
               #end
             #end
           #end
         #end
-        #set($targetAlreadyExists = "$!request.targetexists" == 'true')
+        #set($targetAlreadyExists = "$!request.targetexists" == 'true' || ($targetRef &amp;&amp; $xwiki.exists($targetRef)))
         #if($targetAlreadyExists)
           &lt;div class="xHint warningmessage targetexists"&gt;&lt;div class="warning"&gt;$services.localization.render('workflow.start.targetExists')&lt;/div&gt;&lt;/div&gt;
         #end
@@ -562,39 +582,40 @@ document.observe('xwiki:dom:loading', function() {
           &lt;div class="xHint"&gt;$services.localization.render('workflow.start.advancedoptions.text')&lt;/div&gt;
           &lt;a id="workflow-options" href="#workflow-options-container" data-toggle="collapse"&gt;$services.localization.render('workflow.start.advancedoptions.button')&lt;/a&gt;
         #end
-
-        &lt;div id="workflow-options-container" class="collapse"&gt;
-          #getWikiHomePageReference($doc.wiki $homeReference)
-          #set($currentDocRef = $doc.documentReference)
-          #if($doc.name == $defaultPageName)
-            #set($targetDocName = $currentDocRef.lastSpaceReference.name)
-          #else
-            #set($targetDocName = $doc.name)
+        #getWikiHomePageReference($doc.wiki $homeReference)
+        #if($currentDocRef.name == $defaultPageName)
+          #set($targetDocName = $currentDocRef.lastSpaceReference.name)
+        #else
+          #set($targetDocName = $currentDocRef.name)
+        #end
+        ## Build the target document location based on the type of the draft document and some variables.
+        ## The variable workflowStartPublishedParentReference is not defined by default.
+        ## It is used for setting a default space where to publish the current draft document.
+        #if($workflowStartPublishedParentReference)
+          #set ($parentReference = $workflowStartPublishedParentReference)
+        #elseif ($currentDocRef.equals($homeReference))
+          ## Encourage the user to create top level documents from the home page.
+          #set ($parentReference = $currentDocRef.wikiReference)
+        #else
+          ## Encourage the user to create a sibling of the current document.
+          #set($spaceReferences = $currentDocRef.spaceReferences)
+          #set($spaceRefencesNb = $spaceReferences.size())
+          ## In case the current page is nested and it is placed at least on the second level.
+          ## in the documents tree, the parent of the target page as the is set to be
+          ## the current parent space.
+          #if($doc.name == $defaultPageName &amp;&amp; $spaceRefencesNb &gt; 1)
+            #set($previousSpaceIndex = $spaceRefencesNb - 2)
+            #set ($parentReference = $currentDocRef.spaceReferences[$previousSpaceIndex])
           #end
-          ## Build the target document location based on the type of the draft document and some variables.
-          ## The variable workflowStartPublishedParentReference is not defined by default.
-          ## It is used for setting a default space where to publish the current draft document.
-          #if($workflowStartPublishedParentReference)
-            #set ($parentReference = $workflowStartPublishedParentReference)
-          #elseif ($currentDocRef.equals($homeReference))
-            ## Encourage the user to create top level documents from the home page.
-            #set ($parentReference = $currentDocRef.wikiReference)
-          #else
-            ## Encourage the user to create a sibling of the current document.
-            #set($spaceReferences = $currentDocRef.spaceReferences)
-            #set($spaceRefencesNb = $spaceReferences.size())
-            ## In case the current page is nested and it is placed at least on the second level.
-            ## in the documents tree, the parent of the target page as the is set to be
-            ## the current parent space.
-            #if($doc.name == $defaultPageName &amp;&amp; $spaceRefencesNb &gt; 1)
-              #set($previousSpaceIndex = $spaceRefencesNb - 2)
-              #set ($parentReference = $currentDocRef.spaceReferences[$previousSpaceIndex])
-            #end
-            #if(!$parentReference || $doc.name != $defaultPageName || $spaceRefencesNb &lt;= 1)
-              #set ($parentReference = $currentDocRef.lastSpaceReference)
-              #set ($targetDocName = $doc.name)
-            #end
+          #if(!$parentReference || $doc.name != $defaultPageName || $spaceRefencesNb &lt;= 1)
+            #set ($parentReference = $currentDocRef.lastSpaceReference)
+            #set ($targetDocName = $doc.name)
           #end
+        #end
+        #set($showDetails = $targetAlreadyExists || $!request.same == 'true'
+             || $xwiki.exists($services.model.createDocumentReference($targetDocName, $parentReference))
+             || $xwiki.exists($services.model.createDocumentReference($parentReference.name, $targetDocName, $defaultPageName)))
+        &lt;div id="workflow-options-container" class="collapse #if($showDetails) in#end"&gt;
           ## Display the location picker.
           #template('locationPicker_macros.vm')
           #locationPicker({
@@ -627,7 +648,7 @@ document.observe('xwiki:dom:loading', function() {
                 #set($workflows = $services.query.xwql("from doc.object(PublicationWorkflow.PublicationWorkflowConfigClass) as wfConfig where doc.name &lt;&gt; 'PublicationWorkflowConfigTemplate' order by lower(doc.title) asc").execute())
                 #foreach($wf in $workflows)
                   #set($wfDoc = $xwiki.getDocument($wf))
-                  &lt;option value="${wfDoc.fullName}" #if($wfDoc.fullName == $wfDocSelectedID) selected="selected"#end&gt;$wfDoc.displayTitle&lt;/option&gt;
+                  &lt;option value="${escapetool.html($wfDoc.fullName)}" #if($wfDoc.fullName == $wfDocSelectedID) selected="selected"#end&gt;$wfDoc.displayTitle&lt;/option&gt;
                 #end
               &lt;/select&gt;
             &lt;/dd&gt;
@@ -654,7 +675,7 @@ document.observe('xwiki:dom:loading', function() {
 #else
   ## get the state of the workflow and create a form to advance to the next state, if the current user has the right
   #set($workflowObject = $doc.getObject("PublicationWorkflow.PublicationWorkflowClass"))
-  
+
   {{html clean="false"}}
     &lt;div class="publicationworkflow-info"&gt;
       &lt;p&gt;
@@ -735,7 +756,7 @@ document.observe('xwiki:dom:loading', function() {
       #else
         $services.localization.render('workflow.panel.noValidationRight')
       #end
-    #elseif($state == "valid") 
+    #elseif($state == "valid")
       #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
         &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline' id="formPublish"&gt;
           &lt;div&gt;
@@ -828,7 +849,7 @@ document.observe('xwiki:dom:loading', function() {
           &lt;div class="buttonwrapper"&gt;
             &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.backtodraft'))" class="button" /&gt;
           &lt;/div&gt;
-        &lt;/form&gt;       
+        &lt;/form&gt;
       #end
     #end
     &lt;/div&gt;

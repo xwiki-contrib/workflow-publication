@@ -47,6 +47,19 @@ meeting.livetable.validator = Freigebende
 workflow.start.pagename = Öffentlicher Seitenname
 workflow.start.spacename = Öffentlicher Bereich
 workflow.start.dostart = Workflow starten
+workflow.start.template = Workflow
+workflow.start.template.hint = Workflow für die aktuelle Seite.
+workflow.start.locationPreview.label = Veröffentlichte Variante
+workflow.start.locationPreview.hint = Ort in der Seitenhierarchie, in der die veröffentlichte Variente angelegt werden wird. &lt;div class="warningmessage"&gt;Der Ort der veröffentlichten Variante muss sich von dem Ort des Entwurfs unterscheiden.&lt;/div&gt;
+workflow.start.spaceReference.label = Oberseite
+workflow.start.spaceReference.hint = Oberseite der veröffentlichen Variante. Zum Anlegen einer Top-level Seite leer lassen.
+workflow.start.name.label = Name
+workflow.start.name.hint = Name der veröffentlichten Variante
+workflow.start.name.placeholder=Zielseite
+workflow.start.advancedoptions.text=Verwenden Sie die erweiterten Optionen, um den Ort der veröffentlichten Variante und den Workflow für diese Seite auszuwählen.
+workflow.start.advancedoptions.button=Erweiterte Optionen
+workflow.start.targetExists=Zielseite exisitert bereits.
+
 workflow.title = Workflow
 workflow.currentStatus = Status
 workflow.submitformoderation = Vorprüfung beantragen
@@ -65,14 +78,14 @@ workflow.backtodraft = Zum Entwurf
 workflow.panel.noContributionRight = Sie haben nicht die erforderlichen Rechte um dieses Dokument zu bearbeiten.
 workflow.panel.noModerationRight = Das Dokument befindet sich derzeit in der Vorprüfung und ist daher im Moment nicht verfügbar.
 workflow.panel.noValidationRight = Das Dokument wurde vorgeprüft und befindet sich derzeit in der Freigabe.
-workflow.panel.thisIsDraft = Dies ist die Entwurfsan­sicht. Für die veröffent­lichte Version, klicken Sie bitte auf folgenden Link.
+workflow.panel.thisIsDraft = Dies ist die Entwurfsan­sicht. Für die veröffent­lichte Variante klicken Sie bitte auf folgenden Link.
 workflow.panel.thisIsDraft2 = Um diesen Entwurf zu bearbeiten, klicken Sie bitte auf folgende Schaltfläche.
 workflow.panel.thisIsPublished = Dieses ist ein ver­öffent­lichtes Dokument. Um Änderungen vorzu­nehmen, wechseln Sie bitte zum Entwurf.
-workflow.panel.publishedVersion = Veröffentlichte Version
+workflow.panel.publishedVersion = Veröffentlichte Variante
 workflow.panel.draftVersion = Zum Entwurf
 workflow.panel.editDraft = Dieses Dokument ist veröffentlicht. Um in den Entwurfszustand zu wechseln, bitte den folgenden Button drücken.
 
-workflow.panel.alreadyExist = Das veröffentlichte Dokument muss sich vom Entwurf unterscheiden.
+workflow.panel.alreadyExist = Der Ort der veröffentlichten Variante muss sich vom Entwurf unterscheiden.
 workflow.panel.publish.hintLanguages = Veröffentlichen wirkt sich nicht nur auf die Sprachvariante aus, die Sie gerade sehen, sondern veröffentlicht alle Sprachvarianten des Dokumentes.
 workflow.panel.applications.label = Workflow
 
@@ -94,8 +107,8 @@ workflow.refusal.message = Geben Sie hier einen Grund für die Ablehnung an.
 workflow.refusal.submit = Ablehnen
 workflow.refusal.cancel = Abbrechen
 
-workflow.unpublish.noDiff = Der Entwurf ist identisch mit der veröffentlichten Version. Bitte bestätigen Sie die Depublizierung.
-workflow.unpublish.diff = Der Entwurf ist nicht identisch mit der veröffentlichten Version. Sie können entscheiden, ob Sie den Entwurf überschreiben möchten.
+workflow.unpublish.noDiff = Der Entwurf ist identisch mit der veröffentlichten Variante. Bitte bestätigen Sie die Depublizierung.
+workflow.unpublish.diff = Der Entwurf ist nicht identisch mit der veröffentlichten Variante. Sie können entscheiden, ob Sie den Entwurf überschreiben möchten.
 workflow.unpublish.noDraft = Bitte bestätigen Sie die Depublizierung.
 workflow.unpublish.submit = Depublizieren
 

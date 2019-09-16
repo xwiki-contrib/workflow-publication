@@ -56,6 +56,7 @@ workflow.start.name.hint = Name of the published page
 workflow.start.name.placeholder=TargetPage
 workflow.start.advancedoptions.text=Use the advanced options to select the location of the published page and the workflow configuration associated to this page.
 workflow.start.advancedoptions.button=Advanced options
+workflow.start.targetExists=Published page already exists.
 
 workflow.title = Workflow
 workflow.currentStatus = Current status
