@@ -95,6 +95,8 @@ PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint = Edit Workflo
 PublicationWorkflow.PublicationWorkflowConfigClass_contributor = Contributors
 PublicationWorkflow.PublicationWorkflowConfigClass_moderator = Moderators
 PublicationWorkflow.PublicationWorkflowConfigClass_validator = Publishers
+PublicationWorkflow.PublicationWorkflowConfigClass_commenter = Commenters
+PublicationWorkflow.PublicationWorkflowConfigClass_viewer = Viewers
 PublicationWorkflow.PublicationWorkflowConfigClass_defaultDraftSpace = Default Draft Space
 
 workflow.script.notenoughparams = Not enough parameters.
