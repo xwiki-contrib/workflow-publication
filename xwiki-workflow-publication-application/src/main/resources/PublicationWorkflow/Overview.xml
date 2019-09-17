@@ -226,7 +226,6 @@
       this.tableId = status + 'docs'
       this.$form = $(formId)
       if (!this.$form) {
-        console.log('nix', formId)
         return;
       }
       this.$table = $(this.tableId)
@@ -234,24 +233,27 @@
       this.livetable = window['livetable_' + this.tableId ]
       this.docs = [];
       this.$extraFields = this.$form.down('span.hidden')
+      this.$extraFields.show()
       var self = this;
-      document.observe("xwiki:livetable:receivedEntries", function(event) {
+      document.observe("xwiki:livetable:displayComplete", function(event) {
         if (event.memo.tableId != self.tableId) {
-          // console.log('not my table')
           return;
         }
         self.$extraFields.childElements().each(function(it) { it.remove() })
         self.docs = [];
-        if (event.memo.data.totalrows == 0) {
+        self.$table.select('td.doc_location ol').each(function(fullNameElement) {
+          // rudimentary rights check: omit page if not viewable
+          if (fullNameElement.down('li.active a')) {
+            self.docs.push(fullNameElement.getAttribute('data-entity'))
+          }
+        })
+        if (self.docs.length == 0) {
           self.$empty.show()
           self.$form.hide()
         } else {
           self.$empty.hide()
           self.$form.show()
         }
-        // FIXME: better rights check?
-        event.memo.data.rows.each(function(row) { if (row.doc_viewable) self.docs.push(row.doc_fullName) })
-        // handle non-js submit
         self.docs.each(function(fullName){
           var docInput = new Element('input',{type:'hidden', name:'docNames', value:fullName})
           self.$extraFields.appendChild(docInput);
@@ -259,10 +261,9 @@
       })
       // js / ajax handling  - not yet done
       // this.$form.on('submit', function(event) {
-        // event.stop();
-        // self.livetable.refresh();
+      //   event.stop();
+      //   self.livetable.refresh();
       // });
-
     }
   })
 
