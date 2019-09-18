@@ -142,7 +142,7 @@ workflow.alert.no = Non
 
 workflow.move.updateDraft=La page publiée a été déplacée / renommée. Le nouvel emplacement a été défini sur {0}.
 
-## missing: workflow.overview.evenIfNotShown
+workflow.overview.evenIfNotShown=(même si pas affiché)
 workflow.overview.doc.title=Titre
 workflow.overview.doc.location=Emplacement
 workflow.overview.doc.author=Dernier auteur
