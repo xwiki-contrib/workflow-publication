@@ -82,6 +82,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
     public final static String WF_IS_DRAFTSPACE_FIELDNAME = "defaultDraftSpace";
 
+    public static final String WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME = "draftsHidden";
+
     public final static int DRAFT = 0;
 
     public final static int PUBLISHED = 1;
@@ -479,8 +481,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     private void setupDraftAccess(XWikiDocument document, BaseObject workflow, XWikiContext xcontext)
         throws XWikiException
     {
-        document.setHidden(true);
-
         BaseObject wfConfig =
             configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
 
@@ -500,6 +500,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 Arrays.asList(commenters), Arrays.<String> asList(), true, 2, xcontext);
             // and remove the rest of the rights
             removeRestOfRights(document, 3, xcontext);
+
+            if (wfConfig.getIntValue(WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME, 1) == 1) {
+                document.setHidden(true);
+            }
+        } else {
+            // b/w compat
+            document.setHidden(true);
         }
     }
 
@@ -1159,8 +1166,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     /**
      * Turns a document in a draft document by setting the appropriate rights, hidden, settings in the workflow object.
      * 
-     * @param doc
-     * @param workflow
+     * @param doc the document to be turned into a draft
+     * @param workflow the workflow object associated with the document. if null then the object will be fetched from the document.
      * @param xcontext
      * @throws XWikiException
      */

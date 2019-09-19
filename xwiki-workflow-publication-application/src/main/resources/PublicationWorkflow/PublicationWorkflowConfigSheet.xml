@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.1">
+<xwikidoc version="1.2" reference="PublicationWorkflow.PublicationWorkflowConfigSheet" locale="">
   <web>PublicationWorkflow</web>
   <name>PublicationWorkflowConfigSheet</name>
   <language/>
@@ -40,11 +40,11 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity output="false"}}
-#macro(displayGroupEditLink $groupFullName)
-  #if("$!groupFullName" != '')
-    [[[[image:icon:group_edit||alt="$services.localization.render('edit')"]]&gt;&gt;path:$xwiki.getURL($groupFullName, 'inline', "xredirect=$escapetool.url($doc.getURL())")||title="$services.localization.render('PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint')"]]
-  #end
+#macro(displayGroupEditLink $groupFullName) ## do not add line breaks here
+  #if("$!groupFullName" != '') [[[[image:icon:group_edit||alt="$services.localization.render('edit')"]]&gt;&gt;path:$xwiki.getURL($groupFullName, 'inline', "xredirect=$escapetool.url($doc.getURL())")||title="$services.localization.render('PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint')"]]#end
 #end
+#set($groupProperties = ['contributor', 'moderator', 'validator', 'viewer', 'commenter'])
+#set($discard = $xwiki.ssx.use('PublicationWorkflow.PublicationWorkflowConfigSheet'))
 {{/velocity}}
 
 {{velocity}}
@@ -52,8 +52,121 @@
 #set($class = $object.xWikiClass)
 #foreach($prop in $class.properties)
   ; $doc.displayPrettyName($prop.name, $object)
-  : $doc.display($prop.getName()) #if ("!$xcontext.action" != 'edit' &amp;&amp; "$!xcontext.action" != 'inline' &amp;&amp; ($prop.name != 'defaultDraftSpace'))#displayGroupEditLink($object.getProperty($prop.name).value)#end
+  : $doc.display($prop.getName()) #if ("$!xcontext.action" != 'edit' &amp;&amp; "$!xcontext.action" != 'inline' &amp;&amp; ($groupProperties.contains($prop.name)))#displayGroupEditLink($object.getProperty($prop.name).value)#end
 
 #end
 {{/velocity}}</content>
+  <object>
+    <name>PublicationWorkflow.PublicationWorkflowConfigSheet</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>06d11b37-ed64-4b93-9358-2747db054897</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>6</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>3</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>1</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>5</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>4</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>#mainContentArea dd  {
+  margin-bottom: 1em;
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>property list styling</name>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
 </xwikidoc>

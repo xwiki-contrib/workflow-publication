@@ -58,8 +58,7 @@
     <commenter>
       <cache>0</cache>
       <classname/>
-      <customDisplay>
-{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}
+      <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}
 </customDisplay>
       <disabled>0</disabled>
       <displayType>input</displayType>
@@ -74,8 +73,7 @@
       <separators/>
       <size>40</size>
       <sort>none</sort>
-      <sql>
-select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'
+      <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'
 </sql>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
@@ -131,6 +129,20 @@ select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullNa
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </defaultDraftSpace>
+    <draftsHidden>
+      <customDisplay/>
+      <defaultValue>1</defaultValue>
+      <disabled>0</disabled>
+      <displayFormType>radio</displayFormType>
+      <displayType/>
+      <name>draftsHidden</name>
+      <number>7</number>
+      <prettyName>Set Drafts to Hidden?</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </draftsHidden>
     <moderator>
       <cache>0</cache>
       <classname/>
@@ -182,8 +194,7 @@ select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullNa
     <viewer>
       <cache>0</cache>
       <classname/>
-      <customDisplay>
-{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}
+      <customDisplay>{{include document="PublicationWorkflow.PublicationWorkflowConfigGroupsDisplay" /}}
 </customDisplay>
       <disabled>0</disabled>
       <displayType>input</displayType>
@@ -198,8 +209,7 @@ select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullNa
       <separators/>
       <size>40</size>
       <sort>none</sort>
-      <sql>
-select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'
+      <sql>select distinct obj.name from XWikiDocument doc, BaseObject obj where doc.fullName = obj.name and obj.className='XWiki.XWikiGroups' and doc.name != 'XWikiGroupTemplate'
 </sql>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
