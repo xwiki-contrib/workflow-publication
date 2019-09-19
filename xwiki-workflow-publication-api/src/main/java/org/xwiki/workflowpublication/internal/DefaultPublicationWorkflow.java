@@ -459,7 +459,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 String message =
                     getMessage("workflow.save.createDraft", defaultMessage,
                             Arrays.asList(stringSerializer.serialize(targetRef).toString()));
-                xcontext.getWiki().saveDocument(translatedDraftDoc, message, false, xcontext);
+                saveDocumentWithoutRightsCheck(translatedDraftDoc, message, false, xcontext);
                 LOGGER.debug(defaultMessage);
             } finally {
                 xcontext.setLocale(origLocale);
@@ -536,7 +536,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message =
             this.getMessage("workflow.save.start", defaultMessage,
                 Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
-        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
         LOGGER.info(defaultMessage);
 
         return true;
@@ -584,7 +584,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message =
             this.getMessage("workflow.save.startastarget", defaultMessage,
                 Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
-        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
+
         LOGGER.info(defaultMessage);
 
         return true;
@@ -643,7 +644,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message =
             this.getMessage("workflow.save.submitForModeration", defaultMessage,
                 Arrays.asList(stringSerializer.serialize(document).toString()));
-        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
 
         return true;
     }
@@ -668,7 +669,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // save the document prepared like this
         String defaultMessage = "Refused moderation : " + reason;
         String message = getMessage("workflow.save.refuseModeration", defaultMessage, Arrays.asList(reason));
-        xcontext.getWiki().saveDocument(doc, message, false, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, false, xcontext);
 
         return true;
     }
@@ -714,13 +715,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // save the doc.
         // TODO: prevent the save protection from being executed.
+        // this is achieved at the moment by using the XWiki#saveDocument
+        // which bypasses the check
 
         // save the document prepared like this
         String defaultMessage = "Submitted document " + stringSerializer.serialize(document) + "for validation.";
         String message =
             getMessage("workflow.save.submitForValidation", defaultMessage,
                 Arrays.asList(stringSerializer.serialize(document).toString()));
-        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
 
         return true;
     }
@@ -745,7 +748,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // save the document prepared like this
         String defaultMessage = "Refused publication : " + reason;
         String message = getMessage("workflow.save.refuseValidation", defaultMessage, Arrays.asList(reason));
-        xcontext.getWiki().saveDocument(doc, message, false, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, false, xcontext);
 
         return true;
     }
@@ -775,7 +778,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message =
             getMessage("workflow.save.validate", defaultMessage,
                 Arrays.asList(stringSerializer.serialize(document).toString()));
-        xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
         LOGGER.info(defaultMessage);
 
         return true;
@@ -827,6 +830,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             }
 
             // TODO: figure out who should be the author of the published document
+            // currently it is the user who publishes it (as this one is uniquely determined,
+            // unlike the contributor(s), who might be several users)
 
             // save the published document prepared like this
             String defaultMessage = "Published new version of the document by {0}.";
@@ -836,7 +841,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     Arrays.asList(stringSerializer.serialize(publisher)));
                 // setup the context to let events know that they are in the publishing context
                 xcontext.put(CONTEXTKEY_PUBLISHING, true);
-                xcontext.getWiki().saveDocument(translatedNewDocument, message, false, xcontext);
+                saveDocumentWithoutRightsCheck(translatedNewDocument, message, false, xcontext);
                 LOGGER.debug(message + (locale.equals(doc.getDefaultLocale()) ? "" : " (in locale "+locale+")"));
             } finally {
                 xcontext.remove(CONTEXTKEY_PUBLISHING);
@@ -865,7 +870,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String message2 =
             getMessage("workflow.save.publishDraft", defaultMessage2,
                 Arrays.asList(stringSerializer.serialize(targetRef).toString()));
-        xcontext.getWiki().saveDocument(doc, message2, false, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message2, false, xcontext);
         LOGGER.info(defaultMessage2);
 
         return targetRef;
@@ -905,7 +910,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     String message =
                         getMessage("workflow.save.unpublish", defaultMessage,
                             Arrays.asList(stringSerializer.serialize(document).toString()));
-                    xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
+                    saveDocumentWithoutRightsCheck(draftDoc, message, true, xcontext);
                     LOGGER.info(defaultMessage);
                 }
             } else {
@@ -929,7 +934,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 String message =
                     getMessage("workflow.save.unpublish", defaultMessage,
                         Arrays.asList(stringSerializer.serialize(document).toString()));
-                xcontext.getWiki().saveDocument(draftDoc, message, true, xcontext);
+                saveDocumentWithoutRightsCheck(draftDoc, message, true, xcontext);
+
                 LOGGER.info(defaultMessage);
             }
         } else {
@@ -957,7 +963,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             makeDocumentDraft(doc, workflow, xcontext);
             String defaultMessage = "Back to draft status to enable editing.";
             String message = getMessage("workflow.save.backToDraft", defaultMessage, null);
-            xcontext.getWiki().saveDocument(doc, message, true, xcontext);
+            saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
             return true;
         } else
             return false;
@@ -989,7 +995,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Archived document by {0}.";
         String message = getMessage("workflow.save.archive", defaultMessage,
             Arrays.asList(stringSerializer.serialize(publisher)));
-        xcontext.getWiki().saveDocument(publishedDoc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(publishedDoc, message, true, xcontext);
         LOGGER.info(message + " " + stringSerializer.serialize(document));
 
         return true;
@@ -1027,7 +1033,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Published document from an archive by {0}.";
         String message = getMessage("workflow.save.publishFromArchive", defaultMessage,
             Arrays.asList(stringSerializer.serialize(publisher)));
-        xcontext.getWiki().saveDocument(archivedDoc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(archivedDoc, message, true, xcontext);
+
         LOGGER.info(message + " " + stringSerializer.serialize(document));
 
         return true;
@@ -1264,6 +1271,30 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             }
         }
         return document.newXObject(RIGHTS_CLASS, xcontext);
+    }
+
+    /**
+     * helper method to save the current document despite of the fact that the current user might not have edit rights.
+     * this happens on a regular basis every time the document is promoted by one workflow step, which
+     * as a side effect removed edit rights from the account doing the promotion.
+     * @param doc the document to save
+     * @param saveMessage the message for the new version
+     * @param isMinorEdit if this is a minor edit
+     * @param xcontext the context of the current execution
+     * @throws XWikiException if the save fails
+     */
+    protected void saveDocumentWithoutRightsCheck(XWikiDocument doc, String saveMessage, boolean isMinorEdit,
+        XWikiContext xcontext) throws XWikiException
+    {
+        DocumentReference currentUserReference = xcontext.getUserReference();
+        if (currentUserReference != null) {
+            doc.setAuthorReference(currentUserReference);
+            if (doc.isNew()) {
+                doc.setCreatorReference(currentUserReference);
+            }
+        }
+
+        xcontext.getWiki().saveDocument(doc, saveMessage, isMinorEdit, xcontext);
     }
 
     /**
