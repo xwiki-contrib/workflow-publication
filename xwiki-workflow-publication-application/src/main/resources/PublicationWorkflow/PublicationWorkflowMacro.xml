@@ -603,18 +603,23 @@ document.observe('xwiki:dom:loading', function() {
           ## In case the current page is nested and it is placed at least on the second level.
           ## in the documents tree, the parent of the target page as the is set to be
           ## the current parent space.
-          #if($doc.name == $defaultPageName &amp;&amp; $spaceRefencesNb &gt; 1)
+          #if($currentDocRef.name == $defaultPageName &amp;&amp; $spaceRefencesNb &gt; 1)
             #set($previousSpaceIndex = $spaceRefencesNb - 2)
             #set ($parentReference = $currentDocRef.spaceReferences[$previousSpaceIndex])
           #end
-          #if(!$parentReference || $doc.name != $defaultPageName || $spaceRefencesNb &lt;= 1)
+          #if(!$parentReference || $currentDocRef.name != $defaultPageName || $spaceRefencesNb &lt;= 1)
             #set ($parentReference = $currentDocRef.lastSpaceReference)
-            #set ($targetDocName = $doc.name)
+            #set ($targetDocName = $currentDocRef.name)
           #end
         #end
-        #set($showDetails = $targetAlreadyExists || $!request.same == 'true'
-             || $xwiki.exists($services.model.createDocumentReference($targetDocName, $parentReference))
-             || $xwiki.exists($services.model.createDocumentReference($parentReference.name, $targetDocName, $defaultPageName)))
+        ## construct the current target reference to see if the target already exists
+        #if($targetDocName != $defaultPageName)
+          #set($__targetSpaceRef = $services.model.createSpaceReference($targetDocName, $parentReference))
+          #set($targetDocRef = $services.model.createDocumentReference($defaultPageName, $__targetSpaceRef))
+        #else
+          #set($targetDocRef = $services.model.createDocumentReference($targetDocName, $parentReference))
+        #end
+        #set($showDetails = $targetAlreadyExists || $!request.same == 'true' || $xwiki.exists($targetDocRef))
         &lt;div id="workflow-options-container" class="collapse #if($showDetails) in#end"&gt;
           ## Display the location picker.
           #template('locationPicker_macros.vm')
@@ -658,7 +663,7 @@ document.observe('xwiki:dom:loading', function() {
               #set ($hidden = 'hidden')
             #end
             &lt;dt class="$hidden"&gt;
-              &lt;input type="checkbox" id="targetIsTerminal" name="targetIsTerminal" #if($doc.name != $defaultPageName)checked="checked" #end/&gt;
+              &lt;input type="checkbox" id="targetIsTerminal" name="targetIsTerminal" #if($currentDocRef.name != $defaultPageName)checked="checked" #end/&gt;
               &lt;label for="terminal"&gt;$services.localization.render('core.create.terminal.label')&lt;/label&gt;
             &lt;/dt&gt;
           &lt;/dl&gt;
