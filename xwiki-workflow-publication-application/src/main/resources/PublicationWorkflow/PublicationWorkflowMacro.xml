@@ -653,7 +653,7 @@ document.observe('xwiki:dom:loading', function() {
                 #set($workflows = $services.query.xwql("from doc.object(PublicationWorkflow.PublicationWorkflowConfigClass) as wfConfig where doc.name &lt;&gt; 'PublicationWorkflowConfigTemplate' order by lower(doc.title) asc").execute())
                 #foreach($wf in $workflows)
                   #set($wfDoc = $xwiki.getDocument($wf))
-                  &lt;option value="${escapetool.html($wfDoc.fullName)}" #if($wfDoc.fullName == $wfDocSelectedID) selected="selected"#end&gt;$wfDoc.displayTitle&lt;/option&gt;
+                  &lt;option value="${escapetool.xml($wfDoc.fullName)}" #if($wfDoc.fullName == $wfDocSelectedID) selected="selected"#end&gt;$wfDoc.displayTitle&lt;/option&gt;
                 #end
               &lt;/select&gt;
             &lt;/dd&gt;
