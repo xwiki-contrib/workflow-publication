@@ -559,8 +559,10 @@ document.observe('xwiki:dom:loading', function() {
             ## by appending all the spaces missing between the page with the workflow object and the current page
             #if($remainingPathLength &gt;=0 &amp;&amp; $targetSpaceRef)
               #set($remainingPathLength = $remainingPathLength + 1)
-              #foreach($index in [${remainingPathLength}..${pathLength}])
-                #set($targetSpaceRef = $services.model.createSpaceReference($spaceRefs[$index].name, $targetSpaceRef))
+              #if($remainingPathLength &lt;= $pathLength)
+                #foreach($index in [${remainingPathLength}..${pathLength}])
+                  #set($targetSpaceRef = $services.model.createSpaceReference($spaceRefs[$index].name, $targetSpaceRef))
+                #end
               #end
               #set($targetRef = $services.model.createDocumentReference($doc.documentReference.name, $targetSpaceRef))
               #if($currentDocRef.name == $defaultPageName)
