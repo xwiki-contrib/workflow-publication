@@ -181,7 +181,12 @@ public class PublicationWorkflowRenameListener implements EventListener
 
                 // Set the current document as target
                 String serializedNewTargetName = compactWikiSerializer.serialize(targetRef, context.getWiki());
-                workflowInstance.setStringValue(WF_TARGET_FIELDNAME, serializedNewTargetName);
+
+                // In case there's no difference between the target document and its target reference,
+                // we don't need to update the drafts.
+                if (serializedNewTargetName.equals(serializedOldTargetName)) {
+                    return;
+                }
 
                 // Searching for the draft
                 List<Object> queryParams = new ArrayList<Object>();
