@@ -573,8 +573,8 @@ document.observe('xwiki:dom:loading', function() {
             #end
           #end
         #end
-        #set($targetAlreadyExists = "$!request.targetexists" == 'true' || ($targetRef &amp;&amp; $xwiki.exists($targetRef)))
-        #if($targetAlreadyExists)
+        #set ($targetAlreadyContainsAWorkflow = ("$!request.targetexists" == 'true'))
+        #if ($targetAlreadyContainsAWorkflow)
           &lt;div class="xHint warningmessage targetexists"&gt;&lt;div class="warning"&gt;$services.localization.render('workflow.start.targetExists')&lt;/div&gt;&lt;/div&gt;
         #end
         ## Advanced options link.
@@ -621,7 +621,7 @@ document.observe('xwiki:dom:loading', function() {
         #else
           #set($targetDocRef = $services.model.createDocumentReference($targetDocName, $parentReference))
         #end
-        #set($showDetails = $targetAlreadyExists || $!request.same == 'true' || $xwiki.exists($targetDocRef))
+        #set ($showDetails = $targetAlreadyContainsAWorkflow || $!request.same == 'true' || $xwiki.exists($targetDocRef))
         &lt;div id="workflow-options-container" class="collapse #if($showDetails) in#end"&gt;
           ## Display the location picker.
           #template('locationPicker_macros.vm')

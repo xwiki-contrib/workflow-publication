@@ -80,8 +80,6 @@
   #if($request.cancel)  
     $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', ''))
   #end
-  ## workflow doc ref: $workflowDocRef
-  ## Action : $action
   #if($action == "start")
     #set ($targetSpaceReferencePath = "$!request.targetSpace")
     #set ($targetName = "$!request.targetName")
@@ -91,15 +89,16 @@
       #set ($targetSpaceReference = $services.model.createSpaceReference($targetName, $targetSpaceReference))
       #set ($targetReference = $services.model.createDocumentReference($defaultSpaceHomePageName, $targetSpaceReference))
     #else
-      #set ($targetSpaceReference = $services.model.resolveSpace($targetSpaceReferencePath))
-      #set ($targetReference = $services.model.createDocumentReference($targetName, $targetSpaceReference))
+      ## #createDocumentReference(name, space) is available from 7.2M2.
+      #set ($targetReference = $services.model.createDocumentReference('', $targetSpaceReferencePath, $targetName))
     #end
     #set($workflowConfig = "$request.workflow")
     ## Check that the target and the existing doc are different
     #if($targetReference.equals($workflowDocRef))
       $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
-    ## Check that the target does not exist
-    #elseif($xwiki.exists($targetReference))
+    ## Check if the target is not already a published page in a workflow.
+    ## Although this check is already done in services.publicationworkflow#startWorkflow, we should display the reason of the error.
+    #elseif ($services.publicationworkflow.isWorkflowDocument($targetReference))
       $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'targetexists=true'))
     #else
       #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $workflowConfig, $targetReference))
