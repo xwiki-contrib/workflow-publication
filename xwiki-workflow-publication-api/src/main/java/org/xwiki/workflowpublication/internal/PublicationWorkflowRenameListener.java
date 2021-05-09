@@ -11,21 +11,24 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.context.Execution;
 import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
 import org.xwiki.observation.event.Event;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 
@@ -34,6 +37,10 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+
+import difflib.DiffUtils;
+import difflib.Patch;
+import difflib.PatchFailedException;
 
 /**
  * Event listener to listen to document copy or renaming events and update the target of the draft according to the new location.
@@ -54,14 +61,31 @@ import com.xpn.xwiki.objects.BaseObject;
  *     We trust the person doing the copy to set up a new workflow if desired, instead of making guesses on our own.
  *   <li> if the event is a rename/move and the document is a target, we instead update the targetDocument attribute
  *     in the workflow object to point to itself, and also update the targetDocument of the corresponding draft.
- *     FIXME: should we move / rename the draft, too? We probably should.
- *   <li> if the event is a rename/move of a draft, we restore its original workflow state, and try to find the new location for the target.
- *    If this can be determined, and there is not already a document at the new target location, and the user doing the move has rights
- *    to publish the draft and it is in published state, we move the target instantly.
- *    Otherwise we note the new target location in a separate attribute of the workflow and perform the move when the document gets published.
- *    FIXME: not yet; instead we just do nothing except undoing the action performed when we thought it is a "Copy".
+ *     Depending on the configuration of the workflow, drafts can also be moved automatically (see below).
+ *   <li> if the event is a rename/move of a draft, we restore its original workflow state.
+ *    Otherwise we note the new target location in a separate attribute of the workflow and perform the move when the
+ *    document gets published.
+ *    Depending on the configuration of the workflow, the target can also be moved automatically (see below).
  * </ul>
  *
+ * Depending on the configuration of the option WF_MOVE_STRATEGY_FIELDNAME in the workflow configuration, the
+ * listener can either :
+ * <ul>
+ *   <li>Move the equivalent documents of the document being moved, whatever this document is (draft or target)</li>
+ *   <li>Only move the drafts corresponding to a target that is being moved</li>
+ *   <li>Only move the target corresponding to a draft that is being moved</li>
+ *   <li>Only update the target attribute of the draft being moved when the target is not published yet</li>
+ *   <li>Do nothing</li>
+ * </ul>
+ * When the move of an equivalent document is attempted, the listener will try to compute the new location of the
+ * equivalent document based on a diff between the old location and the new location of the document being moved. If
+ * this computation fails, no move is attempted, and the user is informed through the move logs.
+ * When performing such moves, the following parameters are checked :
+ * <ul>
+ *     <li>Verify that the equivalent document has not been moved already.</li>
+ *     <li>Verify that the user performing the move has edit rights on the target space.</li>
+ *     <li>Verify that no document already exists in the new location.</li>
+ * </ul>
  *
  * @version $Id$
  * @since 1.9
@@ -78,13 +102,6 @@ public class PublicationWorkflowRenameListener implements EventListener
     @Inject
     private Logger logger;
 
-    /**
-     * The current entity reference resolver, to resolve the notions class reference.
-     */
-    @Inject
-    @Named("current/reference")
-    protected DocumentReferenceResolver<EntityReference> currentReferenceEntityResolver;
-
     @Inject
     @Named("explicit")
     protected DocumentReferenceResolver<EntityReference> explicitReferenceDocRefResolver;
@@ -94,12 +111,6 @@ public class PublicationWorkflowRenameListener implements EventListener
 
     @Inject
     private QueryManager queryManager;
-
-    /**
-     * The execution, to get the context from it.
-     */
-    @Inject
-    protected Execution execution;
 
     /**
      * Reference string serializer for diagnostic messages, etc.
@@ -113,6 +124,12 @@ public class PublicationWorkflowRenameListener implements EventListener
     @Inject
     @Named("compactwiki")
     protected EntityReferenceSerializer<String> compactWikiSerializer;
+
+    /**
+     * Used to check access rights when moving automatically equivalent documents.
+     */
+    @Inject
+    private AuthorizationManager authorizationManager;
 
     /**
      * For translations.
@@ -132,6 +149,8 @@ public class PublicationWorkflowRenameListener implements EventListener
 
     public final static String WF_IS_DRAFTSPACE_FIELDNAME = "defaultDraftSpace";
 
+    public static final String WF_MOVE_STRATEGY_FIELDNAME = "moveStrategy";
+
     public final static int DRAFT = 0;
 
     public final static int PUBLISHED = 1;
@@ -146,6 +165,16 @@ public class PublicationWorkflowRenameListener implements EventListener
 
     public final static String STATUS_PUBLISHED = "published";
 
+    public static final String MOVE_STRATEGY_DO_NOTHING = "doNothing";
+
+    public static final String MOVE_STRATEGY_MOVE_TARGET_IF_UNPUBLISHED = "moveTargetIfUnpublished";
+
+    public static final String MOVE_STRATEGY_MOVE_TARGET = "moveTarget";
+
+    public static final String MOVE_STRATEGY_MOVE_DRAFTS = "moveDrafts";
+
+    public static final String MOVE_STRATEGY_MOVE_ALL = "moveAll";
+
     //
     // internal use: key names for data stored in the current context
     //
@@ -157,6 +186,8 @@ public class PublicationWorkflowRenameListener implements EventListener
     private final static String DOCREF_KEY = "doc";
 
     private final static String WORKFLOW_KEY = "wf";
+
+    private final static String EQUIVALENT_DOCUMENT_MOVE_KEY = "publicationWorkflowEquivalentDocumentMove";
 
     @Inject
     protected PublicationWorkflow publicationWorkflow;
@@ -197,10 +228,13 @@ public class PublicationWorkflowRenameListener implements EventListener
      */
     public void onEvent(Event event, Object source, Object data)
     {
+        XWikiContext context = (XWikiContext) data;
+        XWikiDocument document = (XWikiDocument) source;
+
         if (event instanceof DocumentCreatingEvent) {
-            handleDocumentCreation((XWikiDocument) source, (XWikiContext) data);
+            handleDocumentCreation(document, context);
         } else if (event instanceof DocumentDeletingEvent) {
-            handleDocumentDeletion((XWikiDocument) source, (XWikiContext) data);
+            handleDocumentDeletion(document, context);
         }
     }
 
@@ -370,11 +404,32 @@ public class PublicationWorkflowRenameListener implements EventListener
             draftWorkflowInstance.setStringValue(WF_TARGET_FIELDNAME, serializedNewTargetName);
 
             // Save the draft document
-            String defaultMessage = "The target was moved / renamed. Set the new location to " + serializedNewTargetName + ".";
-            String message =
-                getMessage("workflow.move.updateDraft", defaultMessage,
-                    Arrays.asList(serializedNewTargetName));
+            String defaultMessage =
+                String.format("The target was moved / renamed. Set the new location to [%s].", serializedNewTargetName);
+            String message = getMessage("workflow.move.updateDraft", defaultMessage,
+                Arrays.asList(serializedNewTargetName));
             context.getWiki().saveDocument(draftDocument, message, false, context);
+
+            String moveStrategy = getMoveStrategy(draftWorkflowInstance);
+            if (moveStrategy != null
+                && (moveStrategy.equals(MOVE_STRATEGY_MOVE_ALL) || moveStrategy.equals(MOVE_STRATEGY_MOVE_DRAFTS))
+                && !(context.containsKey(EQUIVALENT_DOCUMENT_MOVE_KEY)
+                     && context.get(EQUIVALENT_DOCUMENT_MOVE_KEY).equals(true))) {
+                // Try to move the given draft to a new location in order to match the move performed on the target
+                // document
+                DocumentReference newDraftDocumentReference = computeNewEquivalentDocumentReference(oldTargetDoc,
+                    newTargetDocumentReference, docRef, context);
+
+                if (!newDraftDocumentReference.equals(docRef)) {
+                    if (tryToMoveEquivalentDocument(oldTargetDoc,
+                        newTargetDocumentReference, docRef, newDraftDocumentReference, context)) {
+                        logger.info("The draft document [{}] has been moved to [{}]", docRef,
+                            newDraftDocumentReference);
+                    } else {
+                        logger.warn("The draft document [{}] could not be moved", docRef);
+                    }
+                }
+            }
         }
     }
 
@@ -384,10 +439,10 @@ public class PublicationWorkflowRenameListener implements EventListener
         // we first check if there is another draft document;
         // only if it is, assume a copy and delete the workflow
         // otherwise we are a XAR import, wiki creation or maybe create from template
-        final String currenDocumentFullName = this.compactWikiSerializer.serialize(currentDocument.getDocumentReference());
+        final String currentDocumentFullName = this.compactWikiSerializer.serialize(currentDocument.getDocumentReference());
         final String serializedTargetName = workflowInstance.getStringValue(WF_TARGET_FIELDNAME);
         List<String> results = getDraftOrTargetPagesForWorkflow(serializedTargetName, false);
-        results.remove(currenDocumentFullName);
+        results.remove(currentDocumentFullName);
         if (results.isEmpty()) {
             return;
         }
@@ -432,15 +487,178 @@ public class PublicationWorkflowRenameListener implements EventListener
         backupOfWorkflowInstance = newDraftDocument.getXObject(explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,
             newDraftDocumentReference));
 
+        // TODO: Add option to silently update the moved / renamed document without creating a new version
         String defaultSaveMessage = "Restore workflow object after rename of draft document with target " + serializedOldTargetName + '.';
         String saveMessage =
             getMessage("workflow.move.restoreWorkflowOnDraftAfterMove", defaultSaveMessage, null);
         context.getWiki().saveDocument(newDraftDocument, saveMessage, true, context);
 
-        // now ... do we update the target or not?
-        // currently we do not do it
+        String moveStrategy = getMoveStrategy(backupOfWorkflowInstance);
+
+        if (moveStrategy != null
+            && !moveStrategy.equals(MOVE_STRATEGY_DO_NOTHING)
+            && !(context.containsKey(EQUIVALENT_DOCUMENT_MOVE_KEY)
+                 && context.get(EQUIVALENT_DOCUMENT_MOVE_KEY).equals(true))) {
+            DocumentReference oldTargetReference = defaultDocRefResolver.resolve(serializedOldTargetName);
+            DocumentReference newTargetReference = computeNewEquivalentDocumentReference(oldDraftDoc,
+                newDraftDocumentReference, oldTargetReference, context);
+
+            // Verify that we have been able to compute the new target name
+            if (!newTargetReference.equals(oldTargetReference)) {
+                if (xwiki.exists(oldTargetReference, context)
+                    && (moveStrategy.equals(MOVE_STRATEGY_MOVE_ALL) || moveStrategy.equals(MOVE_STRATEGY_MOVE_TARGET)))
+                {
+                    if (tryToMoveEquivalentDocument(oldDraftDoc, newDraftDocumentReference,
+                        oldTargetReference, newTargetReference, context)) {
+                        logger.info("The target document [{}] has been moved to [{}]", oldTargetReference,
+                            newTargetReference);
+                    } else {
+                        logger.warn("The target document [{}] could not be moved", oldTargetReference);
+                    }
+                } else if (moveStrategy.equals(MOVE_STRATEGY_MOVE_TARGET_IF_UNPUBLISHED)) {
+                    backupOfWorkflowInstance.set(WF_TARGET_FIELDNAME,
+                        compactWikiSerializer.serialize(newTargetReference, context.getWiki()), context);
+
+                    // TODO: Improve save message for this particular case
+                    context.getWiki().saveDocument(newDraftDocument, saveMessage, true, context);
+                }
+            }
+        }
     }
 
+    /**
+     * Based on the provided references, will try to compute the new equivalent document reference of the old
+     * equivalent document reference.
+     *
+     * @param oldCurrentDocumentReference the old reference of the document that is currently being moved
+     * @param newCurrentDocumentReference the new reference of the document that is currently being moved
+     * @param oldEquivalentDocumentReference the new reference of the equivalent document
+     * @param context the current context
+     * @return the reference of the new equivalent document reference. If this reference could not be computed, the
+     * old equivalent document reference is returned.
+     */
+    private DocumentReference computeNewEquivalentDocumentReference(DocumentReference oldCurrentDocumentReference,
+        DocumentReference newCurrentDocumentReference, DocumentReference oldEquivalentDocumentReference,
+        XWikiContext context)
+    {
+        // Compare the differences between the original draft and target references
+        // One option would be to do a three way merge with :
+        // * Previous : the old draft name
+        // * Current : the old target name
+        // * New : the new draft name
+        // However this option does not work well with small strings, such as serialized document references.
+        // Instead, we will be creating a diff based on the old draft reference and the new draft reference,
+        // and then we'll try to apply this diff to the target reference. If the diff applies correctly,
+        // and if it corresponds to a valid document name, we can continue. Else, we abort.
+
+        // Start by splitting the different document references into an array of strings, which will be easier
+        // to diff.
+        List<String> oldCurrentSplittedReference = createSplitReference(oldCurrentDocumentReference);
+        List<String> newCurrentSplittedReference = createSplitReference(newCurrentDocumentReference);
+        List<String> oldEquivalentSplittedReference = createSplitReference(oldEquivalentDocumentReference);
+
+        // Create the patch and try to apply it
+        Patch<String> patch = DiffUtils.diff(oldCurrentSplittedReference, newCurrentSplittedReference);
+        List<String> newEquivalentSplittedReference;
+        try {
+            newEquivalentSplittedReference = DiffUtils.patch(oldEquivalentSplittedReference, patch);
+        } catch (PatchFailedException e) {
+            logger.warn("Unable to compute new location for the document [{}]", oldEquivalentDocumentReference);
+            logger.debug("Error when applying patch : [{}]", ExceptionUtils.getRootCause(e), e);
+            return oldEquivalentDocumentReference;
+        }
+
+        // Reconstruct the new equivalent reference
+        String newEquivalentName = newEquivalentSplittedReference.get(newEquivalentSplittedReference.size() - 1);
+        newEquivalentSplittedReference.remove(newEquivalentSplittedReference.size() - 1);
+
+        return new DocumentReference(context.getWikiId(), newEquivalentSplittedReference, newEquivalentName);
+    }
+
+    /**
+     * Will try to move the equivalent document of the one provided in parameter to a new location.
+     * This method applies when the draft or the target is moved somewhere else and we need to also need to move
+     * the corresponding draft or target.
+     *
+     * @param oldCurrentDocumentReference the old reference of the document that is currently being moved
+     * @param newCurrentDocumentReference the new reference of the document that is currently being moved
+     * @param oldEquivalentDocumentReference the old reference of the equivalent document
+     * @param newEquivalentDocumentReference the new reference of the equivalent document
+     * @param context the current context
+     * @return true if the move happened, false otherwise
+     */
+    private boolean tryToMoveEquivalentDocument(DocumentReference oldCurrentDocumentReference,
+        DocumentReference newCurrentDocumentReference, DocumentReference oldEquivalentDocumentReference,
+        DocumentReference newEquivalentDocumentReference, XWikiContext context)
+    {
+        // Conditions for moving / renaming the other document
+        // * The other document should exist (maybe it has already been renamed)
+        // * The other document should not overwrite another document present on its new document reference
+        // * The user executing the rename should have edit rights on the new document reference of the equivalent
+        // document
+        XWiki xwiki = context.getWiki();
+
+        // Check if the old equivalent document exists
+        if (!xwiki.exists(oldEquivalentDocumentReference, context)) {
+            logger.info("The equivalent document [{}] does not exist anymore", oldEquivalentDocumentReference);
+            return false;
+        }
+
+        // Check if the new equivalent document exists
+        if (xwiki.exists(newEquivalentDocumentReference, context)
+            || newEquivalentDocumentReference.equals(newCurrentDocumentReference)) {
+            logger.warn("Cannot move [{}] to destination [{}] as a document already exists on this location",
+                oldEquivalentDocumentReference, newEquivalentDocumentReference);
+            return false;
+        }
+
+        // Check if the user performing the move has edit rights on the new document reference
+        if (!authorizationManager.hasAccess(Right.EDIT, context.getUserReference(), newEquivalentDocumentReference)) {
+            logger.warn("Cannot move [{}] to destination [{}] as the current user [{}] has no edit rights on the "
+                + "destination document", oldEquivalentDocumentReference, newEquivalentDocumentReference,
+                context.getUserReference());
+            return false;
+        }
+
+        try {
+            // Before doing the rename of a document, we'll add a key in the context indicating that this move
+            // was triggered by this event listener, so that we do not end up in a loop.
+            context.put(EQUIVALENT_DOCUMENT_MOVE_KEY, true);
+            logger.info("Moving equivalent document [{}] to destination [{}]", oldEquivalentDocumentReference,
+                newEquivalentDocumentReference);
+            xwiki.renamePage(stringSerializer.serialize(oldEquivalentDocumentReference),
+                stringSerializer.serialize(newEquivalentDocumentReference),
+                context);
+            context.remove(EQUIVALENT_DOCUMENT_MOVE_KEY);
+        } catch (Exception e) {
+            logger.error("Failed to move [{}] to destination [{}]", oldEquivalentDocumentReference,
+                newEquivalentDocumentReference, e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * From the given document reference, create a list that contains the reversed reference chain of this document,
+     * with the exclusion of the wiki reference.
+     * Example : with a document "A.B.C.D.WebHome", the list will be ['A', 'B', 'C', 'D', 'WebHome']
+     *
+     * @param reference the reference to use
+     * @return the splitted reference list
+     */
+    private List<String> createSplitReference(DocumentReference reference)
+    {
+        List<String> splittedReference = new ArrayList<>();
+
+        for (EntityReference entity : reference.getReversedReferenceChain()) {
+            if (!(entity instanceof WikiReference)) {
+                splittedReference.add(entity.getName());
+            }
+        }
+
+        return splittedReference;
+    }
 
     /**
      * helper to look up either the draft or the target document.
@@ -493,6 +711,38 @@ public class PublicationWorkflowRenameListener implements EventListener
             message = message.substring(0, 252) + "...";
         }
         return message;
+    }
+
+    /**
+     * From the given {@link BaseObject}, returns the move strategy chosen as part of the workflow configuration.
+     *
+     * @param workflowObject the object to use for getting the configuration
+     * @return the move strategy of the workflow, null if the workflow configuration could not be loaded
+     */
+    private String getMoveStrategy(BaseObject workflowObject)
+    {
+        try {
+            List<String> result = queryManager.createQuery(
+                "select moveStrategy.value from BaseObject configObj, StringProperty moveStrategy "
+                    + "where configObj.name = :configFullName and configObj.className = "
+                    + "'PublicationWorkflow.PublicationWorkflowConfigClass' and moveStrategy.id.name = 'moveStrategy' "
+                    + "and configObj.id = moveStrategy.id.id",
+                Query.HQL)
+                .bindValue("configFullName", workflowObject.getStringValue(WF_CONFIG_REF_FIELDNAME))
+                .setLimit(1).execute();
+
+            if (result.size() == 1) {
+                return result.get(0);
+            } else {
+                logger.error("Could not fetch the move strategy of the workflow object [{}]",
+                    workflowObject.getDocumentReference());
+                return null;
+            }
+        } catch (QueryException e) {
+            logger.error("Failed to load the move strategy of the workflow object [{}]",
+                workflowObject.getDocumentReference(), e);
+            return null;
+        }
     }
 
     //

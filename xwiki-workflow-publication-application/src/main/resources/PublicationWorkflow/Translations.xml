@@ -98,6 +98,12 @@ PublicationWorkflow.PublicationWorkflowConfigClass_validator = Publishers
 PublicationWorkflow.PublicationWorkflowConfigClass_commenter = Commenters
 PublicationWorkflow.PublicationWorkflowConfigClass_viewer = Viewers
 PublicationWorkflow.PublicationWorkflowConfigClass_defaultDraftSpace = Default Draft Space
+PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy=Move strategy
+PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_doNothing=Do nothing
+PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveTargetIfUnpublished=Update the target reference of the draft, only if the draft has not been published before
+PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveTarget=Move the target that is linked to a draft being moved
+PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveDrafts=Move the drafts that are linked to a target being moved
+PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveAll=Regardless of the type of document being moved, move its equivalent document(s)
 
 workflow.script.notenoughparams = Not enough parameters.
 workflow.refusal.notenoughparams = Not enough parameters.

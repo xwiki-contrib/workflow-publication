@@ -167,6 +167,30 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </moderator>
+    <moveStrategy>
+      <cache>0</cache>
+      <customDisplay/>
+      <defaultValue>doNothing</defaultValue>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <freeText>forbidden</freeText>
+      <hint/>
+      <multiSelect>0</multiSelect>
+      <name>moveStrategy</name>
+      <number>8</number>
+      <picker>1</picker>
+      <prettyName>Move strategy</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>value</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>doNothing|moveTargetIfUnpublished|moveTarget|moveDrafts|moveAll</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </moveStrategy>
     <validator>
       <cache>0</cache>
       <classname/>
