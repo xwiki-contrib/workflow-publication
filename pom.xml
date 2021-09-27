@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+
 <!--
- *
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,24 +18,21 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.xwiki.commons</groupId>
-    <artifactId>xwiki-commons-pom</artifactId>
-    <version>7.2</version>
+    <groupId>org.xwiki.contrib</groupId>
+    <artifactId>parent-platform</artifactId>
+    <version>12.10.4</version>
   </parent>
   <groupId>org.xwiki.contrib.workflow-publication</groupId>
   <artifactId>xwiki-workflow-publication</artifactId>
   <name>Publication Workflow Application</name>
   <description>Simple publication workflow implementation that allows to push a document through various validation states until it is published.</description>
   <packaging>pom</packaging>
-  <version>1.11-SNAPSHOT</version>
-  <properties>
-    <xwiki.platform.version>${commons.version}</xwiki.platform.version>
-  </properties>
+  <version>2.0-SNAPSHOT</version>
   <developers>
     <developer>
       <id>lucaa</id>
@@ -48,7 +45,11 @@
     <developer>
       <id>rstavro</id>
       <name>Raluca Stavro</name>
-    </developer>    
+    </developer>
+    <developer>
+      <id>slauriere</id>
+      <name>slauriere</name>
+    </developer>
   </developers>
   <issueManagement>
     <system>jira</system>

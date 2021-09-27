@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+
 <!--
- *
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,18 +18,26 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.xwiki.contrib.workflow-publication</groupId>
     <artifactId>xwiki-workflow-publication</artifactId>
-    <version>1.11-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
   </parent>
   <artifactId>xwiki-workflow-publication-application</artifactId>
   <name>XWiki Publication Workflow Application</name>
   <packaging>xar</packaging>
+  <properties>
+    <xwiki.extension.name>Publication Workflow Application</xwiki.extension.name>
+    <xwiki.extension.category>application</xwiki.extension.category>
+    <xwiki.release.jira.skip>true</xwiki.release.jira.skip>
+    <xwiki.issueManagement.system>jira</xwiki.issueManagement.system>
+    <xwiki.issueManagement.url>https://jira.xwiki.org/projects/XAWORKFLOW/</xwiki.issueManagement.url>
+    <platform.version>12.10.4</platform.version>
+  </properties>
   <dependencies>
     <!-- Adding publication workflow api as dependencies since these pages need the 
       server in order to work properly and for EM to find them related. -->
@@ -40,18 +48,15 @@
     </dependency>
   </dependencies>
   <build>
-    <extensions>
-      <extension>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-handlers</artifactId>
-      </extension>
-    </extensions>
     <plugins>
       <plugin>
         <groupId>org.xwiki.commons</groupId>
         <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
         <configuration>
-          <skip>true</skip>
+          <visibleTechnicalPages>
+            <visibleTechnicalPage>.*/PublicationWorkflow/Overview\.xml</visibleTechnicalPage>
+            <visibleTechnicalPage>.*/PublicationWorkflow/WebHome\.xml</visibleTechnicalPage>
+          </visibleTechnicalPages>
         </configuration>
       </plugin>
     </plugins>

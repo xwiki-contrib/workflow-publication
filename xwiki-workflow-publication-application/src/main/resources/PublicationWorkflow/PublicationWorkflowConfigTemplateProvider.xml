@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.1" encoding="UTF-8"?>
 
 <!--
  * See the NOTICE file distributed with this work for additional
@@ -20,18 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.2" reference="PublicationWorkflow.PublicationWorkflowConfigTemplateProvider" locale="">
+<xwikidoc version="1.4" reference="PublicationWorkflow.PublicationWorkflowConfigTemplateProvider" locale="">
   <web>PublicationWorkflow</web>
   <name>PublicationWorkflowConfigTemplateProvider</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1357556946000</creationDate>
+  <parent>WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1358262535000</date>
-  <contentUpdateDate>1358262535000</contentUpdateDate>
   <version>1.1</version>
   <title>PublicationWorkflowConfigTemplateProvider</title>
   <comment/>
@@ -72,7 +70,7 @@
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
-        <values>edit|saveandedit</values>
+        <values>edit|saveandedit|saveandview</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </action>
       <creationRestrictions>
@@ -177,17 +175,29 @@
         <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
       </spaces>
       <template>
+        <cache>0</cache>
+        <classname/>
         <customDisplay/>
         <disabled>0</disabled>
+        <displayType>input</displayType>
+        <hint/>
+        <idField/>
+        <multiSelect>0</multiSelect>
         <name>template</name>
         <number>2</number>
-        <picker>0</picker>
+        <picker>1</picker>
         <prettyName>template</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
         <size>30</size>
+        <sort>none</sort>
+        <sql/>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
       </template>
       <terminal>
         <customDisplay/>
