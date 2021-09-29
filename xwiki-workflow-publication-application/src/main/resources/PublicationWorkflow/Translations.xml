@@ -88,6 +88,7 @@ PublicationWorkflow.PublicationWorkflowClass_status_validating = Currently being
 PublicationWorkflow.PublicationWorkflowClass_status_valid = Validated
 PublicationWorkflow.PublicationWorkflowClass_status_published = Published
 PublicationWorkflow.PublicationWorkflowClass_status_archived = Archived
+PublicationWorkflow.PublicationWorkflowClass_includeChildren=Include children
 PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint = Edit Workflow Group
 PublicationWorkflow.PublicationWorkflowConfigClass_contributor = Contributors
 PublicationWorkflow.PublicationWorkflowConfigClass_moderator = Moderators
@@ -144,6 +145,8 @@ workflow.save.unpublish =  Creating draft from the published document {0}.
 workflow.save.backToDraft = Change the status to draft to allow editing.
 workflow.save.archive = Archive the document by {0}.
 workflow.save.publishFromArchive = Publication of the document from an archive by {0}.
+workflow.save.hide = Mark as hidden.
+workflow.save.unhide = Mark as unhidden.
 
 workflow.alert.publish = Are you sure you want to publish this document ?
 workflow.alert.archive = Are you sure you want to archive this document ?

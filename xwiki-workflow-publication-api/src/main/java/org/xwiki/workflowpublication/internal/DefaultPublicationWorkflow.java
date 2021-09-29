@@ -21,10 +21,14 @@ package org.xwiki.workflowpublication.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,6 +41,8 @@ import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 import org.suigeneris.jrcs.diff.delta.Delta;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.contrib.rights.RightsWriter;
+import org.xwiki.contrib.rights.RulesObjectWriter;
 import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.logging.LogLevel;
 import org.xwiki.logging.event.LogEvent;
@@ -44,10 +50,17 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceProvider;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.SpaceReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.observation.ObservationManager;
+import org.xwiki.properties.converter.Converter;
+import org.xwiki.security.authorization.ReadableSecurityRule;
+import org.xwiki.security.authorization.Right;
+import org.xwiki.security.authorization.RuleState;
+import org.xwiki.workflowpublication.DocumentChildPublishingEvent;
 import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 import org.xwiki.workflowpublication.WorkflowConfigManager;
@@ -60,9 +73,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.merge.MergeConfiguration;
 import com.xpn.xwiki.doc.merge.MergeResult;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ObjectDiff;
-import com.xpn.xwiki.objects.classes.PropertyClass;
 
 /**
  * @version $Id$
@@ -71,6 +82,11 @@ import com.xpn.xwiki.objects.classes.PropertyClass;
 public class DefaultPublicationWorkflow implements PublicationWorkflow
 {
     public static final String WF_CONFIG_REF_FIELDNAME = "workflow";
+
+    /**
+     * PublicationWorkflowClass field storing whether the workflow encompasses descendants or not.
+     */
+    public static final String WF_INCLUDE_CHILDREN_FIELDNAME = "includeChildren";
 
     public static final String WF_TARGET_FIELDNAME = "target";
 
@@ -117,31 +133,16 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public static final EntityReference RATINGS_CLASS =
         new EntityReference("RatingsClass", EntityType.DOCUMENT, new EntityReference("XWiki", EntityType.SPACE));
 
+    public static final String XWIKI_SPACE = "XWiki";
+
     /**
      * The reference to the xwiki rights, relative to the current wiki. <br />
      */
     public static final EntityReference RIGHTS_CLASS = new EntityReference("XWikiRights", EntityType.DOCUMENT,
-        new EntityReference("XWiki", EntityType.SPACE));
+        new EntityReference(XWIKI_SPACE, EntityType.SPACE));
 
-    /**
-     * The groups property of the rights class.
-     */
-    public static final String RIGHTS_GROUPS = "groups";
-
-    /**
-     * The levels property of the rights class.
-     */
-    public static final String RIGHTS_LEVELS = "levels";
-
-    /**
-     * The users property of the rights class.
-     */
-    public static final String RIGHTS_USERS = "users";
-
-    /**
-     * The 'allow / deny' property of the rights class.
-     */
-    public static final String RIGHTS_ALLOWDENY = "allow";
+    public static final EntityReference GLOBAL_RIGHTS_CLASS = new EntityReference("XWikiGlobalRights",
+        EntityType.DOCUMENT, new EntityReference(XWIKI_SPACE, EntityType.SPACE));
 
     /**
      * For translations.
@@ -187,6 +188,45 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * Logging tool.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPublicationWorkflow.class);
+
+    /**
+     * Used to send document child publishing events.
+     */
+    @Inject
+    protected ObservationManager observationManager;
+
+    /**
+     * EntityReference provider used to get default EntityReference names.
+     */
+    @Inject
+    protected EntityReferenceProvider defaultEntityReferenceProvider;
+
+    /**
+     * Used to generate {@link org.xwiki.security.authorization.SecurityRule} on workflow transitions.
+     */
+    @Inject
+    protected RightsWriter rightsWriter;
+
+    /**
+     * Allows to set rules on page objects without saving them to the database yet.
+     */
+    @Inject
+    @Named("recycling")
+    private RulesObjectWriter rulesObjectWriter;
+
+    /**
+     * Used to retrieve page children using the reference hierarchy.
+     */
+    @Inject
+    @Named("nestedPages")
+    private org.xwiki.tree.Tree tree;
+
+    /**
+     * Used to convert an EntityReference into a {@link org.xwiki.tree.TreeNode} id.
+     */
+    @Inject
+    @Named("entityTreeNodeId")
+    private Converter<EntityReference> entityTreeNodeIdConverter;
 
     /**
      * {@inheritDoc}
@@ -492,17 +532,22 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
             // give the view and edit right to contributors, moderators and validators
-            fillRightsObject(document, Arrays.asList("edit", "comment", "view"),
-                Arrays.asList(contributors, moderators, validators), Arrays.<String> asList(), true, 0, xcontext);
-            fillRightsObject(document, Arrays.asList("view"),
-                Arrays.asList(viewers), Arrays.<String> asList(), true, 1, xcontext);
-            fillRightsObject(document, Arrays.asList("comment", "view"),
-                Arrays.asList(commenters), Arrays.<String> asList(), true, 2, xcontext);
-            // and remove the rest of the rights
-            removeRestOfRights(document, 3, xcontext);
+            List<ReadableSecurityRule> rules = new ArrayList<>();
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors, moderators,
+                validators), document.getDocumentReference()),null, Arrays.asList(Right.VIEW, Right.COMMENT,
+                Right.EDIT), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers),
+                document.getDocumentReference()), null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters),
+                document.getDocumentReference()),null, Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            persistAndMaybeSaveRules(document, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
 
             if (wfConfig.getIntValue(WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME, 1) == 1) {
                 document.setHidden(true);
+                if (workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
+                    // TODO: provide contextual message
+                    updateChildrenHiddenStatus(document.getDocumentReference(), true, null);
+                }
             }
         } else {
             // b/w compat
@@ -514,7 +559,20 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public boolean startWorkflow(DocumentReference docName, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException
     {
+        return this.startWorkflow(docName, false, workflowConfig, target, xcontext);
+    }
+
+    @Override
+    public boolean startWorkflow(DocumentReference docName, boolean includeChildren, String workflowConfig,
+        DocumentReference target, XWikiContext xcontext) throws XWikiException
+    {
         XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
+
+        // If the workflow scope includes children, check that the target is not terminal.
+        if (includeChildren && isTerminal(docName)) {
+            // TODO: put this error in context
+            return false;
+        }
 
         // Check that the target is free. i.e. no other workflow document targets this target
         if (this.getDraftDocument(target, xcontext) != null) {
@@ -532,6 +590,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return false;
         }
 
+        workflowObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
         workflowObject.set(WF_CONFIG_REF_FIELDNAME, workflowConfig, xcontext);
         workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(target, docName), xcontext);
 
@@ -628,18 +687,18 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
         // give the view and edit right to moderators and validators ...
-        fillRightsObject(doc, Arrays.asList("edit", "comment", "view"), Arrays.asList(moderators, validators),
-            Arrays.<String> asList(), true, 0, xcontext);
+        List<ReadableSecurityRule> rules = new ArrayList<>();
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, validators), document),
+            null, Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
         // ... and only view for contributors
-        fillRightsObject(doc, Arrays.asList("view"), Arrays.asList(contributors), Arrays.<String> asList(), true, 1,
-            xcontext);
-        fillRightsObject(doc, Arrays.asList("view"),
-            Arrays.asList(viewers), Arrays.<String> asList(), true, 2, xcontext);
-        fillRightsObject(doc, Arrays.asList("comment", "view"),
-            Arrays.asList(commenters), Arrays.<String> asList(), true, 3, xcontext);
-        // and remove the rest of the rights
-        removeRestOfRights(doc, 4, xcontext);
-        
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors), document), null,
+            Arrays.asList(Right.VIEW), RuleState.ALLOW));
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
+            Arrays.asList(Right.VIEW), RuleState.ALLOW));
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
+            Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+        persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+
         // Add the author in order to keep track of the person who change the status
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
 
@@ -708,17 +767,17 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
         // give the view and edit right to validators ...
-        fillRightsObject(doc, Arrays.asList("edit", "comment", "view"), Arrays.asList(validators),
-            Arrays.<String> asList(), true, 0, xcontext);
+        List<ReadableSecurityRule> rules = new ArrayList<>();
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(validators), document), null,
+            Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
         // ... and only view for contributors and moderators
-        fillRightsObject(doc, Arrays.asList("view"), Arrays.asList(moderators, contributors), Arrays.<String> asList(),
-            true, 1, xcontext);
-        fillRightsObject(doc, Arrays.asList("view"),
-            Arrays.asList(viewers), Arrays.<String> asList(), true, 2, xcontext);
-        fillRightsObject(doc, Arrays.asList("comment", "view"),
-            Arrays.asList(commenters), Arrays.<String> asList(), true, 3, xcontext);
-        // remove the rest of the rights, if any
-        removeRestOfRights(doc, 4, xcontext);
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, contributors), document),
+            null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
+            Arrays.asList(Right.VIEW), RuleState.ALLOW));
+        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
+            Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+        persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
 
         // save the doc.
         // TODO: prevent the save protection from being executed.
@@ -809,61 +868,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
         DocumentReference publisher = xcontext.getUserReference();
         DocumentReference targetRef = explicitStringDocRefResolver.resolve(target, document);
-        XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
-        // TODO: handle checking if the target document is free...
-
-        final Locale origLocale = xcontext.getLocale();
-        List<Locale> locales = doc.getTranslationLocales(xcontext);
-        List<Locale> publishedLocales = targetDocument.getTranslationLocales(xcontext);
-        locales.add(0, doc.getDefaultLocale());
-
-        for (Locale locale : locales) {
-            XWikiDocument translatedNewDocument = copyTranslatedDocument(doc, targetDocument, locale, xcontext);
-
-            // published document is visible
-            translatedNewDocument.setHidden(false);
-
-            if (locale.equals(doc.getDefaultLocale())) {
-                // setup the workflow and target flag, if a workflow doesn't exist already - only needs to be done for default locale
-                BaseObject newWorkflow = targetDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
-                if (newWorkflow == null) {
-                    newWorkflow = targetDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
-                    newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-                    newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
-                    newWorkflow.set(WF_TARGET_FIELDNAME, target, xcontext);
-                    newWorkflow.set(WF_CONFIG_REF_FIELDNAME, workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
-                }
-            }
-
-            // TODO: figure out who should be the author of the published document
-            // currently it is the user who publishes it (as this one is uniquely determined,
-            // unlike the contributor(s), who might be several users)
-
-            // save the published document prepared like this
-            String defaultMessage = "Published new version of the document by {0}.";
-            try {
-                xcontext.setLocale(translatedNewDocument.getRealLocale());
-                String message = getMessage("workflow.save.publishNew", defaultMessage,
-                    Arrays.asList(stringSerializer.serialize(publisher)));
-                // setup the context to let events know that they are in the publishing context
-                xcontext.put(CONTEXTKEY_PUBLISHING, true);
-                saveDocumentWithoutRightsCheck(translatedNewDocument, message, false, xcontext);
-                LOGGER.debug(message + (locale.equals(doc.getDefaultLocale()) ? "" : " (in locale "+locale+")"));
-            } finally {
-                xcontext.remove(CONTEXTKEY_PUBLISHING);
-                xcontext.setLocale(origLocale);
-            }
-        }
-        // remove the languages which are not anymore
-        publishedLocales.removeAll(locales);
-        for (Locale toRemove: publishedLocales) {
-            XWikiDocument translatedDocumentToRemove = targetDocument.getTranslatedDocument(toRemove, xcontext);
-            if (translatedDocumentToRemove != targetDocument) {
-                xcontext.getWiki().deleteDocument(translatedDocumentToRemove, xcontext);
-                LOGGER.debug("deleted published target {} in locale {}", stringSerializer.serialize(targetRef), toRemove);
-            }
-        }
+        // Publish the workflow document and its children if the workflow scope includes the children
+        boolean includeChildren = workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1 ? true : false;
+        copyDocument(document, targetRef, targetRef, publisher, includeChildren);
 
         // prepare the draft document as well (objects only, so default locale is good enough)
         // set the status
@@ -1005,6 +1013,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         saveDocumentWithoutRightsCheck(publishedDoc, message, true, xcontext);
         LOGGER.info(message + " " + stringSerializer.serialize(document));
 
+        // If workflow scope includes children, hide children as well
+        if (publishedWorkflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
+            updateChildrenHiddenStatus(document, true, message);
+        }
+
         return true;
     }
 
@@ -1044,6 +1057,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         LOGGER.info(message + " " + stringSerializer.serialize(document));
 
+        // If workflow scope includes children, unhide children as well
+        if (archivedWorkflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
+            updateChildrenHiddenStatus(document, false, message);
+        }
         return true;
     }
 
@@ -1159,6 +1176,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             document.getDocumentReference()));
         document.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
             document.getDocumentReference()));
+        document.removeXObjects(explicitReferenceDocRefResolver.resolve(GLOBAL_RIGHTS_CLASS,
+            document.getDocumentReference()));
         document.removeXObjects(explicitReferenceDocRefResolver.resolve(PUBLICATION_WORKFLOW_CLASS,
             document.getDocumentReference()));
     }
@@ -1212,75 +1231,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     /**
-     * Fills the n-th non-null rights object in this document with the passed settings. <br />
-     * NOTE that n is not actually the object number, but an ordinal: first, second, etc among all the non-null objects.
-     * It is however 0-based. We need to proceed like this for rights setup because otherwise (remove all objects, add
-     * objects) object numbers are incremented and this can turn out to be pretty bad for performance, since empty slots
-     * are filled with nulls. <br/>
-     * If such an object does not exist, the function will create one and fill it in. <br />
-     * To setup multiple sets of rights on a document, use this function multiple times with incrementing values,
-     * starting on 0, for the n argument.
-     * 
-     * @param document
-     * @param levels
-     * @param groups
-     * @param users
-     * @param allowdeny
-     * @param n
-     * @param context
-     * @throws XWikiException
-     */
-    protected void fillRightsObject(XWikiDocument document, List<String> levels, List<String> groups, List<String> users,
-        boolean allowdeny, int n, XWikiContext context) throws XWikiException
-    {
-        // create a new object of type xwiki rights
-        BaseObject rightsObject = getNonNullRightsObject(document, n, context);
-        // put the rights and create
-        rightsObject.set(RIGHTS_ALLOWDENY, allowdeny ? 1 : 0, context);
-        // prepare the value for the groups property: it's a bit uneasy, we cannot pass a list to the BaseObject.set
-        // and
-        // to build the string we either need to know the separator, or we need to do this bad workaround to make
-        // GroupsClass build the property value
-        PropertyClass groupsPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_GROUPS);
-        BaseProperty<?> groupsProperty = groupsPropClass.fromStringArray(groups.toArray(new String[groups.size()]));
-        rightsObject.set(RIGHTS_GROUPS, groupsProperty.getValue(), context);
-        PropertyClass usersPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_USERS);
-        BaseProperty<?> usersProperty = usersPropClass.fromStringArray(users.toArray(new String[users.size()]));
-        rightsObject.set(RIGHTS_USERS, usersProperty.getValue(), context);
-        PropertyClass levelsPropClass = (PropertyClass) rightsObject.getXClass(context).get(RIGHTS_LEVELS);
-        BaseProperty<?> levelsProperty = levelsPropClass.fromStringArray(levels.toArray(new String[levels.size()]));
-        rightsObject.set(RIGHTS_LEVELS, levelsProperty.getValue(), context);
-    }
-
-    /**
-     * @param document
-     * @param index
-     * @param xcontext
-     * @return the object of type rights with ordinal 'index' in the list of rights objects of the passed document or a
-     *         new object if none is found. If the first non-null object is needed, the passed index needs to be 0
-     *         regardless of the actual object number of that rights object. If the second object is needed, the passed
-     *         index should be 1, etc.
-     * @throws XWikiException
-     */
-    protected BaseObject getNonNullRightsObject(XWikiDocument document, int index, XWikiContext xcontext)
-        throws XWikiException
-    {
-        int nonNullIndex = 0;
-        List<BaseObject> rightObjects = document.getXObjects(RIGHTS_CLASS);
-        if (rightObjects != null) {
-            for (BaseObject rObj : rightObjects) {
-                if (rObj != null) {
-                    if (nonNullIndex == index) {
-                        return rObj;
-                    }
-                    nonNullIndex++;
-                }
-            }
-        }
-        return document.newXObject(RIGHTS_CLASS, xcontext);
-    }
-
-    /**
      * helper method to save the current document despite of the fact that the current user might not have edit rights.
      * this happens on a regular basis every time the document is promoted by one workflow step, which
      * as a side effect removed edit rights from the account doing the promotion.
@@ -1302,48 +1252,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         xcontext.getWiki().saveDocument(doc, saveMessage, isMinorEdit, xcontext);
-    }
-
-    /**
-     * Removes all non-null objects of type rights of this document, starting with the one with index
-     * {@code startingWith}. Note that startingWith is not an actual object number, but an ordinal: only non-null
-     * objects are counted.
-     * 
-     * @param document
-     * @param startingWith
-     * @param context
-     * @throws XWikiException
-     */
-    protected void removeRestOfRights(XWikiDocument document, int startingWith, XWikiContext context)
-        throws XWikiException
-    {
-        // if starting with is smaller or equal to 0, remove all.
-        if (startingWith <= 0) {
-            document.removeXObjects(explicitReferenceDocRefResolver.resolve(RIGHTS_CLASS,
-                document.getDocumentReference()));
-            return;
-        }
-
-        int nonNullIndex = 0;
-        List<BaseObject> objects = document.getXObjects(RIGHTS_CLASS);
-        if (objects == null) {
-            // yey, nothing to do
-            return;
-        }
-        // for all the positions in the objects array...
-        for (int i = 0; i < objects.size(); i++) {
-            // ... get the object
-            BaseObject rObj = objects.get(i);
-            if (rObj != null) {
-                // ... if it's not null
-                if (nonNullIndex >= startingWith) {
-                    // ... and the index is higher than the starting position, remove it
-                    document.removeXObject(rObj);
-                }
-                // ... increment the non null index
-                nonNullIndex++;
-            }
-        }
     }
 
     /**
@@ -1374,5 +1282,262 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             message = message.substring(0, 252) + "...";
         }
         return message;
+    }
+
+    /**
+     * Copies/merges a page to a target in all source page locales. Also copies recursively the source children if
+     * {@code includeChildren} is <code>true</code>. The source locales and children get removed from the target if
+     * they do not exist in the source. In case the page to be copied is a workflow document (i.e. a document
+     * holding a <code>PublicationWorkflowClass</code> object), sets up a workflow object in the target. Fires a
+     * {@link DocumentChildPublishingEvent} when copying pages which are not holding a workflow object.
+     * @param source a reference to a document to be copied/merged
+     * @param target a reference to the document to be created or updated
+     * @param workflowDocumentReference a reference to the workflow document holding the workflow object in the
+     * context of which the copy occurs
+     * @param publisher a reference to the user performing the action
+     * @param includeChildren <code>true</code> if the children of the source should be copied as well, <code>false</code>
+     * otherwise
+     * @throws XWikiException in case an error occurs
+     */
+    public void copyDocument(DocumentReference source, DocumentReference target,
+        DocumentReference workflowDocumentReference, DocumentReference publisher, boolean includeChildren) throws XWikiException
+    {
+        XWikiContext xcontext = getXContext();
+        XWikiDocument sourceDocument = xcontext.getWiki().getDocument(source, xcontext);
+        XWikiDocument targetDocument = xcontext.getWiki().getDocument(target, xcontext);
+        final Locale origLocale = xcontext.getLocale();
+        List<Locale> locales = sourceDocument.getTranslationLocales(xcontext);
+        List<Locale> publishedLocales = targetDocument.getTranslationLocales(xcontext);
+        locales.add(0, sourceDocument.getDefaultLocale());
+
+        for (Locale locale : locales) {
+            XWikiDocument translatedNewDocument = copyTranslatedDocument(sourceDocument, targetDocument, locale,
+                xcontext);
+
+            // published document is visible
+            translatedNewDocument.setHidden(false);
+
+            boolean isWorkflowDocument = target.equals(workflowDocumentReference);
+            if (isWorkflowDocument && locale.equals(sourceDocument.getDefaultLocale())) {
+                // setup the workflow and target flag, if a workflow doesn't exist already - only needs to be done for default locale
+                BaseObject newWorkflow = targetDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
+                if (newWorkflow == null) {
+                    BaseObject sourceWorkflow = sourceDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
+                    newWorkflow = targetDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
+                    newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
+                    newWorkflow.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
+                    newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
+                    newWorkflow.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(target), xcontext);
+                    newWorkflow.set(WF_CONFIG_REF_FIELDNAME, sourceWorkflow.getStringValue(WF_CONFIG_REF_FIELDNAME),
+                        xcontext);
+                }
+            }
+
+            // TODO: figure out who should be the author of the published document
+            // currently it is the user who publishes it (as this one is uniquely determined,
+            // unlike the contributor(s), who might be several users)
+
+            // save the published document prepared like this
+            String defaultMessage = "Published new version of the document by {0}.";
+            try {
+                xcontext.setLocale(translatedNewDocument.getRealLocale());
+                String message = getMessage("workflow.save.publishNew", defaultMessage,
+                    Arrays.asList(stringSerializer.serialize(publisher)));
+                // setup the context to let events know that they are in the publishing context
+                xcontext.put(CONTEXTKEY_PUBLISHING, true);
+                if (!isWorkflowDocument) {
+                    observationManager.notify(new DocumentChildPublishingEvent(target, workflowDocumentReference),
+                        translatedNewDocument, xcontext);
+                }
+                saveDocumentWithoutRightsCheck(translatedNewDocument, message, false, xcontext);
+                LOGGER
+                    .debug(message + (locale.equals(sourceDocument.getDefaultLocale()) ? "" : " (in locale " + locale +
+                        ")"));
+            } finally {
+                xcontext.remove(CONTEXTKEY_PUBLISHING);
+                xcontext.setLocale(origLocale);
+            }
+        }
+        // remove the languages which are not anymore
+        publishedLocales.removeAll(locales);
+        for (Locale toRemove : publishedLocales) {
+            XWikiDocument translatedDocumentToRemove = targetDocument.getTranslatedDocument(toRemove, xcontext);
+            if (translatedDocumentToRemove != targetDocument) {
+                xcontext.getWiki().deleteDocument(translatedDocumentToRemove, xcontext);
+                LOGGER.debug("deleted published target {} in locale {}", stringSerializer.serialize(target), toRemove);
+            }
+        }
+        // Copy the page children if the "includeChildren" argument is true, and remove the obsolete ones
+        if (includeChildren) {
+            List<DocumentReference> children = getChildren(source);
+            // Retrieve all target's children and keep only the ones that do not have a counterpart in the source
+            // anymore so as to delete them.
+            List<DocumentReference> obsoletePublishedChildren = getChildren(target);
+            for (DocumentReference child : children) {
+                DocumentReference childTarget = getChildTarget(child, target);
+                copyDocument(child, childTarget, workflowDocumentReference, publisher,true);
+                obsoletePublishedChildren.remove(childTarget);
+            }
+            // Delete target's children without a counterpart in the source
+            for (DocumentReference obsoletePublishedChild : obsoletePublishedChildren) {
+                XWikiDocument obsoletePublishedChildDocument =
+                    xcontext.getWiki().getDocument(obsoletePublishedChild, xcontext);
+                xcontext.getWiki().deleteDocument(obsoletePublishedChildDocument, xcontext);
+            }
+        }
+    }
+
+    /**
+     * Returns the first ten thousands children of a given document using the reference hierarchy.
+     * @param reference a {@link DocumentReference}
+     * @return child pages references
+     */
+    protected List<DocumentReference> getChildren(DocumentReference reference)
+    {
+        String name = entityTreeNodeIdConverter.convert(String.class, reference);
+        int childrenCount = tree.getChildCount(name);
+        List<String> children = tree.getChildren(name, 0, childrenCount);
+        List<DocumentReference> childReferences = new ArrayList<>();
+        for (String childNodeId : children) {
+            // FIXME: do not use hardcoded prefix "document:"
+            String childName = childNodeId.replace("document:", "");
+            DocumentReference childReference = explicitStringDocRefResolver.resolve(childName, reference);
+            childReferences.add(childReference);
+        }
+        return childReferences;
+    }
+
+    @Override
+    public DocumentReference getChildTarget(DocumentReference child, DocumentReference workflowDocumentTarget)
+    {
+        if (isTerminal(child)) {
+            return new DocumentReference(child.getName(), workflowDocumentTarget.getLastSpaceReference());
+        } else {
+            SpaceReference spaceReference =
+                new SpaceReference(child.getLastSpaceReference(), workflowDocumentTarget.getLastSpaceReference());
+            return child.replaceParent(child.getLastSpaceReference(), spaceReference);
+        }
+    }
+
+    /**
+     * @return a list of references in the parents chain of a given reference, ordered from this reference to the
+     * root. See also {@link EntityReference#getReversedReferenceChain()}.
+     * @param reference a {@link DocumentReference}
+     */
+    public List<EntityReference> getReferenceChain(DocumentReference reference)
+    {
+        LinkedList<EntityReference> referenceChain = new LinkedList<EntityReference>();
+
+        EntityReference ref = reference;
+        do {
+            referenceChain.push(ref);
+            ref = ref.getParent();
+        } while (ref != null);
+
+        return referenceChain;
+    }
+
+    /**
+     * @param document an XWikiDocument
+     * @return a reference to a document holding a workflow object in the passed reference parent hierarchy
+     * including the passed reference itself
+     * @throws XWikiException in case an error occurs
+     */
+    @Override
+    public DocumentReference getWorkflowDocument(DocumentReference document) throws XWikiException
+    {
+        List<EntityReference> chain = getReferenceChain(document);
+        Collections.reverse(chain);
+        XWikiContext context = getXContext();
+        for (EntityReference ancestor: chain) {
+            if (ancestor.getType() == EntityType.DOCUMENT || ancestor.getType() == EntityType.SPACE) {
+                XWikiDocument ancestorDocument = context.getWiki().getDocument(ancestor, context);
+                BaseObject workflow = ancestorDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
+                if (workflow != null) {
+                    return ancestorDocument.getDocumentReference();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param reference a {@link DocumentReference}
+     * @return <code>true</code> if the passed reference is terminal, <code>false</code> otherwise
+     */
+    protected boolean isTerminal(DocumentReference reference)
+    {
+        String defaultDocumentName =
+            this.defaultEntityReferenceProvider.getDefaultReference(EntityType.DOCUMENT).getName();
+        return !reference.getName().equals(defaultDocumentName);
+    }
+
+    /**
+     * Persists a set of rules in the document holding the rights for a given document, and saves these rules only if
+     * the document holding the rights differs from the passed document. In case of terminal pages, the document holding
+     * the rights is the same as the workflow document, the rules get persisted to objects without performing a save
+     * since the save is performed separately. In case of non-terminal pages whose workflow scope includes the children,
+     * the document holding the rights is <code>WebPreferences</code>, the rules are persisted to objects and saved.
+     *
+     * @param doc an XWikiDocument which holds a workflow object
+     * @param rules a list of {@link org.xwiki.security.authorization.SecurityRule}
+     * @param includeChildren whether the document's workflow scope includes children or not
+     * @throws XWikiException in case an error occurs when saving the document holding the rights
+     */
+    protected void persistAndMaybeSaveRules(XWikiDocument doc, List<ReadableSecurityRule> rules, boolean includeChildren)
+        throws XWikiException
+    {
+        if (includeChildren && !isTerminal(doc.getDocumentReference())) {
+            SpaceReference spaceReference = doc.getDocumentReference().getLastSpaceReference();
+            rightsWriter.saveRules(rules, spaceReference);
+        } else {
+            rulesObjectWriter.persistRulesToObjects(rules, doc, RIGHTS_CLASS, getXContext());
+        }
+    }
+
+    /**
+     * Converts a list of document full names to a list of {@link DocumentReference}, filtering out empty names.
+     * @param list a list of document full names
+     * @param relativeTo a relative reference to be used when resolving strings to {@link DocumentReference}
+     * @return a list of {@link DocumentReference}
+     */
+    protected List<DocumentReference> toDocumentReferenceList(List<String> list, DocumentReference relativeTo)
+    {
+        return list.stream().filter(group -> group.trim().length() > 0).map(group -> explicitStringDocRefResolver.resolve(group
+            , relativeTo)).collect(Collectors.toList());
+    }
+
+    /**
+     * Hides/unhides recursively the children of a given {@link DocumentReference}.
+     * @param reference a {@link DocumentReference}
+     * @param hidden whether the page should be hidden or unhidden
+     * @param message the version comment to be stored in the page history
+     * @throws XWikiException in case an error occurs
+     */
+    protected void updateChildrenHiddenStatus(DocumentReference reference, boolean hidden,
+        String message) throws XWikiException
+    {
+        XWikiContext xcontext = getXContext();
+        for (DocumentReference child: getChildren(reference)) {
+            XWikiDocument childDocument = xcontext.getWiki().getDocument(child, xcontext).clone();
+            if (childDocument.isHidden() != hidden) {
+                childDocument.setHidden(hidden);
+                // The message is empty when the method is called from setupDraftAccess, which can happen in multiple
+                // contexts which carry their own message, currently not passed as an argument.
+                if (StringUtils.isEmpty(message)) {
+                    if (hidden) {
+                        message = getMessage("workflow.save.hide", "Mark as hidden", null);
+                    } else {
+                        message = getMessage("workflow.save.unhide", "Mark as unhidden", null);
+                    }
+                }
+                // XWikiDocument#setHidden does not flag the document metadata as dirty so we need to flag it so that
+                // the document gets really saved in the database.
+                childDocument.setMetaDataDirty(true);
+                saveDocumentWithoutRightsCheck(childDocument, message, true, xcontext);
+                LOGGER.info(message + " " + stringSerializer.serialize(child));
+                updateChildrenHiddenStatus(child, hidden, message);
+            }
+        }
     }
 }

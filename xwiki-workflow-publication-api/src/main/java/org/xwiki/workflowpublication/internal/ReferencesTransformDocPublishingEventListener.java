@@ -44,6 +44,7 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.block.match.ClassBlockMatcher;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
+import org.xwiki.workflowpublication.DocumentChildPublishingEvent;
 import org.xwiki.workflowpublication.DocumentPublishingEvent;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 
@@ -119,7 +120,8 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     /**
      * The events observed by this observation manager.
      */
-    private final List<Event> eventsList = new ArrayList<Event>(Arrays.asList(new DocumentPublishingEvent()));
+    private final List<Event> eventsList = new ArrayList<Event>(Arrays.asList(new DocumentPublishingEvent(),
+        new DocumentChildPublishingEvent()));
 
     /**
      * {@inheritDoc}
@@ -156,26 +158,24 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
         final XWikiContext context = (XWikiContext) data;
 
         try {
-            transformReferences(publishedDocument, context);
+            DocumentReference workflowDocumentReference = publishedDocument.getDocumentReference();
+            if (event instanceof DocumentChildPublishingEvent) {
+                workflowDocumentReference = ((DocumentChildPublishingEvent) event).getWorkflowDocumentReference();
+            }
+            transformReferences(publishedDocument, workflowDocumentReference, context);
         } catch (XWikiException e) {
             logger.error("failed to transform references on published document " + publishedDocument, e);
         }
 
     }
 
-    private void transformReferences(final XWikiDocument publishedDocument, final XWikiContext context)
-        throws XWikiException
+    private void transformReferences(final XWikiDocument publishedDocument,
+        DocumentReference workflowDocumentReference, final XWikiContext context) throws XWikiException
     {
-        final BaseObject workflowInstance = getWorkflowObject(publishedDocument);
-
-        if (workflowInstance == null || workflowInstance
-            .getIntValue(DefaultPublicationWorkflow.WF_IS_TARGET_FIELDNAME) != DefaultPublicationWorkflow.PUBLISHED) {
-            logger.warn("got published event for document {} which is not a workflow document?", publishedDocument);
+        DocumentReference draftDocumentRef = publicationWorkflow.getDraftDocument(workflowDocumentReference, context);
+        if (draftDocumentRef == null) {
             return;
         }
-
-        DocumentReference draftDocumentRef = publicationWorkflow
-            .getDraftDocument(publishedDocument.getDocumentReference(), context);
 
         XDOM xDom = publishedDocument.getXDOM();
         for (Block link : xDom.getBlocks(new ClassBlockMatcher(LinkBlock.class), Block.Axes.DESCENDANT_OR_SELF)) {
@@ -225,26 +225,39 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     }
 
     /**
-     * check if the given document is a draft document in a workflow, and if so, return a reference to its target
+     * check if the given reference is a draft document in a workflow, and if so, return a reference to its target
      * document, null otherwise.
      *
-     * @param document
-     *            the document
+     * @param reference the document
      * @return null if not in workflow, or the reference to the target document
      */
-    private String getTargetDocRefInWorkflow(XWikiDocument document)
+    private String getTargetDocRefInWorkflow(DocumentReference reference, XWikiContext context) throws XWikiException
     {
-        BaseObject workFlow = getWorkflowObject(document);
+        DocumentReference linkedWorkflowDocumentRefence = publicationWorkflow.getWorkflowDocument(reference);
+        if (linkedWorkflowDocumentRefence == null) {
+            return null;
+        }
+        XWikiDocument linkedWorkflowDocument = context.getWiki().getDocument(linkedWorkflowDocumentRefence, context);
+
+        BaseObject workFlow = getWorkflowObject(linkedWorkflowDocument);
         if (workFlow == null) {
-            logger.debug("target is not in a workflow: {}", document);
+            logger.debug("target is not in a workflow: {}", linkedWorkflowDocument);
             return null;
         }
         if (workFlow
             .getIntValue(DefaultPublicationWorkflow.WF_IS_TARGET_FIELDNAME) != DefaultPublicationWorkflow.DRAFT) {
-            logger.debug("target is no draft: {}", document);
+            logger.debug("target is no draft: {}", linkedWorkflowDocument);
             return null;
         }
-        return workFlow.getStringValue(DefaultPublicationWorkflow.WF_TARGET_FIELDNAME);
+        String targetDocRef = workFlow.getStringValue(DefaultPublicationWorkflow.WF_TARGET_FIELDNAME);
+        // If the linked reference is not a workflow document but a child of a workflow document, compute the child
+        // target.
+        if (!linkedWorkflowDocument.getDocumentReference().equals(reference)) {
+            DocumentReference targetDocReference = explicitStringDocRefResolver.resolve(targetDocRef, reference);
+            DocumentReference childTarget = publicationWorkflow.getChildTarget(reference, targetDocReference);
+            targetDocRef = stringSerializer.serialize(childTarget);
+        }
+        return targetDocRef;
     }
 
     /**
@@ -266,10 +279,9 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     {
         DocumentReference currentLinkReference = explicitStringDocRefResolver.resolve(linkTarget.getReference(),
             draftDocumentRef);
-        XWikiDocument currentLinkReferenceDoc = context.getWiki().getDocument(currentLinkReference, context);
 
         // if we point to a draft object: look up the target:
-        String targetDocRef = getTargetDocRefInWorkflow(currentLinkReferenceDoc);
+        String targetDocRef = getTargetDocRefInWorkflow(currentLinkReference, context);
         if (targetDocRef == null) {
             return;
         }
@@ -297,11 +309,9 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     {
         AttachmentReference currentAttachmentLinkReference = explicitStringAttachmentRefResolver
             .resolve(attTarget.getReference(), draftDocumentRef);
-        XWikiDocument currentDocumentForAttachment = context.getWiki()
-            .getDocument(currentAttachmentLinkReference.getDocumentReference(), context);
 
         // we point to a draft object: look up the target:
-        String targetDocRef = getTargetDocRefInWorkflow(currentDocumentForAttachment);
+        String targetDocRef = getTargetDocRefInWorkflow(currentAttachmentLinkReference.getDocumentReference(), context);
         if (targetDocRef == null) {
             return;
         }

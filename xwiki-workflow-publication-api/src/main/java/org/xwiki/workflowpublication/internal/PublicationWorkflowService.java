@@ -118,10 +118,16 @@ public class PublicationWorkflowService implements ScriptService
 
     public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target)
     {
+        return this.startWorkflow(doc, false, workflowConfig, target);
+    }
+
+    public boolean startWorkflow(DocumentReference doc, boolean includeChildren, String workflowConfig,
+        DocumentReference target)
+    {
         XWikiContext xcontext = getXContext();
         try {
             if (authManager.hasAccess(Right.EDIT, xcontext.getUserReference(), doc)) {
-                return this.publicationWorkflow.startWorkflow(doc, workflowConfig, target, xcontext);
+                return this.publicationWorkflow.startWorkflow(doc, includeChildren, workflowConfig, target, xcontext);
             } else {
                 // TODO: put error on context
                 return false;
@@ -379,6 +385,17 @@ public class PublicationWorkflowService implements ScriptService
             // TODO: put error on context
             return false;
         }
+    }
+
+    /**
+     * See {@link PublicationWorkflow#getChildTarget(DocumentReference, DocumentReference)}
+     * @param reference a reference to a workflow document child
+     * @param workflowTarget the target of the workflow document owning the given child
+     * @return a reference to the child target
+     */
+    public DocumentReference getChildTarget(DocumentReference reference, DocumentReference workflowTarget)
+    {
+        return this.publicationWorkflow.getChildTarget(reference, workflowTarget);
     }
 
     /**

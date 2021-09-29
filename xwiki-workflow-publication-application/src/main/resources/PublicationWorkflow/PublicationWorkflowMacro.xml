@@ -571,13 +571,13 @@ document.observe('xwiki:dom:loading', function() {
       </visibility>
     </class>
     <property>
-      <async_cached/>
+      <async_cached>0</async_cached>
     </property>
     <property>
       <async_context/>
     </property>
     <property>
-      <async_enabled/>
+      <async_enabled>0</async_enabled>
     </property>
     <property>
       <code>{{velocity}}
@@ -751,6 +751,13 @@ document.observe('xwiki:dom:loading', function() {
                 #end
               &lt;/select&gt;
             &lt;/dd&gt;
+            ## Option for including children, for non-terminal pages
+            #if($currentDocRef.name == $defaultPageName)
+              &lt;dt class="$hidden"&gt;
+                &lt;input type="checkbox" id="includeChildren" name="includeChildren" #if($currentDocRef.name == $defaultPageName)checked="checked" #end/&gt;
+                &lt;label for="includeChildren"&gt;$services.localization.render('PublicationWorkflow.PublicationWorkflowClass_includeChildren')&lt;/label&gt;
+              &lt;/dt&gt;
+            #end
             ## Terminal page - Advanced users.
             #set ($hidden = '')
             #if (!($isAdvancedUser || $isSuperAdmin) || $deprecatedSpaceCreate)

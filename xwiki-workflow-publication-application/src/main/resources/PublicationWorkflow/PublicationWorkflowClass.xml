@@ -52,14 +52,30 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <includeChildren>
+      <customDisplay/>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <hint/>
+      <name>includeChildren</name>
+      <number>3</number>
+      <prettyName>includeChildren</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </includeChildren>
     <istarget>
       <customDisplay/>
       <defaultValue>0</defaultValue>
       <disabled>0</disabled>
       <displayFormType>checkbox</displayFormType>
       <displayType/>
+      <hint/>
       <name>istarget</name>
-      <number>4</number>
+      <number>5</number>
       <prettyName>istarget</prettyName>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
@@ -69,8 +85,12 @@
     <status>
       <cache>0</cache>
       <customDisplay/>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>status</name>
       <number>1</number>
@@ -90,11 +110,15 @@
     <statusAuthor>
       <cache>0</cache>
       <customDisplay/>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>input</displayType>
+      <freeText/>
+      <hint/>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>statusAuthor</name>
-      <number>5</number>
+      <number>6</number>
       <picker>1</picker>
       <prettyName>statusAuthor</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -111,8 +135,9 @@
     <target>
       <customDisplay/>
       <disabled>0</disabled>
+      <hint/>
       <name>target</name>
-      <number>3</number>
+      <number>4</number>
       <picker>0</picker>
       <prettyName>target</prettyName>
       <size>30</size>
@@ -125,9 +150,13 @@
       <cache>0</cache>
       <classname/>
       <customDisplay/>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayType>select</displayType>
+      <freeText/>
+      <hint/>
       <idField/>
+      <largeStorage>0</largeStorage>
       <multiSelect>0</multiSelect>
       <name>workflow</name>
       <number>2</number>

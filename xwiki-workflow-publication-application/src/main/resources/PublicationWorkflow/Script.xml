@@ -81,6 +81,7 @@
   ## workflow doc ref: $workflowDocRef
   ## Action : $action
   #if($action == "start")
+    #set ($includeChildren = "$!request.includeChildren" != '')
     #set ($targetSpaceReferencePath = "$!request.targetSpace")
     #set ($targetName = "$!request.targetName")
     #set ($defaultSpaceHomePageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
@@ -100,7 +101,7 @@
     #elseif($xwiki.exists($targetReference))
       $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'targetexists=true'))
     #else
-      #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $workflowConfig, $targetReference))
+      #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $includeChildren, $workflowConfig, $targetReference))
     #end
   #elseif($action == 'startastarget')
     #set($workflowConfig = "$!request.workflow")

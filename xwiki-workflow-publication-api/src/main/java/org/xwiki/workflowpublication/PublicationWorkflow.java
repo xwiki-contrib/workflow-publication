@@ -59,6 +59,9 @@ public interface PublicationWorkflow
     public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException;
 
+    public boolean startWorkflow(DocumentReference doc, boolean includeChildren, String workflowConfig,
+        DocumentReference target, XWikiContext xcontext) throws XWikiException;
+
     /**
      * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
      * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
@@ -237,4 +240,23 @@ public interface PublicationWorkflow
      * @throws XWikiException
      */
     public boolean publishFromArchive(DocumentReference document) throws XWikiException;
+
+    /**
+     * Returns a reference to the first document containing a workflow object in the given reference's ancestors
+     * including the passed reference itself.
+     * @param reference a {@link DocumentReference}
+     * @return a reference to the ancestor workflow owning the passed reference if any, null otherwise
+     * @throws XWikiException
+     */
+    DocumentReference getWorkflowDocument(DocumentReference reference) throws XWikiException;
+
+    /**
+     * Computes the target of a workflow document descendant, based on the workflow document target. For instance, if
+     * the workflow document is "Drafts.ABC.WebHome", with a target "Published.ABC.WebHome", the target of the
+     * descendant document "Drafts.ABC.DEF.WebHome" is "Published.ABC.DEF.WebHome".
+     * @param reference a reference to a descendant of a workflow document
+     * @param workflowDocumentTarget the target of the workflow document owning the given descendant
+     * @return the descendant's target reference
+     */
+    DocumentReference getChildTarget(DocumentReference reference, DocumentReference workflowDocumentTarget);
 }
