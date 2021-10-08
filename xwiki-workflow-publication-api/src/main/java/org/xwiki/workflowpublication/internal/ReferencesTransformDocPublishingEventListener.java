@@ -225,14 +225,15 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     }
 
     /**
-     * check if the given reference is a draft document in a workflow, and if so, return a reference to its target
-     * document, null otherwise.
+     * Checks if a given reference is a draft document in a workflow (either main workflow document or a descendant),
+     * and if so, returns a reference to its target document, null otherwise.
      *
-     * @param reference the document
-     * @return null if not in workflow, or the reference to the target document
+     * @param reference a {@link DocumentReference}
+     * @return a reference to the target document if the passed reference is in a workflow, null otherwise
      */
     private String getTargetDocRefInWorkflow(DocumentReference reference, XWikiContext context) throws XWikiException
     {
+        // Compute the parent workflow the given reference belongs to, if any
         DocumentReference linkedWorkflowDocumentRefence = publicationWorkflow.getWorkflowDocument(reference);
         if (linkedWorkflowDocumentRefence == null) {
             return null;
