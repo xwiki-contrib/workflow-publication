@@ -22,9 +22,11 @@ package org.xwiki.workflowpublication;
 import org.xwiki.bridge.event.AbstractDocumentEvent;
 import org.xwiki.model.reference.DocumentReference;
 /**
- * Sent before a document that is a descendant of a workflow document gets published through the publication
- * workflow. Distinct from {@link DocumentPublishingEvent} in order to distinguish between the publication of the
- * document holding the workflow object and the publication of the descendants.
+ * This event is sent before a descendant of a workflow document gets published through the publication workflow.
+ * It is distinct from {@link DocumentPublishingEvent} in order to distinguish between the publication of the document
+ * holding the workflow object and the publication of its descendants: the former is the main event that external
+ * applications may listen to, while the latter is used internally by the publication workflow to perform
+ * operations on the descendants before publishing, such as updating the references.
  *
  * @version $Id$
  */

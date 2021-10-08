@@ -1285,12 +1285,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     /**
-     * Copies/merges a page to a target in all source page locales. Also copies recursively the source children if
-     * {@code includeChildren} is <code>true</code>. The source locales and children get removed from the target if
-     * they do not exist in the source. In case the page to be copied is a workflow document (i.e. a document
+     * Copies/merges a draft page to a target in all draft page locales. Also copies recursively the draft's children if
+     * {@code includeChildren} is <code>true</code>. The draft locales and children get removed from the target if
+     * they do not exist in the draft. In case the page to be copied is a workflow document (i.e. a document
      * holding a <code>PublicationWorkflowClass</code> object), sets up a workflow object in the target. Fires a
-     * {@link DocumentChildPublishingEvent} when copying pages which are not holding a workflow object.
-     * @param source a reference to a document to be copied/merged
+     * {@link DocumentChildPublishingEvent} when copying draft pages which are not holding a workflow object.
+     * @param draft a reference to a document to be copied/merged
      * @param target a reference to the document to be created or updated
      * @param workflowDocumentReference a reference to the workflow document holding the workflow object in the
      * context of which the copy occurs
@@ -1299,11 +1299,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * otherwise
      * @throws XWikiException in case an error occurs
      */
-    public void copyDocument(DocumentReference source, DocumentReference target,
+    public void copyDocument(DocumentReference draft, DocumentReference target,
         DocumentReference workflowDocumentReference, DocumentReference publisher, boolean includeChildren) throws XWikiException
     {
         XWikiContext xcontext = getXContext();
-        XWikiDocument sourceDocument = xcontext.getWiki().getDocument(source, xcontext);
+        XWikiDocument sourceDocument = xcontext.getWiki().getDocument(draft, xcontext);
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(target, xcontext);
         final Locale origLocale = xcontext.getLocale();
         List<Locale> locales = sourceDocument.getTranslationLocales(xcontext);
@@ -1369,7 +1369,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
         // Copy the page children if the "includeChildren" argument is true, and remove the obsolete ones
         if (includeChildren) {
-            List<DocumentReference> children = getChildren(source);
+            List<DocumentReference> children = getChildren(draft);
             // Retrieve all target's children and keep only the ones that do not have a counterpart in the source
             // anymore so as to delete them.
             List<DocumentReference> obsoletePublishedChildren = getChildren(target);
@@ -1388,7 +1388,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     /**
-     * Returns the first ten thousands children of a given document using the reference hierarchy.
+     * Returns the children references of a given document reference based on the reference hierarchy.
      * @param reference a {@link DocumentReference}
      * @return child pages references
      */
@@ -1419,37 +1419,13 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
     }
 
-    /**
-     * @return a list of references in the parents chain of a given reference, ordered from this reference to the
-     * root. See also {@link EntityReference#getReversedReferenceChain()}.
-     * @param reference a {@link DocumentReference}
-     */
-    public List<EntityReference> getReferenceChain(DocumentReference reference)
-    {
-        LinkedList<EntityReference> referenceChain = new LinkedList<EntityReference>();
-
-        EntityReference ref = reference;
-        do {
-            referenceChain.push(ref);
-            ref = ref.getParent();
-        } while (ref != null);
-
-        return referenceChain;
-    }
-
-    /**
-     * @param document an XWikiDocument
-     * @return a reference to a document holding a workflow object in the passed reference parent hierarchy
-     * including the passed reference itself
-     * @throws XWikiException in case an error occurs
-     */
     @Override
     public DocumentReference getWorkflowDocument(DocumentReference document) throws XWikiException
     {
-        List<EntityReference> chain = getReferenceChain(document);
-        Collections.reverse(chain);
+        List<EntityReference> chain = document.getReversedReferenceChain();
         XWikiContext context = getXContext();
-        for (EntityReference ancestor: chain) {
+        for (int i = chain.size(); i-- > 0; ) {
+            EntityReference ancestor = chain.get(i);
             if (ancestor.getType() == EntityType.DOCUMENT || ancestor.getType() == EntityType.SPACE) {
                 XWikiDocument ancestorDocument = context.getWiki().getDocument(ancestor, context);
                 BaseObject workflow = ancestorDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
@@ -1462,6 +1438,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     /**
+     * Returns <code>true</code> if the passed reference is terminal, <code>false</code> otherwise.
      * @param reference a {@link DocumentReference}
      * @return <code>true</code> if the passed reference is terminal, <code>false</code> otherwise
      */
