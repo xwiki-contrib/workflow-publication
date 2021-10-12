@@ -243,7 +243,8 @@ public interface PublicationWorkflow
 
     /**
      * Returns a reference to the first document containing a workflow object in the given reference's ancestors
-     * including the passed reference itself, from the passed reference to the root.
+     * including the passed reference itself, from the passed reference to the root, and whose hierarchical scope
+     * ("includeChildren" option) includes the passed document in case the workflow document is an ancestor.
      * @param reference a {@link DocumentReference}
      * @return a reference to the ancestor workflow owning the passed reference if any, null otherwise
      * @throws XWikiException

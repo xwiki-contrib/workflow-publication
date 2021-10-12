@@ -1430,7 +1430,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 XWikiDocument ancestorDocument = context.getWiki().getDocument(ancestor, context);
                 BaseObject workflow = ancestorDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
                 if (workflow != null) {
-                    return ancestorDocument.getDocumentReference();
+                    // Return ancestor reference either if it is the passed document reference itself
+                    // or if it is a real ancestor with a workflow whose scope includes the descendants.
+                    int includeChildren = workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME);
+                    if (ancestorDocument.getDocumentReference().equals(document) || includeChildren == 1) {
+                        return ancestorDocument.getDocumentReference();
+                    }
                 }
             }
         }
