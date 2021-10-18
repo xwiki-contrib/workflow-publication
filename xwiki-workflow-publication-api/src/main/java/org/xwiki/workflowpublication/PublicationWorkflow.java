@@ -255,9 +255,10 @@ public interface PublicationWorkflow
      * Computes the target of a workflow document descendant, based on the workflow document target. For instance, if
      * the workflow document is "Drafts.ABC.WebHome", with a target "Published.ABC.WebHome", the target of the
      * descendant document "Drafts.ABC.DEF.WebHome" is "Published.ABC.DEF.WebHome".
-     * @param reference a reference to a descendant of a workflow document
+     * @param descendant a reference to a descendant of a workflow document
      * @param workflowDocumentTarget the target of the workflow document owning the given descendant
      * @return the descendant's target reference
      */
-    DocumentReference getChildTarget(DocumentReference reference, DocumentReference workflowDocumentTarget);
+    DocumentReference getChildTarget(DocumentReference descendant, DocumentReference workflowDocumentDraft,
+        DocumentReference workflowDocumentTarget);
 }

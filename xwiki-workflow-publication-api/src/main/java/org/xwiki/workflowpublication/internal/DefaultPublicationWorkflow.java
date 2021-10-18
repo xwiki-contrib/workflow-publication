@@ -1374,7 +1374,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // anymore so as to delete them.
             List<DocumentReference> obsoletePublishedChildren = getChildren(target);
             for (DocumentReference child : children) {
-                DocumentReference childTarget = getChildTarget(child, target);
+                DocumentReference childTarget = getChildTarget(child, draft, target);
                 copyDocument(child, childTarget, workflowDocumentReference, publisher,true);
                 obsoletePublishedChildren.remove(childTarget);
             }
@@ -1408,15 +1408,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     @Override
-    public DocumentReference getChildTarget(DocumentReference child, DocumentReference workflowDocumentTarget)
+    public DocumentReference getChildTarget(DocumentReference child, DocumentReference workflowDocumentDraft,
+        DocumentReference workflowDocumentTarget)
     {
-        if (isTerminal(child)) {
-            return new DocumentReference(child.getName(), workflowDocumentTarget.getLastSpaceReference());
-        } else {
-            SpaceReference spaceReference =
-                new SpaceReference(child.getLastSpaceReference(), workflowDocumentTarget.getLastSpaceReference());
-            return child.replaceParent(child.getLastSpaceReference(), spaceReference);
-        }
+        return child.replaceParent(workflowDocumentDraft.getParent(), workflowDocumentTarget.getParent());
     }
 
     @Override

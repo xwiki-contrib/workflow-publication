@@ -388,14 +388,15 @@ public class PublicationWorkflowService implements ScriptService
     }
 
     /**
-     * See {@link PublicationWorkflow#getChildTarget(DocumentReference, DocumentReference)}
+     * See {@link PublicationWorkflow#getChildTarget(DocumentReference, DocumentReference, DocumentReference)}
      * @param reference a reference to a workflow document child
      * @param workflowTarget the target of the workflow document owning the given child
      * @return a reference to the child target
      */
-    public DocumentReference getChildTarget(DocumentReference reference, DocumentReference workflowTarget)
+    public DocumentReference getChildTarget(DocumentReference reference, DocumentReference workflowDraft,
+        DocumentReference workflowTarget)
     {
-        return this.publicationWorkflow.getChildTarget(reference, workflowTarget);
+        return this.publicationWorkflow.getChildTarget(reference, workflowDraft, workflowTarget);
     }
 
     /**

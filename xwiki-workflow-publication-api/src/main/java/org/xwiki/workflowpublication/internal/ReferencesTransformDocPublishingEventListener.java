@@ -112,6 +112,7 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
      * Reference string serializer.
      */
     @Inject
+    @Named("compactwiki")
     private EntityReferenceSerializer<String> stringSerializer;
 
     @Inject
@@ -226,12 +227,13 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
 
     /**
      * Checks if a given reference is a draft document in a workflow (either main workflow document or a descendant),
-     * and if so, returns a reference to its target document, null otherwise.
+     * and if so, returns a serialized reference to its target document, null otherwise.
      *
      * @param reference a {@link DocumentReference}
      * @return a reference to the target document if the passed reference is in a workflow, null otherwise
      */
-    private String getTargetDocRefInWorkflow(DocumentReference reference, XWikiContext context) throws XWikiException
+    private String getTargetDocRefInWorkflow(DocumentReference reference,
+        DocumentReference publishedDocumentReference, XWikiContext context) throws XWikiException
     {
         // Compute the parent workflow the given reference belongs to, if any
         DocumentReference linkedWorkflowDocumentRefence = publicationWorkflow.getWorkflowDocument(reference);
@@ -251,12 +253,15 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
             return null;
         }
         String targetDocRef = workFlow.getStringValue(DefaultPublicationWorkflow.WF_TARGET_FIELDNAME);
+        DocumentReference targetDocReference = explicitStringDocRefResolver.resolve(targetDocRef, reference);
         // If the linked reference is not a workflow document but a child of a workflow document, compute the child
         // target.
         if (!linkedWorkflowDocument.getDocumentReference().equals(reference)) {
-            DocumentReference targetDocReference = explicitStringDocRefResolver.resolve(targetDocRef, reference);
-            DocumentReference childTarget = publicationWorkflow.getChildTarget(reference, targetDocReference);
-            targetDocRef = stringSerializer.serialize(childTarget);
+            DocumentReference childTarget = publicationWorkflow.getChildTarget(reference,
+                linkedWorkflowDocumentRefence, targetDocReference);
+            targetDocRef = stringSerializer.serialize(childTarget, publishedDocumentReference);
+        } else {
+            targetDocRef = stringSerializer.serialize(targetDocReference, publishedDocumentReference);
         }
         return targetDocRef;
     }
@@ -282,7 +287,8 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
             draftDocumentRef);
 
         // if we point to a draft object: look up the target:
-        String targetDocRef = getTargetDocRefInWorkflow(currentLinkReference, context);
+        String targetDocRef = getTargetDocRefInWorkflow(currentLinkReference,
+            publishedDocument.getDocumentReference(), context);
         if (targetDocRef == null) {
             return;
         }
@@ -312,7 +318,8 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
             .resolve(attTarget.getReference(), draftDocumentRef);
 
         // we point to a draft object: look up the target:
-        String targetDocRef = getTargetDocRefInWorkflow(currentAttachmentLinkReference.getDocumentReference(), context);
+        String targetDocRef = getTargetDocRefInWorkflow(currentAttachmentLinkReference.getDocumentReference(),
+            publishedDocument.getDocumentReference(), context);
         if (targetDocRef == null) {
             return;
         }
@@ -322,7 +329,8 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
         AttachmentReference targetAttachmentReference = new AttachmentReference(
             currentAttachmentLinkReference.getName(), targetDocumentReference);
 
-        String targetAttachmentRef = stringSerializer.serialize(targetAttachmentReference);
+        String targetAttachmentRef = stringSerializer.serialize(targetAttachmentReference,
+            publishedDocument.getDocumentReference());
         logger.debug("transform att link {} in doc {} to {}", attTarget.getReference(), publishedDocument,
             targetAttachmentRef);
         attTarget.setReference(targetAttachmentRef);

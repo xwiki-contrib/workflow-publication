@@ -8,7 +8,7 @@
 
 ### Scenario
 
-* Create page in multiple languages with links to other drafts.
+* Create page in multiple languages with links to other drafts in the same wiki and in a distinct wiki.
 * Initialize workflow on that page
 * Submit page to moderation, then to validation
 * Publish page
@@ -33,7 +33,7 @@
 
 * Create page in multiple languages containing both non-terminal and terminal children, with at least 3 hierarchy
  levels, with links to other drafts under the same workflow or in other workflows, pointing at either terminal or 
- non-terminal pages, either workflow root pages or child pages
+ non-terminal pages, either workflow root pages or child pages, in the same wiki or in a distinct wiki.
 * Initialize workflow on that page and check the "include children" option
 * Submit page to moderation, then to validation
 * Publish page
