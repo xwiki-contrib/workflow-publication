@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.1" encoding="UTF-8"?>
 
 <!--
  * See the NOTICE file distributed with this work for additional
@@ -20,24 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.2" reference="PublicationWorkflow.Translations" locale="">
+<xwikidoc version="1.4" reference="PublicationWorkflow.Translations" locale="">
   <web>PublicationWorkflow</web>
   <name>Translations</name>
   <language/>
   <defaultLanguage>en</defaultLanguage>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1423227662000</creationDate>
   <parent>Main.SpaceIndex</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1423227662000</date>
-  <contentUpdateDate>1423227662000</contentUpdateDate>
   <version>1.1</version>
   <title>Translations</title>
   <comment/>
   <minorEdit>false</minorEdit>
-  <syntaxId>xwiki/2.1</syntaxId>
+  <syntaxId>plain/1.0</syntaxId>
   <hidden>true</hidden>
   <content>meeting.livetable.doc.title = Workflow Name
 meeting.livetable.contributor = Contributors
@@ -91,6 +88,7 @@ PublicationWorkflow.PublicationWorkflowClass_status_validating = Currently being
 PublicationWorkflow.PublicationWorkflowClass_status_valid = Validated
 PublicationWorkflow.PublicationWorkflowClass_status_published = Published
 PublicationWorkflow.PublicationWorkflowClass_status_archived = Archived
+PublicationWorkflow.PublicationWorkflowClass_includeChildren=Include children
 PublicationWorkflow.PublicationWorkflowConfigClass_groupedit_hint = Edit Workflow Group
 PublicationWorkflow.PublicationWorkflowConfigClass_contributor = Contributors
 PublicationWorkflow.PublicationWorkflowConfigClass_moderator = Moderators
@@ -147,6 +145,8 @@ workflow.save.unpublish =  Creating draft from the published document {0}.
 workflow.save.backToDraft = Change the status to draft to allow editing.
 workflow.save.archive = Archive the document by {0}.
 workflow.save.publishFromArchive = Publication of the document from an archive by {0}.
+workflow.save.hide = Mark as hidden.
+workflow.save.unhide = Mark as unhidden.
 
 workflow.alert.publish = Are you sure you want to publish this document ?
 workflow.alert.archive = Are you sure you want to archive this document ?
@@ -178,6 +178,8 @@ workflow.overview.doc.date=Date</content>
         <cache>0</cache>
         <disabled>0</disabled>
         <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
         <multiSelect>0</multiSelect>
         <name>scope</name>
         <number>1</number>
