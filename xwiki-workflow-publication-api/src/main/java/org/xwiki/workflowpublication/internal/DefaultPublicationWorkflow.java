@@ -1279,11 +1279,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     /**
-     * Copies/merges a draft page to a target in all draft page locales. Also copies recursively the draft's children if
-     * {@code includeChildren} is <code>true</code>. The draft locales and children get removed from the target if
-     * they do not exist in the draft. In case the page to be copied is a workflow document (i.e. a document
+     * Copies/merges a source page to a target in all source page locales. Also copies recursively the source
+     * children if {@code includeChildren} is <code>true</code>. The source locales and children get removed from the
+     * target if they do not exist in the source. In case the page to be copied is a workflow document (i.e. a document
      * holding a <code>PublicationWorkflowClass</code> object), sets up a workflow object in the target. Fires a
-     * {@link DocumentChildPublishingEvent} when copying draft pages which are not holding a workflow object.
+     * {@link DocumentChildPublishingEvent} when copying source pages which are not holding a workflow object.
      * @param source a reference to a document to be copied/merged
      * @param target a reference to the document to be created or updated
      * @param workflowDocumentReference a reference to the workflow document holding the workflow object in the
