@@ -41,6 +41,7 @@
 * Add rights to the published page hierarchy, then republish
 * Archive page
 * Publish page from archive
+* Create new child in draft, with a workflow configuration where drafts are marked as hidden
 
 ### Expected results
 
@@ -55,7 +56,9 @@
  removed on next publish
 * When rights are updated on the published page hierarchy, they are preserved on next publish
 * On page archiving, the main page, the children and grandchildren get hidden
-* On page publication from archive, the main page, its children and grandchildren get unhidden 
+* On page publication from archive, the main page, its children and grandchildren get unhidden
+* Newly created child pages in draft document after the workflow has been initialized are marked as hidden if the
+ corresponding workflow config says so (not implemented) 
 
 ## Page with children, workflow without children
 
