@@ -568,12 +568,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     {
         XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
 
-        // If the workflow scope includes children, check that the target is not terminal.
-        if (includeChildren && isTerminal(docName)) {
-            // TODO: put this error in context
-            return false;
-        }
-
         // Check that the target is free. i.e. no other workflow document targets this target
         if (this.getDraftDocument(target, xcontext) != null) {
             // TODO: put this error on the context
@@ -1290,7 +1284,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * they do not exist in the draft. In case the page to be copied is a workflow document (i.e. a document
      * holding a <code>PublicationWorkflowClass</code> object), sets up a workflow object in the target. Fires a
      * {@link DocumentChildPublishingEvent} when copying draft pages which are not holding a workflow object.
-     * @param draft a reference to a document to be copied/merged
+     * @param source a reference to a document to be copied/merged
      * @param target a reference to the document to be created or updated
      * @param workflowDocumentReference a reference to the workflow document holding the workflow object in the
      * context of which the copy occurs
@@ -1299,11 +1293,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * otherwise
      * @throws XWikiException in case an error occurs
      */
-    public void copyDocument(DocumentReference draft, DocumentReference target,
+    public void copyDocument(DocumentReference source, DocumentReference target,
         DocumentReference workflowDocumentReference, DocumentReference publisher, boolean includeChildren) throws XWikiException
     {
         XWikiContext xcontext = getXContext();
-        XWikiDocument sourceDocument = xcontext.getWiki().getDocument(draft, xcontext);
+        XWikiDocument sourceDocument = xcontext.getWiki().getDocument(source, xcontext);
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(target, xcontext);
         final Locale origLocale = xcontext.getLocale();
         List<Locale> locales = sourceDocument.getTranslationLocales(xcontext);
@@ -1325,7 +1319,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     BaseObject sourceWorkflow = sourceDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
                     newWorkflow = targetDocument.newXObject(PUBLICATION_WORKFLOW_CLASS, xcontext);
                     newWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-                    newWorkflow.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
+                    newWorkflow.set(WF_INCLUDE_CHILDREN_FIELDNAME,
+                        sourceWorkflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME), xcontext);
                     newWorkflow.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
                     newWorkflow.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(target), xcontext);
                     newWorkflow.set(WF_CONFIG_REF_FIELDNAME, sourceWorkflow.getStringValue(WF_CONFIG_REF_FIELDNAME),
@@ -1369,12 +1364,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
         // Copy the page children if the "includeChildren" argument is true, and remove the obsolete ones
         if (includeChildren) {
-            List<DocumentReference> children = getChildren(draft);
+            List<DocumentReference> children = getChildren(source);
             // Retrieve all target's children and keep only the ones that do not have a counterpart in the source
             // anymore so as to delete them.
             List<DocumentReference> obsoletePublishedChildren = getChildren(target);
             for (DocumentReference child : children) {
-                DocumentReference childTarget = getChildTarget(child, draft, target);
+                DocumentReference childTarget = getChildTarget(child, source, target);
                 copyDocument(child, childTarget, workflowDocumentReference, publisher,true);
                 obsoletePublishedChildren.remove(childTarget);
             }

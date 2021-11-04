@@ -23,6 +23,7 @@ import org.xwiki.component.annotation.Role;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.stability.Unstable;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -59,6 +60,7 @@ public interface PublicationWorkflow
     public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException;
 
+    @Unstable
     public boolean startWorkflow(DocumentReference doc, boolean includeChildren, String workflowConfig,
         DocumentReference target, XWikiContext xcontext) throws XWikiException;
 
@@ -249,6 +251,7 @@ public interface PublicationWorkflow
      * @return a reference to the ancestor workflow owning the passed reference if any, null otherwise
      * @throws XWikiException
      */
+    @Unstable
     DocumentReference getWorkflowDocument(DocumentReference reference) throws XWikiException;
 
     /**
@@ -259,6 +262,7 @@ public interface PublicationWorkflow
      * @param workflowDocumentTarget the target of the workflow document owning the given descendant
      * @return the descendant's target reference
      */
+    @Unstable
     DocumentReference getChildTarget(DocumentReference descendant, DocumentReference workflowDocumentDraft,
         DocumentReference workflowDocumentTarget);
 }
