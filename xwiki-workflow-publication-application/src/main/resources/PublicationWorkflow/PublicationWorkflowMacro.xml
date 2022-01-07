@@ -803,7 +803,7 @@ document.observe('xwiki:dom:loading', function() {
           &lt;/div&gt;
         &lt;/form&gt;
       #else
-        $services.localization.render('workflow.panel.noRightContribution')
+        $services.localization.render('workflow.panel.noContributionRight')
       #end
     #elseif($state == "moderating")
       #if($services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
