@@ -979,39 +979,61 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     @Override
-    public boolean archive(DocumentReference document) throws XWikiException
+    public boolean archive(DocumentReference reference) throws XWikiException
+    {
+        return archive(reference, true);
+    }
+
+    /**
+     * Archives a document.
+     * @param document a DocumentReference
+     * @param isTarget true if the reference is a target, false otherwise (the reference is a draft)
+     * @return
+     * @throws XWikiException
+     */
+    protected boolean archive(DocumentReference document, boolean isTarget) throws XWikiException
     {
         XWikiContext xcontext = getXContext();
-        XWikiDocument publishedDoc = xcontext.getWiki().getDocument(document, xcontext);
+        XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext).clone();
         DocumentReference publisher = xcontext.getUserReference();
 
-        BaseObject publishedWorkflow =
-            validateWorkflow(publishedDoc, Arrays.asList(STATUS_PUBLISHED), PUBLISHED, xcontext);
-        if (publishedWorkflow == null) {
+        BaseObject workflow = null;
+        if (isTarget) {
+            workflow = validateWorkflow(doc, Arrays.asList(STATUS_PUBLISHED), PUBLISHED, xcontext);
+        } else {
+            workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        }
+        if (workflow == null) {
             return false;
         }
 
-        // finally, preconditions are met, put the document on hidden (hoping that this is what archive actually means)
-        // TODO: figure out what archive actually means
-        publishedWorkflow.set(WF_STATUS_FIELDNAME, STATUS_ARCHIVED, xcontext);
+        // Preconditions are met, mark document as hidden
+        workflow.set(WF_STATUS_FIELDNAME, STATUS_ARCHIVED, xcontext);
         
-        // Add the author in order to keep track of the person who change the status
-        publishedWorkflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
+        // Add the author in order to keep track of the person who changed the status
+        workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
         
-        publishedDoc.setHidden(true);
+        doc.setHidden(true);
 
-        // save it
+        // Save document
         String defaultMessage = "Archived document by {0}.";
         String message = getMessage("workflow.save.archive", defaultMessage,
             Arrays.asList(stringSerializer.serialize(publisher)));
-        saveDocumentWithoutRightsCheck(publishedDoc, message, true, xcontext);
+        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
         LOGGER.info(message + " " + stringSerializer.serialize(document));
 
         // If workflow scope includes children, hide children as well
-        if (publishedWorkflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
+        if (workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
             updateChildrenHiddenStatus(document, true, message);
         }
 
+        // In case the current document is a target, also mark the draft as archived
+        if (isTarget) {
+            DocumentReference draft = getDraftDocument(document, xcontext);
+            if (draft != null) {
+                return archive(draft, false);
+            }
+        }
         return true;
     }
 
@@ -1024,18 +1046,27 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Override
     public boolean publishFromArchive(DocumentReference document) throws XWikiException
     {
+        return publishFromArchive(document, true);
+    }
+
+    public boolean publishFromArchive(DocumentReference document, boolean isTarget) throws XWikiException
+    {
         XWikiContext xcontext = getXContext();
-        XWikiDocument archivedDoc = xcontext.getWiki().getDocument(document, xcontext);
+        XWikiDocument archivedDoc = xcontext.getWiki().getDocument(document, xcontext).clone();
         DocumentReference publisher = xcontext.getUserReference();
 
-        BaseObject archivedWorkflow =
-            validateWorkflow(archivedDoc, Arrays.asList(STATUS_ARCHIVED), PUBLISHED, xcontext);
+        BaseObject archivedWorkflow = null;
+        if (isTarget) {
+            archivedWorkflow = validateWorkflow(archivedDoc, Arrays.asList(STATUS_ARCHIVED), PUBLISHED, xcontext);
+        } else {
+            archivedWorkflow = archivedDoc.getXObject(PUBLICATION_WORKFLOW_CLASS);
+        }
+
         if (archivedWorkflow == null) {
             return false;
         }
 
-        // finally, preconditions are met, put the document on visible (hoping that this is what archive actually means)
-        // TODO: figure out what archive actually means
+        // Preconditions are met, mark document as published and unhide it
         archivedWorkflow.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
         
         // Add the author in order to keep track of the person who change the status
@@ -1051,9 +1082,28 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         LOGGER.info(message + " " + stringSerializer.serialize(document));
 
-        // If workflow scope includes children, unhide children as well
+        // If workflow scope includes children, unhide children as well in case the document is a target or
+        // if drafts should not be hidden
         if (archivedWorkflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
-            updateChildrenHiddenStatus(document, false, message);
+            if (isTarget) {
+                updateChildrenHiddenStatus(document, false, message);
+            } else {
+                BaseObject wfConfig =
+                    configManager.getWorkflowConfig(archivedWorkflow.getStringValue(WF_CONFIG_REF_FIELDNAME),
+                    xcontext);
+                int hideDrafts = wfConfig.getIntValue(WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME, 1);
+                if (hideDrafts == 0) {
+                    updateChildrenHiddenStatus(document, false, message);
+                }
+            }
+        }
+
+        // In case the current document is a target, also mark the draft as archived
+        if (isTarget) {
+            DocumentReference draft = getDraftDocument(document, xcontext);
+            if (draft != null) {
+                return publishFromArchive(draft, false);
+            }
         }
         return true;
     }

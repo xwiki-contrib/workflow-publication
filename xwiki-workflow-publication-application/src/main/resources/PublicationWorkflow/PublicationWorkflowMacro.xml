@@ -935,27 +935,37 @@ document.observe('xwiki:dom:loading', function() {
         &lt;/div&gt;
       #end
     #elseif($state == "archived")
-      #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
-          &lt;div&gt;
-            &lt;input type="hidden" name="action" value="publishfromarchive" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
-          &lt;/div&gt;
-          &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publishfromarchive'))" class="button" /&gt;
-          &lt;/div&gt;
-          #publicationHint()
-        &lt;/form&gt;
-      #elseif($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName) &amp;&amp; !$services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
-         &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;
-          &lt;div&gt;
-            &lt;input type="hidden" name="action" value="backtodraft" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
-          &lt;/div&gt;
-          &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.backtodraft'))" class="button" /&gt;
-          &lt;/div&gt;
-        &lt;/form&gt;
+      #if($isTarget == '0' &amp;&amp; $xwiki.exists("$target"))
+        ## If document is not a target and the target exists, display a link to it
+        #set($url = $xwiki.getURL("$target"))
+        &lt;p&gt;
+          $services.localization.render('workflow.panel.thisIsDraft') &lt;br /&gt;
+          &lt;a href="$url"&gt; $services.localization.render('workflow.panel.publishedVersion') &lt;/a&gt;
+        &lt;/p&gt;
+      #else
+        ## The document is a target: add option to publish from archive, or to publish from draft depending on the current user role
+        #if($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
+          &lt;form action="$xwiki.getURL('PublicationWorkflow.Script')" method='post' class='xform xformInline'&gt;
+            &lt;div&gt;
+              &lt;input type="hidden" name="action" value="publishfromarchive" /&gt;
+              &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
+            &lt;/div&gt;
+            &lt;div class="buttonwrapper"&gt;
+              &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.publishfromarchive'))" class="button" /&gt;
+            &lt;/div&gt;
+            #publicationHint()
+          &lt;/form&gt;
+        #elseif($services.publicationroles.canContribute($xcontext.user, $doc.prefixedFullName) &amp;&amp; !$services.publicationroles.canModerate($xcontext.user, $doc.prefixedFullName))
+           &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xformInline'&gt;
+            &lt;div&gt;
+              &lt;input type="hidden" name="action" value="backtodraft" /&gt;
+              &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
+            &lt;/div&gt;
+            &lt;div class="buttonwrapper"&gt;
+              &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.backtodraft'))" class="button" /&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        #end
       #end
     #end
     &lt;/div&gt;
