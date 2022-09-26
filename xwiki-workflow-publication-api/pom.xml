@@ -47,6 +47,12 @@
       <artifactId>api-rights-bridge</artifactId>
       <version>1.1</version>
     </dependency>
+    <!-- TODO: Remove dependency and refactor the code to use the platform diff library. See XAWORKFLOW-85. -->
+    <dependency>
+      <groupId>com.googlecode.java-diff-utils</groupId>
+      <artifactId>diffutils</artifactId>
+      <version>1.3.0</version>
+    </dependency>
   </dependencies>
   <properties>
     <xwiki.revapi.skip>true</xwiki.revapi.skip>
