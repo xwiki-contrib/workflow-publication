@@ -98,7 +98,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
     public final static String WF_IS_DRAFTSPACE_FIELDNAME = "defaultDraftSpace";
 
+    public static final String WF_PUBLICATION_COMMENT_FIELDNAME = "publicationComment";
+
     public static final String WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME = "draftsHidden";
+
+    public static final String WF_CONFIG_CLASS_ALLOW_CUSTOM_PUBLICATION_COMMENT = "allowCustomPublicationComment";
 
     public final static int DRAFT = 0;
 
@@ -117,6 +121,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public final static String STATUS_ARCHIVED = "archived";
 
     public final static String CONTEXTKEY_PUBLISHING = "publicationworkflow:publish";
+
+    public static final String DEFAULT_PUBLICATION_COMMENT = "Published new version of the document by {0}.";
 
     public static final EntityReference COMMENTS_CLASS = new EntityReference("XWikiComments", EntityType.DOCUMENT,
         new EntityReference("XWiki", EntityType.SPACE));
@@ -863,9 +869,21 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         DocumentReference publisher = xcontext.getUserReference();
         DocumentReference targetRef = explicitStringDocRefResolver.resolve(target, document);
 
+        // Define if a custom publication comment should be used
+        DocumentReference workflowConfig = explicitStringDocRefResolver.resolve(
+            doc.getXObject(PUBLICATION_WORKFLOW_CLASS).getStringValue(WF_CONFIG_REF_FIELDNAME), document);
+        XWikiDocument workflowConfigDocument = xcontext.getWiki().getDocument(workflowConfig, xcontext);
+        String publicationComment = null;
+        if (workflowConfigDocument.getXObject(PUBLICATION_WORKFLOW_CONFIG_CLASS)
+            .getIntValue(WF_CONFIG_CLASS_ALLOW_CUSTOM_PUBLICATION_COMMENT) == 1
+            && StringUtils.isNotBlank(workflow.getStringValue(WF_PUBLICATION_COMMENT_FIELDNAME))) {
+            publicationComment = workflow.getStringValue(WF_PUBLICATION_COMMENT_FIELDNAME);
+        }
+
+
         // Publish the workflow document and its children if the workflow scope includes the children
         boolean includeChildren = workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1 ? true : false;
-        copyDocument(document, targetRef, targetRef, publisher, includeChildren);
+        copyDocument(document, targetRef, targetRef, publisher, includeChildren, publicationComment);
 
         // prepare the draft document as well (objects only, so default locale is good enough)
         // set the status
@@ -1341,10 +1359,12 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      * @param publisher a reference to the user performing the action
      * @param includeChildren <code>true</code> if the children of the source should be copied as well, <code>false</code>
      * otherwise
+     * @param publicationComment a specific publication comment to be used instead of the default translation key
      * @throws XWikiException in case an error occurs
      */
     public void copyDocument(DocumentReference source, DocumentReference target,
-        DocumentReference workflowDocumentReference, DocumentReference publisher, boolean includeChildren) throws XWikiException
+        DocumentReference workflowDocumentReference, DocumentReference publisher, boolean includeChildren,
+        String publicationComment) throws XWikiException
     {
         XWikiContext xcontext = getXContext();
         XWikiDocument sourceDocument = xcontext.getWiki().getDocument(source, xcontext);
@@ -1375,6 +1395,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     newWorkflow.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(target), xcontext);
                     newWorkflow.set(WF_CONFIG_REF_FIELDNAME, sourceWorkflow.getStringValue(WF_CONFIG_REF_FIELDNAME),
                         xcontext);
+                    newWorkflow.set(WF_PUBLICATION_COMMENT_FIELDNAME,
+                        sourceWorkflow.getStringValue(WF_PUBLICATION_COMMENT_FIELDNAME), xcontext);
                 }
             }
 
@@ -1383,11 +1405,14 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // unlike the contributor(s), who might be several users)
 
             // save the published document prepared like this
-            String defaultMessage = "Published new version of the document by {0}.";
             try {
                 xcontext.setLocale(translatedNewDocument.getRealLocale());
-                String message = getMessage("workflow.save.publishNew", defaultMessage,
-                    Arrays.asList(stringSerializer.serialize(publisher)));
+                String message = publicationComment;
+                if (message == null) {
+                    message = getMessage("workflow.save.publishNew", DEFAULT_PUBLICATION_COMMENT,
+                        Arrays.asList(stringSerializer.serialize(publisher)));
+                }
+
                 // setup the context to let events know that they are in the publishing context
                 xcontext.put(CONTEXTKEY_PUBLISHING, true);
                 if (!isWorkflowDocument) {
@@ -1420,7 +1445,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             List<DocumentReference> obsoletePublishedChildren = getChildren(target);
             for (DocumentReference child : children) {
                 DocumentReference childTarget = getChildTarget(child, source, target);
-                copyDocument(child, childTarget, workflowDocumentReference, publisher,true);
+                copyDocument(child, childTarget, workflowDocumentReference, publisher,true, publicationComment);
                 obsoletePublishedChildren.remove(childTarget);
             }
             // Delete target's children without a counterpart in the source

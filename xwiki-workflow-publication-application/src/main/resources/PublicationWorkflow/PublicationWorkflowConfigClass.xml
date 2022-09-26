@@ -52,6 +52,21 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <allowCustomPublicationComment>
+      <customDisplay/>
+      <defaultValue>0</defaultValue>
+      <disabled>0</disabled>
+      <displayFormType>radio</displayFormType>
+      <displayType/>
+      <hint/>
+      <name>allowCustomPublicationComment</name>
+      <number>9</number>
+      <prettyName>Allow custom publication comment ?</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </allowCustomPublicationComment>
     <commenter>
       <cache>0</cache>
       <classname/>

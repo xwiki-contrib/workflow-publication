@@ -82,6 +82,38 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </istarget>
+    <publicationComment>
+      <customDisplay>{{velocity}}&#xd;
+{{html clean="false"}} &#xd;
+#set($id = "$!{prefix}$!{name}")&#xd;
+#if ($type == 'edit')&#xd;
+  $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowCommentJSX')&#xd;
+  &lt;input type="text" id="$!id" name="$!id" value="$!escapetool.xml($value)" maxlength="250" class="publicationWorkflowComment"/>&lt;span id="$!{id}LengthIndicator">&lt;/span>&#xd;
+#elseif ($type == 'search')&#xd;
+  &lt;input type="text" id="$!id" name="$!id" value="$!escapetool.xml($value)"/>&#xd;
+#elseif ($type == 'view' || $type == 'rendered')&#xd;
+  $!escapetool.xml($value)&#xd;
+#elseif ($type == 'hidden')&#xd;
+  &lt;input type="hidden" id="$!id" name="$!id" value="$!escapetool.xml($value)"/>&#xd;
+#else&#xd;
+  ## In order for the custom displayer to be taken into account, the result of its evaluation with an unknown display&#xd;
+  ## mode must not be empty. Let's output something.&#xd;
+  Unknown display mode.&#xd;
+#end&#xd;
+{{/html}}&#xd;
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <hint/>
+      <name>publicationComment</name>
+      <number>7</number>
+      <picker>1</picker>
+      <prettyName>publicationComment</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </publicationComment>
     <status>
       <cache>0</cache>
       <customDisplay/>

@@ -38,7 +38,13 @@ public interface PublicationWorkflow
     /**
      * The reference to the workflow class, relative to the current wiki.
      */
-    public static final EntityReference PUBLICATION_WORKFLOW_CLASS = new EntityReference("PublicationWorkflowClass",
+    EntityReference PUBLICATION_WORKFLOW_CLASS = new EntityReference("PublicationWorkflowClass",
+        EntityType.DOCUMENT, new EntityReference("PublicationWorkflow", EntityType.SPACE));
+
+    /**
+     * The reference to the workflow config class, relative to the current wiki.
+     */
+    EntityReference PUBLICATION_WORKFLOW_CONFIG_CLASS = new EntityReference("PublicationWorkflowConfigClass",
         EntityType.DOCUMENT, new EntityReference("PublicationWorkflow", EntityType.SPACE));
 
     boolean isWorkflowDocument(XWikiDocument document, XWikiContext context) throws XWikiException;
