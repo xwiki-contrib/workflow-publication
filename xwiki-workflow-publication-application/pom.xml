@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.xwiki.contrib.workflow-publication</groupId>
     <artifactId>xwiki-workflow-publication</artifactId>
-    <version>2.0-rc-3-SNAPSHOT</version>
+    <version>2.0</version>
   </parent>
   <artifactId>xwiki-workflow-publication-application</artifactId>
   <name>XWiki Publication Workflow Application</name>
