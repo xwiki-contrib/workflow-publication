@@ -59,7 +59,7 @@
         <displayType/>
         <hint/>
         <name>allowCustomPublicationComment</name>
-        <number>9</number>
+        <number>10</number>
         <prettyName>Allow custom publication comment ?</prettyName>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
@@ -140,6 +140,34 @@
         <valueField/>
         <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
       </defaultDraftSpace>
+      <defaultTargetSpace>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText/>
+        <hint/>
+        <idField/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>defaultTargetSpace</name>
+        <number>7</number>
+        <picker>1</picker>
+        <prettyName>defaultTargetSpace</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort>none</sort>
+        <sql>select distinct doc.web from XWikiDocument doc</sql>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+      </defaultTargetSpace>
       <draftsHidden>
         <customDisplay/>
         <defaultValue>1</defaultValue>
@@ -147,7 +175,7 @@
         <displayFormType>radio</displayFormType>
         <displayType/>
         <name>draftsHidden</name>
-        <number>7</number>
+        <number>8</number>
         <prettyName>Set Drafts to Hidden?</prettyName>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
@@ -188,7 +216,7 @@
         <hint/>
         <multiSelect>0</multiSelect>
         <name>moveStrategy</name>
-        <number>8</number>
+        <number>9</number>
         <picker>1</picker>
         <prettyName>Move strategy</prettyName>
         <relationalStorage>0</relationalStorage>
