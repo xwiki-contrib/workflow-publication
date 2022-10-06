@@ -82,6 +82,13 @@ workflow.panel.alreadyExist = The location of the published document should be d
 workflow.panel.publish.hintLanguages = Publishing does not only publish the language variant that you currently see but all language variants of the document.
 workflow.panel.applications.label = Workflow
 
+rendering.macro.publicationworkflow.name=Publication Workflow
+rendering.macro.publicationworkflow.description=Displays publication process (publish / moderate ...) for workflow resources
+rendering.macro.publicationworkflow.parameter.allowWorkflowInitialization.name=Allow workflow initialization
+rendering.macro.publicationworkflow.parameter.allowWorkflowInitialization.description=If the document is not under workflow, provide a form to start a new workflow
+
+workflow.macro.noWorkflow=This document is not under workflow
+
 PublicationWorkflow.PublicationWorkflowClass_status_draft = Draft
 PublicationWorkflow.PublicationWorkflowClass_status_moderating = Currently being moderated
 PublicationWorkflow.PublicationWorkflowClass_status_validating = Currently being validated
