@@ -111,6 +111,7 @@ PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveTargetIfUnpu
 PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveTarget=Move the target that is linked to a draft being moved
 PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveDrafts=Move the drafts that are linked to a target being moved
 PublicationWorkflow.PublicationWorkflowConfigClass_moveStrategy_moveAll=Regardless of the type of document being moved, move its equivalent document(s)
+PublicationWorkflow.PublicationWorkflowConfigClass_skipDraftRights=Skip draft rights update on workflow transition
 
 workflow.script.notenoughparams = Not enough parameters.
 workflow.refusal.notenoughparams = Not enough parameters.

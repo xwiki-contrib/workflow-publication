@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -103,6 +101,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public static final String WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME = "draftsHidden";
 
     public static final String WF_CONFIG_CLASS_ALLOW_CUSTOM_PUBLICATION_COMMENT = "allowCustomPublicationComment";
+
+    public static final String WF_CONFIG_CLASS_SKIP_DRAFT_RIGHTS = "skipDraftRights";
 
     public final static int DRAFT = 0;
 
@@ -531,22 +531,25 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
 
         if (wfConfig != null) {
-            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
-            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
-            String validators = publicationRoles.getValidators(wfConfig, xcontext);
-            String viewers = publicationRoles.getViewers(wfConfig, xcontext);
-            String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
+            // Update draft rights, only if option "skipDraftRights" is inactive
+            if (wfConfig.getIntValue(WF_CONFIG_CLASS_SKIP_DRAFT_RIGHTS, 0) == 0) {
+                String contributors = publicationRoles.getContributors(wfConfig, xcontext);
+                String moderators = publicationRoles.getModerators(wfConfig, xcontext);
+                String validators = publicationRoles.getValidators(wfConfig, xcontext);
+                String viewers = publicationRoles.getViewers(wfConfig, xcontext);
+                String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
-            // give the view and edit right to contributors, moderators and validators
-            List<ReadableSecurityRule> rules = new ArrayList<>();
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors, moderators,
-                validators), document.getDocumentReference()),null, Arrays.asList(Right.VIEW, Right.COMMENT,
-                Right.EDIT), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers),
-                document.getDocumentReference()), null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters),
-                document.getDocumentReference()),null, Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
-            persistAndMaybeSaveRules(document, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+                // give the view and edit right to contributors, moderators and validators
+                List<ReadableSecurityRule> rules = new ArrayList<>();
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors, moderators,
+                    validators), document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT,
+                    Right.EDIT), RuleState.ALLOW));
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers),
+                    document.getDocumentReference()), null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters),
+                    document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+                persistAndMaybeSaveRules(document, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+            }
 
             if (wfConfig.getIntValue(WF_CONFIG_CLASS_HIDEDRAFT_FIELDNAME, 1) == 1) {
                 document.setHidden(true);
@@ -680,24 +683,26 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         // put the status to moderating
         workflow.set(WF_STATUS_FIELDNAME, STATUS_MODERATING, xcontext);
-        // and put the rights
-        String validators = publicationRoles.getValidators(wfConfig, xcontext);
-        String contributors = publicationRoles.getContributors(wfConfig, xcontext);
-        String viewers = publicationRoles.getViewers(wfConfig, xcontext);
-        String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
+        // and put the rights, only if option "skipDraftRights" is inactive
+        if (wfConfig.getIntValue(WF_CONFIG_CLASS_SKIP_DRAFT_RIGHTS, 0) == 0) {
+            String validators = publicationRoles.getValidators(wfConfig, xcontext);
+            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
+            String viewers = publicationRoles.getViewers(wfConfig, xcontext);
+            String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
-        // give the view and edit right to moderators and validators ...
-        List<ReadableSecurityRule> rules = new ArrayList<>();
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, validators), document),
-            null, Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
-        // ... and only view for contributors
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors), document), null,
-            Arrays.asList(Right.VIEW), RuleState.ALLOW));
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
-            Arrays.asList(Right.VIEW), RuleState.ALLOW));
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
-            Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
-        persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+            // give the view and edit right to moderators and validators ...
+            List<ReadableSecurityRule> rules = new ArrayList<>();
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, validators), document),
+                null, Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
+            // ... and only view for contributors
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors), document), null,
+                Arrays.asList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
+                Arrays.asList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
+                Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+        }
 
         // Add the author in order to keep track of the person who change the status
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
@@ -757,27 +762,30 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // Add the author in order to keep track of the person who change the status
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);      
         
-        // and put the rights
+        // and put the rights, only if option "skipDraftRights" is inactive
         BaseObject wfConfig =
             configManager.getWorkflowConfig(workflow.getStringValue(WF_CONFIG_REF_FIELDNAME), xcontext);
-        String validators = publicationRoles.getValidators(wfConfig, xcontext);
-        String contributors = publicationRoles.getContributors(wfConfig, xcontext);
-        String moderators = publicationRoles.getModerators(wfConfig, xcontext);
-        String viewers = publicationRoles.getViewers(wfConfig, xcontext);
-        String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
+        if (wfConfig.getIntValue(WF_CONFIG_CLASS_SKIP_DRAFT_RIGHTS, 0) == 0) {
+            String validators = publicationRoles.getValidators(wfConfig, xcontext);
+            String contributors = publicationRoles.getContributors(wfConfig, xcontext);
+            String moderators = publicationRoles.getModerators(wfConfig, xcontext);
+            String viewers = publicationRoles.getViewers(wfConfig, xcontext);
+            String commenters = publicationRoles.getCommenters(wfConfig, xcontext);
 
-        // give the view and edit right to validators ...
-        List<ReadableSecurityRule> rules = new ArrayList<>();
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(validators), document), null,
-            Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
-        // ... and only view for contributors and moderators
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, contributors), document),
-            null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
-            Arrays.asList(Right.VIEW), RuleState.ALLOW));
-        rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
-            Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
-        persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+            // give the view and edit right to validators ...
+            List<ReadableSecurityRule> rules = new ArrayList<>();
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(validators), document), null,
+                Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
+            // ... and only view for contributors and moderators
+            rules.add(
+                rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, contributors), document),
+                    null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
+                Arrays.asList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
+                Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
+        }
 
         // save the doc.
         // TODO: prevent the save protection from being executed.

@@ -230,6 +230,21 @@
         <values>doNothing|moveTargetIfUnpublished|moveTarget|moveDrafts|moveAll</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </moveStrategy>
+      <skipDraftRights>
+        <customDisplay/>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>radio</displayFormType>
+        <displayType/>
+        <hint/>
+        <name>skipDraftRights</name>
+        <number>11</number>
+        <prettyName>Skip draft rights</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </skipDraftRights>
       <validator>
         <cache>0</cache>
         <classname/>
@@ -282,6 +297,9 @@
       </viewer>
     </class>
     <property>
+      <allowCustomPublicationComment>0</allowCustomPublicationComment>
+    </property>
+    <property>
       <commenter/>
     </property>
     <property>
@@ -291,13 +309,19 @@
       <defaultDraftSpace/>
     </property>
     <property>
-      <draftsHidden/>
+      <defaultTargetSpace/>
+    </property>
+    <property>
+      <draftsHidden>1</draftsHidden>
     </property>
     <property>
       <moderator/>
     </property>
     <property>
-      <moveStrategy/>
+      <moveStrategy>doNothing</moveStrategy>
+    </property>
+    <property>
+      <skipDraftRights>0</skipDraftRights>
     </property>
     <property>
       <validator/>

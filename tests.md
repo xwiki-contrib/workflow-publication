@@ -72,3 +72,22 @@
 
 * Local rights are used on the draft page, not hierarchical ones
 * On publish, the page under workflow gets published, but not its children
+
+## Test ability to skip draft rights update on workflow transition
+
+### Scenario
+
+* Create new workflow
+* Activate option "Skip draft rights"
+* Initialize workflow  
+* Submit page to moderation
+* Submit page to validation
+* Publish page
+
+### Expected results
+
+For each transition (workflow initialization, submission to moderation, submission to validation, publication), page rights remain unchanged (in the page itself or in WebPreferences dependending whether option "include children" is activated or not).
+
+### Related issues
+
+* https://jira.xwiki.org/browse/XAWORKFLOW-91
