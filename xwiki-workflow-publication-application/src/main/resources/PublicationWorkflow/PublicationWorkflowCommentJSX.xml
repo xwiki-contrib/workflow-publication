@@ -1,4 +1,4 @@
-<?xml version='1.1' encoding='UTF-8'?>
+<?xml version="1.1" encoding="UTF-8"?>
 
 <!--
  * See the NOTICE file distributed with this work for additional
@@ -124,26 +124,26 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>require(['jquery'], function($) {&#xd;
-  $(function() {&#xd;
-    $('input.publicationWorkflowComment').each(function(index) {&#xd;
-      let updateIndicator = (function() {&#xd;
-        // Get the max size of the input&#xd;
-        let maxLength = $(this).attr('maxlength');&#xd;
-        let currentLength = $(this).val().length;&#xd;
-        let id = $(this).attr('id').replaceAll('.', '\\.');&#xd;
-        let span = $('#' + id + 'LengthIndicator');&#xd;
-        span.text(currentLength + ' / ' + maxLength);&#xd;
-      });&#xd;
-      $(this).on('keyup', updateIndicator);&#xd;
-&#xd;
-      updateIndicator.call(this);&#xd;
-    });&#xd;
-  });&#xd;
+      <code>require(['jquery'], function($) {
+  $(function() {
+    $('input.publicationWorkflowComment').each(function(index) {
+      let updateIndicator = (function() {
+        // Get the max size of the input
+        let maxLength = $(this).attr('maxlength');
+        let currentLength = $(this).val().length;
+        let id = $(this).attr('id').replaceAll('.', '\\.');
+        let span = $('#' + id + 'LengthIndicator');
+        span.text(currentLength + ' / ' + maxLength);
+      });
+      $(this).on('keyup', updateIndicator);
+
+      updateIndicator.call(this);
+    });
+  });
 });</code>
     </property>
     <property>
-      <name></name>
+      <name/>
     </property>
     <property>
       <parse>0</parse>
@@ -232,7 +232,7 @@
       <levels>edit</levels>
     </property>
     <property>
-      <users></users>
+      <users/>
     </property>
   </object>
 </xwikidoc>
