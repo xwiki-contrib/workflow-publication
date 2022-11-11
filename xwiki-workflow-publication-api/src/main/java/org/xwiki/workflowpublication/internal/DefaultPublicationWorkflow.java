@@ -334,7 +334,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // modification
         for (XWikiAttachment toAttachment : nextDoc.getAttachmentList()) {
             // check if the attachment exists in the other document
-            XWikiAttachment fromAttachment = nextDoc.getAttachment(toAttachment.getFilename());
+            XWikiAttachment fromAttachment = previousDoc.getAttachment(toAttachment.getFilename());
             if (fromAttachment == null) {
                 // attachment does not exist in the old document, it's a change, return and stop
                 return true;
