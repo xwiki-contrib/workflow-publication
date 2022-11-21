@@ -25,10 +25,10 @@ import org.xwiki.observation.event.filter.EventFilter;
 
 /**
  * Sent before a document is being published through the publication workflow API. Note that if somebody really wants,
- * they can create a published document directly, by putting the publication workflow class object in the document. <br />
+ * they can create a published document directly, by putting the publication workflow class object in the document. <br>
  * Can be used to perform additional operations on the document to be published, just before it is saved or to send
  * notifications, etc. Note that this event is the same when the published document is the first version of the
- * published document or when a new version of an existing document is created (both "creating" and "updating"). <br />
+ * published document or when a new version of an existing document is created (both "creating" and "updating"). <br>
  * This event does not prevent document updating and document creating events to be sent for the impacted document.
  * 
  * @version $Id$
