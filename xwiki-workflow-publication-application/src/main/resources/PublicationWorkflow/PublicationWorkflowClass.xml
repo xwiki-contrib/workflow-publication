@@ -165,7 +165,19 @@
       <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
     </statusAuthor>
     <target>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+#set ($propertyClass = $object.getxWikiClass().get($name))
+#if ($type == 'edit')
+  {{html clean="false"}}$doc.displayEdit($propertyClass, $prefix, $object){{/html}}
+#else
+  #if ("$!value" != '')
+    #set ($reference = $services.model.resolveDocument($value))
+    #set ($target = $xwiki.getDocument($reference))
+    #set ($url = $xwiki.getURL($reference))
+    {{html clean="false"}}&lt;a href="$escapetool.xml($url)"&gt;$escapetool.xml($target.displayTitle)&lt;/a&gt;{{/html}}
+  #end
+#end
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <hint/>
       <name>target</name>
