@@ -723,10 +723,10 @@ public class PublicationWorkflowRenameListener implements EventListener
         if (message == null || message.equals(key)) {
             message = defaultMessage;
         }
-        // trim the message, whichever that is, to 255 characters, otherwise we're in trouble
-        if (message.length() > 255) {
+        // trim the message, whichever that is, to 1023 characters, otherwise we're in trouble
+        if (message.length() > 1023) {
             // add some dots to show that it was trimmed
-            message = message.substring(0, 252) + "...";
+            message = message.substring(0, 1020) + "...";
         }
         return message;
     }
