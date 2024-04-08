@@ -169,6 +169,8 @@
 #set ($propertyClass = $object.getxWikiClass().get($name))
 #if ($type == 'edit')
   {{html clean="false"}}$doc.displayEdit($propertyClass, $prefix, $object){{/html}}
+#elseif ($type == 'hidden')
+  {{html clean="false"}}$doc.displayHidden($propertyClass, $prefix, $object){{/html}}
 #else
   #if ("$!value" != '')
     #set ($reference = $services.model.resolveDocument($value))
