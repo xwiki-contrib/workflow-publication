@@ -33,6 +33,10 @@
   <description>Simple publication workflow implementation that allows to push a document through various validation states until it is published.</description>
   <packaging>pom</packaging>
   <version>2.4-SNAPSHOT</version>
+  <properties>
+    <!-- The Spoon version inherited from this XWiki version has a broken dependency -->
+    <spoon.version>8.1.0</spoon.version>
+  </properties>
   <developers>
     <developer>
       <id>lucaa</id>
