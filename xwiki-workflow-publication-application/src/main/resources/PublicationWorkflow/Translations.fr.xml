@@ -36,10 +36,10 @@
   <minorEdit>false</minorEdit>
   <syntaxId>plain/1.0</syntaxId>
   <hidden>true</hidden>
-  <content>meeting.livetable.doc.title = Nom du workflow
-meeting.livetable.contributor = Contributeurs
-meeting.livetable.moderator = Modérateurs
-meeting.livetable.validator= Webmasters
+  <content>workflow.livetable.doc.title = Nom du workflow
+workflow.livetable.contributor = Contributeurs
+workflow.livetable.moderator = Modérateurs
+workflow.livetable.validator= Webmasters
 
 workflow.start.dostart = Start workflow
 workflow.start.template = Workflow

@@ -36,10 +36,10 @@
   <minorEdit>false</minorEdit>
   <syntaxId>plain/1.0</syntaxId>
   <hidden>true</hidden>
-  <content>meeting.livetable.doc.title = Name des Workflows
-meeting.livetable.contributor = Autoren
-meeting.livetable.moderator = Vorprüfende
-meeting.livetable.validator = Freigebende
+  <content>workflow.livetable.doc.title = Name des Workflows
+workflow.livetable.contributor = Autoren
+workflow.livetable.moderator = Vorprüfende
+workflow.livetable.validator = Freigebende
 
 workflow.start.pagename = Öffentlicher Seitenname
 workflow.start.spacename = Öffentlicher Bereich

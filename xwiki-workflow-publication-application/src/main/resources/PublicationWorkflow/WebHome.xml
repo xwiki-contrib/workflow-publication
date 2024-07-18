@@ -47,7 +47,7 @@
 })
 #set($options = { 
   "className":"PublicationWorkflow.PublicationWorkflowConfigClass",
-  'translationPrefix': 'meeting.livetable.',
+  'translationPrefix': 'workflow.livetable.',
   "rowCount": 10,
   "resultPage":"PublicationWorkflow.PublicationWorkflowLivetableResults"
 })
