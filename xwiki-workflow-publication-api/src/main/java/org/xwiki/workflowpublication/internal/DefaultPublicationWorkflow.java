@@ -150,6 +150,8 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     public static final EntityReference GLOBAL_RIGHTS_CLASS = new EntityReference("XWikiGlobalRights",
         EntityType.DOCUMENT, new EntityReference(XWIKI_SPACE, EntityType.SPACE));
 
+    public static final String WEB_PREFERENCES = "WebPreferences";
+
     /**
      * For translations.
      */
@@ -1386,8 +1388,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             XWikiDocument translatedNewDocument = copyTranslatedDocument(sourceDocument, targetDocument, locale,
                 xcontext);
 
-            // published document is visible
-            translatedNewDocument.setHidden(false);
+            // Published document is visible.
+            // Avoid to make the WebPreferences pages visible.
+            if (!WEB_PREFERENCES.equals(source.getName())) {
+                translatedNewDocument.setHidden(false);
+            }
 
             boolean isWorkflowDocument = target.equals(workflowDocumentReference);
             if (isWorkflowDocument && locale.equals(sourceDocument.getDefaultLocale())) {
@@ -1574,6 +1579,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     {
         XWikiContext xcontext = getXContext();
         for (DocumentReference child: getChildren(reference)) {
+            // Avoid to make the WebPreferences pages visible.
+            if (WEB_PREFERENCES.equals(child.getName())) {
+                return;
+            }
             XWikiDocument childDocument = xcontext.getWiki().getDocument(child, xcontext).clone();
             if (childDocument.isHidden() != hidden) {
                 childDocument.setHidden(hidden);
