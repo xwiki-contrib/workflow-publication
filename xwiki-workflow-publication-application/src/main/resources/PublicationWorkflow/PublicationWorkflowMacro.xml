@@ -585,7 +585,7 @@ document.observe('xwiki:dom:loading', function() {
 #set($discard = $xwiki.jsx.use('PublicationWorkflow.PublicationWorkflowMacro'))
 #set($isWorkflowDoc = $services.publicationworkflow.isWorkflowDocument($doc.prefixedFullName))
 #macro(publicationHint)
-  #if(!${doc.getTranslationList().isEmpty()} &amp;&amp; ${xwiki.isMultiLingual()})
+  #if(!${doc.getTranslationLocales().isEmpty()} &amp;&amp; ${xwiki.isMultiLingual()})
     &lt;p class="xHint"&gt;$services.localization.render('workflow.panel.publish.hintLanguages')&lt;/p&gt;
   #end
 #end
