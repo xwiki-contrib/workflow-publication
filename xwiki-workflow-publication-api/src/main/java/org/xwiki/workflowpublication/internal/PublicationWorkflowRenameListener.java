@@ -685,28 +685,26 @@ public class PublicationWorkflowRenameListener implements EventListener
      * @param targetName the serialized target document name
      * @param isTarget if true, find target, otherwise find draft
      * @return a list of documentReferences (as strings); should usually contain at most one element
-     * @throws QueryException
+     * @throws QueryException if an error occurred during the query execution
      */
     private List<String> getDraftOrTargetPagesForWorkflow(String targetName, boolean isTarget)
         throws QueryException
     {
         // Searching for the draft
-        List<Object> queryParams = new ArrayList<Object>();
+        Map<String, Object> queryParams = new HashMap<>();
         String workflowsQuery =
-            "select obj.name from BaseObject obj, StringProperty target, IntegerProperty istarget where "
-                + "obj.className = ? and obj.id = target.id.id and target.id.name = ? and target.value = ? and "
-                + "obj.id = istarget.id.id and istarget.id.name = ? and istarget.value = ?";
+            "select obj.name from BaseObject obj, StringProperty target, IntegerProperty istarget "
+                + "where obj.className = :className and obj.id = target.id.id and target.id.name = 'target' and "
+                + "target.value = :target and obj.id = istarget.id.id and istarget.id.name = 'istarget' and "
+                + "istarget.value = :istarget";
 
-        queryParams.add(compactWikiSerializer.serialize(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
-        queryParams.add(WF_TARGET_FIELDNAME);
-        queryParams.add(targetName);
-        queryParams.add(WF_IS_TARGET_FIELDNAME);
-        queryParams.add(isTarget ? PUBLISHED : DRAFT);
+        queryParams.put("className", compactWikiSerializer.serialize(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
+        queryParams.put(WF_TARGET_FIELDNAME, targetName);
+        queryParams.put(WF_IS_TARGET_FIELDNAME, isTarget ? PUBLISHED : DRAFT);
 
         Query query = queryManager.createQuery(workflowsQuery, Query.HQL);
         query.bindValues(queryParams);
-        List<String> results = query.execute();
-        return results;
+        return query.execute();
     }
 
     /**
