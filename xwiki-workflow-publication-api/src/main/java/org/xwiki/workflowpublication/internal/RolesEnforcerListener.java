@@ -115,13 +115,7 @@ public class RolesEnforcerListener implements EventListener
         XWikiContext context = (XWikiContext) data;
 
         // check if the old document is a workflow document, if it is, we need to handle moderation protection
-        try {
-            if (!publicationWorkflow.isWorkflowDocument(previousDocument, context)) {
-                return;
-            }
-        } catch (XWikiException exc) {
-            logger.warn("Could not get workflow config document for document {}",
-                stringSerializer.serialize(previousDocument.getDocumentReference()));
+        if (!publicationWorkflow.isWorkflowDocument(previousDocument, context)) {
             return;
         }
 
