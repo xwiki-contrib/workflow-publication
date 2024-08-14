@@ -47,7 +47,7 @@ public interface PublicationWorkflow
     EntityReference PUBLICATION_WORKFLOW_CONFIG_CLASS = new EntityReference("PublicationWorkflowConfigClass",
         EntityType.DOCUMENT, new EntityReference("PublicationWorkflow", EntityType.SPACE));
 
-    boolean isWorkflowDocument(XWikiDocument document, XWikiContext context) throws XWikiException;
+    boolean isWorkflowDocument(XWikiDocument document, XWikiContext context);
 
     /**
      * Returns {@code true} if the two documents are different, {@code false} otherwise. Note that this function ignores

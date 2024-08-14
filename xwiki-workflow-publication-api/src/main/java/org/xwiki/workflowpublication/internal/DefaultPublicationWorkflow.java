@@ -244,7 +244,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      *      com.xpn.xwiki.XWikiContext)
      */
     @Override
-    public boolean isWorkflowDocument(XWikiDocument document, XWikiContext context) throws XWikiException
+    public boolean isWorkflowDocument(XWikiDocument document, XWikiContext context)
     {
         BaseObject workflowInstance =
             document.getXObject(explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,

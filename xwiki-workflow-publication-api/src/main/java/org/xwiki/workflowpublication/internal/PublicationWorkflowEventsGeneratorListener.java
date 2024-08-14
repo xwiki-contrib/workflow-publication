@@ -94,15 +94,9 @@ public class PublicationWorkflowEventsGeneratorListener implements EventListener
         XWikiDocument doc = (XWikiDocument) source;
 
         Object publishingContextKey = xcontext.get(CONTEXTKEY_PUBLISHING);
-        try {
-            if (publishingContextKey != null && Boolean.parseBoolean(publishingContextKey.toString())
-                && publicationWorkflow.isWorkflowDocument(doc, xcontext)) {
-                observation.notify(new DocumentPublishingEvent(doc.getDocumentReference()), doc, xcontext);
-            }
-        } catch (XWikiException e) {
-            logger.warn(
-                "Could not find out if the document is a workflow document to generate publishing event for document {}",
-                doc.getDocumentReference(), e);
+        if (publishingContextKey != null && Boolean.parseBoolean(publishingContextKey.toString())
+            && publicationWorkflow.isWorkflowDocument(doc, xcontext)) {
+            observation.notify(new DocumentPublishingEvent(doc.getDocumentReference()), doc, xcontext);
         }
     }
 }

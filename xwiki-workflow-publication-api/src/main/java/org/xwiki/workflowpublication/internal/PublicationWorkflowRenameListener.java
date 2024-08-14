@@ -319,7 +319,7 @@ public class PublicationWorkflowRenameListener implements EventListener
         } catch (XWikiException e) {
             logger.warn("Could not get workflow config document for deleted document [{}]", documentReferenceString);
         } catch (QueryException e) {
-            logger.warn("Could not get compagnion document (draft or target)for deleted document [{}]", documentReferenceString);
+            logger.warn("Could not get companion document (draft or target)for deleted document [{}]", documentReferenceString);
         }
     }
 
