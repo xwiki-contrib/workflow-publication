@@ -162,25 +162,11 @@ public class PublicationWorkflowRenameListener implements EventListener
 
     public final static String WF_STATUS_FIELDNAME = "status";
 
-    public final static String WF_STATUS_AUTHOR_FIELDNAME = "statusAuthor";
-
     public final static String WF_IS_TARGET_FIELDNAME = "istarget";
-
-    public final static String WF_IS_DRAFTSPACE_FIELDNAME = "defaultDraftSpace";
-
-    public static final String WF_MOVE_STRATEGY_FIELDNAME = "moveStrategy";
 
     public final static int DRAFT = 0;
 
     public final static int PUBLISHED = 1;
-
-    public final static String STATUS_MODERATING = "moderating";
-
-    public final static String STATUS_VALIDATING = "validating";
-
-    public final static String STATUS_VALID = "valid";
-
-    public final static String STATUS_DRAFT = "draft";
 
     public final static String STATUS_PUBLISHED = "published";
 

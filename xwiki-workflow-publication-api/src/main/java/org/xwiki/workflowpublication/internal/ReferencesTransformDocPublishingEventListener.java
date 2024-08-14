@@ -65,18 +65,6 @@ import com.xpn.xwiki.objects.BaseObject;
 @Singleton
 public class ReferencesTransformDocPublishingEventListener implements EventListener
 {
-    public final static String STATUS_PROPNAME = "status";
-
-    public final static String STATUS_MODERATING = "moderating";
-
-    public final static String STATUS_VALIDATING = "validating";
-
-    public final static String STATUS_DRAFT = "draft";
-
-    public final static String STATUS_PUBLISHED = "published";
-
-    public final static String STATUS_ARCHIVED = "archived";
-
     /**
      * The logger to log.
      */
