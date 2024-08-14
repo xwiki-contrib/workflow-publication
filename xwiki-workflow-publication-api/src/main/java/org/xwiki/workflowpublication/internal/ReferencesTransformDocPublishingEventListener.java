@@ -72,13 +72,6 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     private Logger logger;
 
     /**
-     * The current entity reference resolver, to resolve the notions class reference.
-     */
-    @Inject
-    @Named("current/reference")
-    private DocumentReferenceResolver<EntityReference> currentReferenceEntityResolver;
-
-    /**
      * explicit resolvers to get referenced documents and the workflow class
      */
     @Inject
@@ -109,7 +102,7 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
     /**
      * The events observed by this observation manager.
      */
-    private final List<Event> eventsList = new ArrayList<Event>(Arrays.asList(new DocumentPublishingEvent(),
+    private final List<Event> eventsList = new ArrayList<>(Arrays.asList(new DocumentPublishingEvent(),
         new DocumentChildPublishingEvent()));
 
     /**
@@ -153,7 +146,7 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
             }
             transformReferences(publishedDocument, workflowDocumentReference, context);
         } catch (XWikiException e) {
-            logger.error("failed to transform references on published document " + publishedDocument, e);
+            logger.error("failed to transform references on published document {}", publishedDocument, e);
         }
 
     }

@@ -21,6 +21,7 @@ package org.xwiki.workflowpublication.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,11 +70,11 @@ import difflib.PatchFailedException;
  * move/rename shows as a DocumentCreatingEvent followed by a corresponding DocumentDeletingEvent, while a copy is just a DocumentCreatingEvent.
  *
  * So if we get noticed by a DocumentCreatedEvent that a document popped into existence with a Workflow already attached to it,
- * we assume it is a copy. However we remember in the context that this document has been created with a certain targetDocument
+ * we assume it is a copy. However, we remember in the context that this document has been created with a certain targetDocument,
  * so we can change our mind if another document with the same target gets deleted in the same context; in that case we undo
  * the action we did for the copy and handle it as a move.
  *
- * Currently the action taken for the events is:
+ * Currently, the action taken for the events is:
  *
  * <ul>
  *   <li> if the event is a copy, we remove the workflow object from the copy, to avoid having two pages with the same target.
@@ -203,7 +204,8 @@ public class PublicationWorkflowRenameListener implements EventListener
     /**
      * The events observed by this observation manager.
      */
-    private final List<Event> eventsList = new ArrayList<Event>(Arrays.asList(new DocumentCreatingEvent(), new DocumentDeletingEvent()));
+    private final List<Event> eventsList =
+        new ArrayList<>(Arrays.asList(new DocumentCreatingEvent(), new DocumentDeletingEvent()));
 
     /**
      * {@inheritDoc}
@@ -261,7 +263,7 @@ public class PublicationWorkflowRenameListener implements EventListener
             // Check if the document is published and is a target
             if (StringUtils.equals(workflowInstance.getStringValue(WF_STATUS_FIELDNAME), STATUS_PUBLISHED)
                 && workflowInstance.getIntValue(WF_IS_TARGET_FIELDNAME) == PUBLISHED) {
-                // if we knew this is a move, we could handle it right away
+                // if we knew this is a move, we could handle it right away,
                 // but instead we must assume this is a copy
                 handleTargetDocumentCreation(currentDocument, workflowInstance, context);
             } else
@@ -301,7 +303,7 @@ public class PublicationWorkflowRenameListener implements EventListener
                 document.getXObject(explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,
                     documentReference));
 
-            // Check if the document is target and the the current user can validate it
+            // Check if the document is target and the current user can validate it
             if (workflowInstance.getIntValue(WF_IS_TARGET_FIELDNAME) == PUBLISHED) {
                 // XXX: here we rather want to check rights for the draft reference, maybe?
                 if (publicationRoles.canValidate(context.getUserReference(), document, context)) {
@@ -350,12 +352,12 @@ public class PublicationWorkflowRenameListener implements EventListener
     {
         String serializedOldTargetName = oldWorkflowInstance.getStringValue(WF_TARGET_FIELDNAME);
 
-        // see if we have a recently document created with the same workflow target
+        // see if we have a recently created document with the same workflow target
         // which should be updated to the new target (itself)
         Map<String, Object> backupData = hasTargetDocumentBeenCreated(serializedOldTargetName, context);
 
         if (backupData == null) {
-            // it seem the target document really got deleted :(
+            // it seems the target document really got deleted :(
             // what do we do now? tell the draft document about it?
             return;
         }
@@ -412,7 +414,7 @@ public class PublicationWorkflowRenameListener implements EventListener
             String defaultMessage =
                 String.format("The target was moved / renamed. Set the new location to [%s].", serializedNewTargetName);
             String message = getMessage("workflow.move.updateDraft", defaultMessage,
-                Arrays.asList(serializedNewTargetName));
+                Collections.singletonList(serializedNewTargetName));
             context.getWiki().saveDocument(draftDocument, message, false, context);
 
             String moveStrategy = getMoveStrategy(draftWorkflowInstance);
@@ -470,7 +472,7 @@ public class PublicationWorkflowRenameListener implements EventListener
         Map<String, Object> backupData = hasDraftDocumentBeenCreated(serializedOldTargetName, context);
 
         if (backupData == null) {
-            // it seem the draft document really got deleted :(
+            // it seems the draft document really got deleted :(
             // what do we do now? tell the target document about it?
             return;
         }
@@ -547,7 +549,7 @@ public class PublicationWorkflowRenameListener implements EventListener
         XWikiContext context)
     {
         // Compare the differences between the original draft and target references
-        // One option would be to do a three way merge with :
+        // One option would be to do a three-way merge with :
         // * Previous : the old draft name
         // * Current : the old target name
         // * New : the new draft name
@@ -582,7 +584,7 @@ public class PublicationWorkflowRenameListener implements EventListener
 
     /**
      * Will try to move the equivalent document of the one provided in parameter to a new location.
-     * This method applies when the draft or the target is moved somewhere else and we need to also need to move
+     * This method applies when the draft or the target is moved somewhere else, and we need to also need to move
      * the corresponding draft or target.
      *
      * @param oldCurrentDocumentReference the old reference of the document that is currently being moved

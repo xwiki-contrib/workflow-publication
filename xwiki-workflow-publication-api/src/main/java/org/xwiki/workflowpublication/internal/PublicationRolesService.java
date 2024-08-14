@@ -86,8 +86,8 @@ public class PublicationRolesService implements ScriptService
 
             return publicationRoles.canValidate(userRef, documentObject, context);
         } catch (XWikiException e) {
-            logger.error("There was an error getting the validation rights for user " + user + " for document "
-                + document, e);
+            logger.error("There was an error getting the validation rights for user {} for document {}", user, document,
+                e);
             return false;
         }
     }
@@ -107,8 +107,8 @@ public class PublicationRolesService implements ScriptService
 
             return publicationRoles.canModerate(userRef, documentObject, context);
         } catch (XWikiException e) {
-            logger.error("There was an error getting the moderation rights for user " + user + " for document "
-                + document, e);
+            logger.error("There was an error getting the moderation rights for user {} for document {}", user, document,
+                e);
             return false;
         }
     }
@@ -128,8 +128,8 @@ public class PublicationRolesService implements ScriptService
 
             return publicationRoles.canContribute(userRef, documentObject, context);
         } catch (XWikiException e) {
-            logger.error("There was an error getting the contribution rights for user " + user + " for document "
-                + document, e);
+            logger.error("There was an error getting the contribution rights for user {} for document {}", user,
+                document, e);
             return false;
         }
     }
@@ -142,8 +142,8 @@ public class PublicationRolesService implements ScriptService
 
             return publicationRoles.getGroups(userOrGroup, recursive, localGroups, userWikiGroups, context);
         } catch (XWikiException e) {
-            logger.error("There was an error getting all the groups for user " + userOrGroup, e);
-            return Collections.<String> emptyList();
+            logger.error("There was an error getting all the groups for user {}", userOrGroup, e);
+            return Collections.emptyList();
         }
     }
 

@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
@@ -41,7 +43,9 @@ import com.xpn.xwiki.doc.XWikiDocument;
 /**
  * @version $Id$
  */
-@Component("publicationworkfloweventsgenerator")
+@Component()
+@Named("publicationworkfloweventsgenerator")
+@Singleton
 public class PublicationWorkflowEventsGeneratorListener implements EventListener
 {
     public final static String CONTEXTKEY_PUBLISHING = "publicationworkflow:publish";
@@ -74,7 +78,7 @@ public class PublicationWorkflowEventsGeneratorListener implements EventListener
     @Override
     public List<Event> getEvents()
     {
-        return Arrays.<Event> asList(new DocumentCreatingEvent(), new DocumentUpdatingEvent());
+        return Arrays.asList(new DocumentCreatingEvent(), new DocumentUpdatingEvent());
     }
 
     /**
@@ -97,8 +101,8 @@ public class PublicationWorkflowEventsGeneratorListener implements EventListener
             }
         } catch (XWikiException e) {
             logger.warn(
-                "Could not find out if the document is a workflow document to generate publishing event for document "
-                    + doc.getDocumentReference(), e);
+                "Could not find out if the document is a workflow document to generate publishing event for document {}",
+                doc.getDocumentReference(), e);
         }
     }
 }

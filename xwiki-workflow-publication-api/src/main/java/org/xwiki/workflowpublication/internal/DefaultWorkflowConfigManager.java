@@ -60,9 +60,7 @@ public class DefaultWorkflowConfigManager implements WorkflowConfigManager
             XWikiDocument wfConfigDoc =
                 context.getWiki().getDocument(currentMixedStringDocRefResolver.resolve(workflowConfigName), context);
             if (wfConfigDoc != null) {
-                BaseObject wfConfigRef =
-                    wfConfigDoc.getXObject(currentReferenceEntityResolver.resolve(PUBLICATION_WORKFLOW_CONFIG_CLASS));
-                return wfConfigRef;
+                return wfConfigDoc.getXObject(currentReferenceEntityResolver.resolve(PUBLICATION_WORKFLOW_CONFIG_CLASS));
             }
         }
 

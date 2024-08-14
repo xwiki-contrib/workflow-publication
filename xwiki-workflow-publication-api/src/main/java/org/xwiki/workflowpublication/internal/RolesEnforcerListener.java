@@ -20,7 +20,7 @@
 package org.xwiki.workflowpublication.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -35,7 +35,6 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.EventListener;
 import org.xwiki.observation.event.Event;
-import org.xwiki.workflowpublication.PublicationRoles;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 
 import com.xpn.xwiki.XWikiContext;
@@ -74,16 +73,12 @@ public class RolesEnforcerListener implements EventListener
     protected EntityReferenceSerializer<String> stringSerializer;
 
     @Inject
-    @Named("publicationroles")
-    protected PublicationRoles publicationRoles;
-
-    @Inject
     protected PublicationWorkflow publicationWorkflow;
 
     /**
      * The events observed by this observation manager.
      */
-    private final List<Event> eventsList = new ArrayList<Event>(Arrays.asList(new DocumentUpdatingEvent()));
+    private final List<Event> eventsList = new ArrayList<>(Collections.singletonList(new DocumentUpdatingEvent()));
 
     /**
      * {@inheritDoc}
@@ -125,8 +120,8 @@ public class RolesEnforcerListener implements EventListener
                 return;
             }
         } catch (XWikiException exc) {
-            logger.warn("Could not get workflow config document for document "
-                + stringSerializer.serialize(previousDocument.getDocumentReference()));
+            logger.warn("Could not get workflow config document for document {}",
+                stringSerializer.serialize(previousDocument.getDocumentReference()));
             return;
         }
 

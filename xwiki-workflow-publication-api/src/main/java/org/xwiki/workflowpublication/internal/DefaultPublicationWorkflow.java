@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -258,7 +259,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         List<Locale> toLocales = toDoc.getTranslationLocales(xcontext);
 
         // compare locales first (need to ignore order of locales)
-        if (! new HashSet<Locale>(fromLocales).equals( new HashSet<Locale>(toLocales))) {
+        if (!new HashSet<>(fromLocales).equals(new HashSet<>(toLocales))) {
             LOGGER.debug("different locales for {} and {} : {} not equal to {}", fromDoc, toDoc, fromLocales, toLocales);
             return true;
         }
@@ -293,7 +294,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // 0. content diff
         try {
             List<Delta> contentDiffs = previousDoc.getContentDiff(previousDoc, nextDoc, xcontext);
-            if (contentDiffs.size() > 0) {
+            if (!contentDiffs.isEmpty()) {
                 LOGGER.debug("different content for {} and {}", previousDoc, nextDoc);
                 // we found content differences, we stop here and return
                 return true;
@@ -304,7 +305,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     + stringSerializer.serialize(fromDoc.getDocumentReference()) + " and documents "
                     + stringSerializer.serialize(toDoc.getDocumentReference()), e);
         }
-        // 1. meta data diffs, other than document author
+        // 1. metadata diffs, other than document author
         List<MetaDataDiff> metaDiffs = previousDoc.getMetaDataDiff(previousDoc, nextDoc, xcontext);
         // if there is a change other than author, it's a real change
         for (MetaDataDiff metaDataDiff : metaDiffs) {
@@ -316,7 +317,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
         // 2. object diffs
         List<List<ObjectDiff>> objectDiffs = previousDoc.getObjectDiff(previousDoc, nextDoc, xcontext);
-        if (objectDiffs.size() > 0) {
+        if (!objectDiffs.isEmpty()) {
             LOGGER.debug("different objects for {} and {}", previousDoc, nextDoc);
             // is modified, return here, don't need to check the rest, we don't care
             return true;
@@ -352,7 +353,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             }
 
             // quick exit: if file sizes differ, we do not need to check contents to be sure they differ
-            if (fromAttachment.getFilesize() != toAttachment.getFilesize()) {
+            if (fromAttachment.getLongSize() != toAttachment.getLongSize()) {
                 return true;
             }
             LOGGER.debug("compare {} with {}", fromAttachment.getFilename(), toAttachment.getFilename());
@@ -369,9 +370,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     IOUtils.closeQuietly(toInputStream);
                 }
             } catch (IOException ioe) {
-                LOGGER.warn("could not load attachment " + fromAttachment.getFilename() + "; assume they differ in contents", ioe);
+                LOGGER.warn("could not load attachment {}; assume they differ in contents",
+                    fromAttachment.getFilename(), ioe);
             }
-            // unload the content of the attachments after comparison, since we don't need it anymore and we don't
+            // unload the content of the attachments after comparison, since we don't need it anymore, and we don't
             // want to waste memory
             toAttachment.setAttachment_content(null);
             fromAttachment.setAttachment_content(null);
@@ -406,7 +408,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         List<String> params =
             Arrays.asList(compactWikiSerializer.serialize(PUBLICATION_WORKFLOW_CLASS), WF_TARGET_FIELDNAME,
                 serializedTargetName, WF_IS_TARGET_FIELDNAME);
-        List<String> results = null;
+        List<String> results;
         // query on the passed database
         String originalDatabase = xcontext.getWikiId();
         try {
@@ -416,7 +418,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             xcontext.setWikiId(originalDatabase);
         }
 
-        if (results == null || results.size() <= 0) {
+        if (results == null || results.isEmpty()) {
             return null;
         }
 
@@ -499,7 +501,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
             }
 
-            // setup the creator to the current user
+            // set up the creator to the current user
             translatedDraftDoc.setCreatorReference(xcontext.getUserReference());
             // and save the document
             String defaultMessage = "Created draft for " + stringSerializer.serialize(targetRef) + ".";
@@ -508,7 +510,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 xcontext.setLocale(translatedDraftDoc.getRealLocale());
                 String message =
                     getMessage("workflow.save.createDraft", defaultMessage,
-                            Arrays.asList(stringSerializer.serialize(targetRef).toString()));
+                        Collections.singletonList(stringSerializer.serialize(targetRef)));
                 saveDocumentWithoutRightsCheck(translatedDraftDoc, message, false, xcontext);
                 LOGGER.debug(defaultMessage);
             } finally {
@@ -546,9 +548,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors, moderators,
                     validators), document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT,
                     Right.EDIT), RuleState.ALLOW));
-                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers),
-                    document.getDocumentReference()), null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
-                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters),
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers),
+                    document.getDocumentReference()), null, Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters),
                     document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
                 persistAndMaybeSaveRules(document, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
             }
@@ -606,7 +608,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName);
         String message =
             this.getMessage("workflow.save.start", defaultMessage,
-                Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
+                Arrays.asList(workflowConfig, stringSerializer.serialize(docName)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
         LOGGER.info(defaultMessage);
 
@@ -654,7 +656,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName) + " as target";
         String message =
             this.getMessage("workflow.save.startastarget", defaultMessage,
-                Arrays.asList(workflowConfig.toString(), stringSerializer.serialize(docName).toString()));
+                Arrays.asList(workflowConfig, stringSerializer.serialize(docName)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
 
         LOGGER.info(defaultMessage);
@@ -669,7 +671,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
 
-        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_DRAFT), DRAFT, xcontext);
+        BaseObject workflow = validateWorkflow(doc, Collections.singletonList(STATUS_DRAFT), DRAFT, xcontext);
         if (workflow == null) {
             return false;
         }
@@ -697,11 +699,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, validators), document),
                 null, Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
             // ... and only view for contributors
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors), document), null,
-                Arrays.asList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
-                Arrays.asList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(contributors), document), null,
+                Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers), document), null,
+                Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters), document), null,
                 Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
             persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
         }
@@ -716,7 +718,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Submitted document " + stringSerializer.serialize(document) + " for moderation ";
         String message =
             this.getMessage("workflow.save.submitForModeration", defaultMessage,
-                Arrays.asList(stringSerializer.serialize(document).toString()));
+                Collections.singletonList(stringSerializer.serialize(document)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
 
         return true;
@@ -728,7 +730,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
 
-        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_MODERATING), 0, xcontext);
+        BaseObject workflow = validateWorkflow(doc, Collections.singletonList(STATUS_MODERATING), 0, xcontext);
         if (workflow == null) {
             return false;
         }
@@ -741,7 +743,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         
         // save the document prepared like this
         String defaultMessage = "Refused moderation : " + reason;
-        String message = getMessage("workflow.save.refuseModeration", defaultMessage, Arrays.asList(reason));
+        String message = getMessage("workflow.save.refuseModeration", defaultMessage, Collections.singletonList(reason));
         saveDocumentWithoutRightsCheck(doc, message, false, xcontext);
 
         return true;
@@ -776,15 +778,15 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
             // give the view and edit right to validators ...
             List<ReadableSecurityRule> rules = new ArrayList<>();
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(validators), document), null,
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(validators), document), null,
                 Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
             // ... and only view for contributors and moderators
             rules.add(
                 rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, contributors), document),
-                    null, Arrays.asList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(viewers), document), null,
-                Arrays.asList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(commenters), document), null,
+                    null, Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers), document), null,
+                Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters), document), null,
                 Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
             persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
         }
@@ -798,7 +800,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Submitted document " + stringSerializer.serialize(document) + "for validation.";
         String message =
             getMessage("workflow.save.submitForValidation", defaultMessage,
-                Arrays.asList(stringSerializer.serialize(document).toString()));
+                Collections.singletonList(stringSerializer.serialize(document)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
 
         return true;
@@ -810,7 +812,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
 
-        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_VALIDATING), 0, xcontext);
+        BaseObject workflow = validateWorkflow(doc, Collections.singletonList(STATUS_VALIDATING), 0, xcontext);
         if (workflow == null) {
             return false;
         }
@@ -823,7 +825,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         
         // save the document prepared like this
         String defaultMessage = "Refused publication : " + reason;
-        String message = getMessage("workflow.save.refuseValidation", defaultMessage, Arrays.asList(reason));
+        String message = getMessage("workflow.save.refuseValidation", defaultMessage, Collections.singletonList(reason));
         saveDocumentWithoutRightsCheck(doc, message, false, xcontext);
 
         return true;
@@ -835,7 +837,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiContext xcontext = getXContext();
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext);
 
-        BaseObject workflow = validateWorkflow(doc, Arrays.asList(STATUS_VALIDATING), DRAFT, xcontext);
+        BaseObject workflow = validateWorkflow(doc, Collections.singletonList(STATUS_VALIDATING), DRAFT, xcontext);
         if (workflow == null) {
             return false;
         }
@@ -853,7 +855,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         String defaultMessage = "Marked document " + stringSerializer.serialize(document) + " as valid.";
         String message =
             getMessage("workflow.save.validate", defaultMessage,
-                Arrays.asList(stringSerializer.serialize(document).toString()));
+                Collections.singletonList(stringSerializer.serialize(document)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
         LOGGER.info(defaultMessage);
 
@@ -892,7 +894,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
 
         // Publish the workflow document and its children if the workflow scope includes the children
-        boolean includeChildren = workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1 ? true : false;
+        boolean includeChildren = workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1;
         copyDocument(document, targetRef, targetRef, publisher, includeChildren, publicationComment);
 
         // prepare the draft document as well (objects only, so default locale is good enough)
@@ -902,11 +904,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // Add the author in order to keep track of the person who change the status
         workflow.set(WF_STATUS_AUTHOR_FIELDNAME, xcontext.getUserReference().toString(), xcontext);
         
-        // save the the draft document prepared like this
+        // save the draft document prepared like this
         String defaultMessage2 = "Published this document to " + stringSerializer.serialize(targetRef) + ".";
         String message2 =
             getMessage("workflow.save.publishDraft", defaultMessage2,
-                Arrays.asList(stringSerializer.serialize(targetRef).toString()));
+                Collections.singletonList(stringSerializer.serialize(targetRef)));
         saveDocumentWithoutRightsCheck(doc, message2, false, xcontext);
         LOGGER.info(defaultMessage2);
 
@@ -934,7 +936,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             BaseObject workflow = draftDoc.getXObject(PUBLICATION_WORKFLOW_CLASS);
             String draftStatus = workflow.getStringValue(WF_STATUS_FIELDNAME);
             if (STATUS_PUBLISHED.equals(draftStatus) || !forceToDraft) {
-                // a draft exists and it's either in state published, which means identical as the published doc, or
+                // a draft exists, and it's either in state published, which means identical as the published doc, or
                 // some draft and the overwriting of draft is not required
                 // do nothing, draft will stay in place and target will be deleted at the end of this function
                 if (STATUS_PUBLISHED.equals(draftStatus)) // If status is published, change draft status back to draft
@@ -946,7 +948,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                         "Created draft from published document" + stringSerializer.serialize(document) + ".";
                     String message =
                         getMessage("workflow.save.unpublish", defaultMessage,
-                            Arrays.asList(stringSerializer.serialize(document).toString()));
+                            Collections.singletonList(stringSerializer.serialize(document)));
                     saveDocumentWithoutRightsCheck(draftDoc, message, true, xcontext);
                     LOGGER.info(defaultMessage);
                 }
@@ -970,7 +972,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                     "Created draft from published document" + stringSerializer.serialize(document) + ".";
                 String message =
                     getMessage("workflow.save.unpublish", defaultMessage,
-                        Arrays.asList(stringSerializer.serialize(document).toString()));
+                        Collections.singletonList(stringSerializer.serialize(document)));
                 saveDocumentWithoutRightsCheck(draftDoc, message, true, xcontext);
 
                 LOGGER.info(defaultMessage);
@@ -1025,9 +1027,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiDocument doc = xcontext.getWiki().getDocument(document, xcontext).clone();
         DocumentReference publisher = xcontext.getUserReference();
 
-        BaseObject workflow = null;
+        BaseObject workflow;
         if (isTarget) {
-            workflow = validateWorkflow(doc, Arrays.asList(STATUS_PUBLISHED), PUBLISHED, xcontext);
+            workflow = validateWorkflow(doc, Collections.singletonList(STATUS_PUBLISHED), PUBLISHED, xcontext);
         } else {
             workflow = doc.getXObject(PUBLICATION_WORKFLOW_CLASS);
         }
@@ -1046,9 +1048,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // Save document
         String defaultMessage = "Archived document by {0}.";
         String message = getMessage("workflow.save.archive", defaultMessage,
-            Arrays.asList(stringSerializer.serialize(publisher)));
+            Collections.singletonList(stringSerializer.serialize(publisher)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
-        LOGGER.info(message + " " + stringSerializer.serialize(document));
+        LOGGER.info("{} {}", message, stringSerializer.serialize(document));
 
         // If workflow scope includes children, hide children as well
         if (workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1) {
@@ -1083,9 +1085,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         XWikiDocument archivedDoc = xcontext.getWiki().getDocument(document, xcontext).clone();
         DocumentReference publisher = xcontext.getUserReference();
 
-        BaseObject archivedWorkflow = null;
+        BaseObject archivedWorkflow;
         if (isTarget) {
-            archivedWorkflow = validateWorkflow(archivedDoc, Arrays.asList(STATUS_ARCHIVED), PUBLISHED, xcontext);
+            archivedWorkflow = validateWorkflow(archivedDoc, Collections.singletonList(STATUS_ARCHIVED), PUBLISHED, xcontext);
         } else {
             archivedWorkflow = archivedDoc.getXObject(PUBLICATION_WORKFLOW_CLASS);
         }
@@ -1105,10 +1107,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         // save it
         String defaultMessage = "Published document from an archive by {0}.";
         String message = getMessage("workflow.save.publishFromArchive", defaultMessage,
-            Arrays.asList(stringSerializer.serialize(publisher)));
+            Collections.singletonList(stringSerializer.serialize(publisher)));
         saveDocumentWithoutRightsCheck(archivedDoc, message, true, xcontext);
 
-        LOGGER.info(message + " " + stringSerializer.serialize(document));
+        LOGGER.info("{} {}", message, stringSerializer.serialize(document));
 
         // If workflow scope includes children, unhide children as well in case the document is a target or
         // if drafts should not be hidden
@@ -1173,7 +1175,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     /**
      * Function that marshalls the contents from ##fromDocument## to ##toDocument##, besides the workflow object, the
      * comment objects, the annotation objects, the rigths and the history. This function does not save the destination
-     * document, the caller is responsible of that, so that they can perform additional operations on the destination
+     * document, the caller is responsible for that, so that they can perform additional operations on the destination
      * document before save.
      * 
      * @param fromDocument
@@ -1216,7 +1218,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         if (exception.isEmpty()) {
             return true;
         } else {
-            StringBuffer exceptions = new StringBuffer();
+            StringBuilder exceptions = new StringBuilder();
             for (LogEvent e : exception) {
                 if (exceptions.length() == 0) {
                     exceptions.append(";");
@@ -1227,7 +1229,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 "Could not copy document contents from "
                     + stringSerializer.serialize(fromDocument.getDocumentReference()) + " to document "
                     + stringSerializer.serialize(toDocument.getDocumentReference()) + ". Caused by: "
-                    + exceptions.toString());
+                    + exceptions);
         }
     }
 
@@ -1396,7 +1398,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
             boolean isWorkflowDocument = target.equals(workflowDocumentReference);
             if (isWorkflowDocument && locale.equals(sourceDocument.getDefaultLocale())) {
-                // setup the workflow and target flag, if a workflow doesn't exist already - only needs to be done for default locale
+                // set up the workflow and target flag, if a workflow doesn't exist already - only needs to be done for default locale
                 BaseObject newWorkflow = targetDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
                 if (newWorkflow == null) {
                     BaseObject sourceWorkflow = sourceDocument.getXObject(PUBLICATION_WORKFLOW_CLASS);
@@ -1423,10 +1425,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 String message = publicationComment;
                 if (message == null) {
                     message = getMessage("workflow.save.publishNew", DEFAULT_PUBLICATION_COMMENT,
-                        Arrays.asList(stringSerializer.serialize(publisher)));
+                        Collections.singletonList(stringSerializer.serialize(publisher)));
                 }
 
-                // setup the context to let events know that they are in the publishing context
+                // set up the context to let events know that they are in the publishing context
                 xcontext.put(CONTEXTKEY_PUBLISHING, true);
                 if (!isWorkflowDocument) {
                     observationManager.notify(new DocumentChildPublishingEvent(target, workflowDocumentReference),
@@ -1434,8 +1436,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 }
                 saveDocumentWithoutRightsCheck(translatedNewDocument, message, false, xcontext);
                 LOGGER
-                    .debug(message + (locale.equals(sourceDocument.getDefaultLocale()) ? "" : " (in locale " + locale +
-                        ")"));
+                    .debug("{}{}", message,
+                        locale.equals(sourceDocument.getDefaultLocale()) ? "" : " (in locale " + locale +
+                            ")");
             } finally {
                 xcontext.remove(CONTEXTKEY_PUBLISHING);
                 xcontext.setLocale(origLocale);
@@ -1563,7 +1566,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
      */
     protected List<DocumentReference> toDocumentReferenceList(List<String> list, DocumentReference relativeTo)
     {
-        return list.stream().filter(group -> group.trim().length() > 0).map(group -> explicitStringDocRefResolver.resolve(group
+        return list.stream().filter(group -> !group.trim().isEmpty()).map(group -> explicitStringDocRefResolver.resolve(group
             , relativeTo)).collect(Collectors.toList());
     }
 
@@ -1599,7 +1602,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
                 // the document gets really saved in the database.
                 childDocument.setMetaDataDirty(true);
                 saveDocumentWithoutRightsCheck(childDocument, message, true, xcontext);
-                LOGGER.info(message + " " + stringSerializer.serialize(child));
+                LOGGER.info("{} {}", message, stringSerializer.serialize(child));
                 updateChildrenHiddenStatus(child, hidden, message);
             }
         }

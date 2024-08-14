@@ -93,7 +93,7 @@ public class DefaultPublicationRoles implements PublicationRoles
      * @param groupRef the group reference of the group to check
      * @param xcontext TODO
      * @return {@code true} if the userRef is in groupRef, {@code false} otherwise
-     * @throws XWikiException in case smth wrong happes while accessing groups docs et all
+     * @throws XWikiException in case smth wrong happens while accessing groups docs et all
      */
     private boolean isInGroup(DocumentReference userRef, DocumentReference groupRef, XWikiContext xcontext)
         throws XWikiException
@@ -158,7 +158,7 @@ public class DefaultPublicationRoles implements PublicationRoles
             }
             // if we already have it, don't bother to look further
             if (isModerator) {
-                return isModerator;
+                return true;
             }
             // check if user is validator
             boolean isValidator = false;
@@ -171,9 +171,8 @@ public class DefaultPublicationRoles implements PublicationRoles
             // either moderator or validator can validate
             return isModerator || isValidator;
         } catch (XWikiException e) {
-            logger.error(
-                "There was an error getting the moderation groups for user " + stringSerializer.serialize(userRef)
-                    + " for document " + stringSerializer.serialize(document.getDocumentReference()), e);
+            logger.error("There was an error getting the moderation groups for user {} for document {}",
+                stringSerializer.serialize(userRef), stringSerializer.serialize(document.getDocumentReference()), e);
         }
 
         return false;
@@ -205,9 +204,8 @@ public class DefaultPublicationRoles implements PublicationRoles
             }
             return isValidator;
         } catch (XWikiException e) {
-            logger.error(
-                "There was an error getting the validation group for user " + stringSerializer.serialize(userRef)
-                    + " for document " + stringSerializer.serialize(document.getDocumentReference()), e);
+            logger.error("There was an error getting the validation group for user {} for document {}",
+                stringSerializer.serialize(userRef), stringSerializer.serialize(document.getDocumentReference()), e);
         }
 
         return false;
@@ -260,9 +258,8 @@ public class DefaultPublicationRoles implements PublicationRoles
             }
             return isValidator;
         } catch (XWikiException e) {
-            logger.error(
-                "There was an error getting the contribution group for user " + stringSerializer.serialize(userRef)
-                    + " for document " + stringSerializer.serialize(document.getDocumentReference()), e);
+            logger.error("There was an error getting the contribution group for user {} for document {}",
+                stringSerializer.serialize(userRef), stringSerializer.serialize(document.getDocumentReference()), e);
         }
 
         return false;
@@ -281,7 +278,7 @@ public class DefaultPublicationRoles implements PublicationRoles
         try {
             return authManager.hasAccess(Right.ADMIN, user, explicitStringDocRefResolver.resolve(context.getWikiId() + ":XWiki.XWikiPreferences"));
         } catch (RuntimeException e) {
-            logger.error("Failed to check wiki admin right for user [" + user + "]", e);
+            logger.error("Failed to check wiki admin right for user [{}]", user, e);
             return false;
         }
     }
@@ -341,7 +338,7 @@ public class DefaultPublicationRoles implements PublicationRoles
         boolean userWikiGroups, XWikiContext xcontext) throws XWikiException
     {
         // use a set as a collection to make sure duplicates are not added
-        Collection<String> allGroups = new HashSet<String>();
+        Collection<String> allGroups = new HashSet<>();
         String localWiki = xcontext.getWikiId();
         String userWiki = userOrGroup.getWikiReference().getName();
 
@@ -355,7 +352,7 @@ public class DefaultPublicationRoles implements PublicationRoles
         if (recursive) {
             Collection<String> parentGroups;
 	    do {
-                parentGroups = new HashSet<String>();
+                parentGroups = new HashSet<>();
                 for (String group : allGroups) {
                     DocumentReference groupRef = defaultStringDocRefResolver.resolve(group);
                     parentGroups.addAll(getGroups(groupRef, false, localGroups, userWikiGroups, xcontext));
@@ -383,7 +380,7 @@ public class DefaultPublicationRoles implements PublicationRoles
         @SuppressWarnings("unchecked")
         Map<String, Collection<String>> grouplistcache = (Map<String, Collection<String>>) context.get("grouplist");
         if (grouplistcache == null) {
-            grouplistcache = new HashMap<String, Collection<String>>();
+            grouplistcache = new HashMap<>();
             context.put("grouplist", grouplistcache);
         }
 
@@ -399,13 +396,13 @@ public class DefaultPublicationRoles implements PublicationRoles
                 Collection<DocumentReference> groupReferences =
                     groupService.getAllGroupsReferencesForMember(memberReference, 0, 0, context);
 
-                tmpGroupList = new ArrayList<String>(groupReferences.size());
+                tmpGroupList = new ArrayList<>(groupReferences.size());
                 for (DocumentReference groupReference : groupReferences) {
                     tmpGroupList.add(this.stringSerializer.serialize(groupReference));
                 }
             } catch (Exception e) {
-                logger.error("Failed to get groups for user or group [" + stringSerializer.serialize(memberReference)
-                    + "] in wiki [" + wiki + "]", e);
+                logger.error("Failed to get groups for user or group [{}] in wiki [{}]",
+                    stringSerializer.serialize(memberReference), wiki, e);
 
                 tmpGroupList = Collections.emptyList();
             } finally {

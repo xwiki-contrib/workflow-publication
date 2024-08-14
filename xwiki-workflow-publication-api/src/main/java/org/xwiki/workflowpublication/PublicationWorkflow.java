@@ -75,7 +75,7 @@ public interface PublicationWorkflow
      * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
      * will be called on this published document. Roughly this function is only setting up the marker on {@code target}
      * as a published documemt. It does, however, all verifications (that there is no other worflow on that document,
-     * etc).
+     * etc.).
      * 
      * @param target
      * @param workflowConfig
@@ -119,7 +119,7 @@ public interface PublicationWorkflow
     /**
      * Creates a draft document corresponding to the passed target reference, which will have as a target the passed
      * reference. The draft document is created in the same wiki, the space where the document is created is taken from
-     * the defaultDraftsSpace property of the workflow config of the target and the name of the draft document is an
+     * the defaultDraftsSpace property of the workflow config of the target and the name of the draft document is a
      * unique name generated starting from the target document.
      * 
      * @param targetRef
@@ -132,7 +132,7 @@ public interface PublicationWorkflow
 
     /**
      * Sets up the draft rigths and visibility on the passed XWikiDocument, as a draft document. It's a helper function
-     * for the listeners to be able to setup the rights with one function. Workflow groups configuration will be taken
+     * for the listeners to be able to set up the rights with one function. Workflow groups configuration will be taken
      * from the workflow object that is attached to the passed document. If such workflow config does not exist, the
      * document will not be changed. Note that this function does not save the document, it just changes it.
      * 

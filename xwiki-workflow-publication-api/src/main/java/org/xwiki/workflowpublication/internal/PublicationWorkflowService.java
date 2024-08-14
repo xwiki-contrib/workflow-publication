@@ -96,7 +96,7 @@ public class PublicationWorkflowService implements ScriptService
 
             return this.publicationWorkflow.isWorkflowDocument(documentObject, context);
         } catch (XWikiException e) {
-            logger.error("There was an error getting the workflow for document " + document, e);
+            logger.error("There was an error getting the workflow for document {}", document, e);
             return false;
         }
     }
@@ -109,8 +109,8 @@ public class PublicationWorkflowService implements ScriptService
             XWikiDocument toDocDoc = xcontext.getWiki().getDocument(toDoc, xcontext);
             return this.publicationWorkflow.isModified(fromDocDoc, toDocDoc, xcontext);
         } catch (XWikiException e) {
-            logger.warn("Could not compare documents " + stringSerializer.serialize(fromDoc) + " and "
-                + stringSerializer.serialize(toDoc), e);
+            logger.warn("Could not compare documents {} and {}", stringSerializer.serialize(fromDoc),
+                stringSerializer.serialize(toDoc), e);
             // by default, if we don't know better, we say they are different
             return true;
         }
@@ -133,8 +133,8 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not start workflow for document " + stringSerializer.serialize(doc) + " and config "
-                + workflowConfig);
+            logger.warn("Could not start workflow for document {} and config {}", stringSerializer.serialize(doc),
+                workflowConfig);
             // TODO: put error on context
             return false;
         }
@@ -151,8 +151,8 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not start workflow for document " + stringSerializer.serialize(doc) + " and config "
-                + workflowConfig);
+            logger.warn("Could not start workflow for document {} and config {}", stringSerializer.serialize(doc),
+                workflowConfig);
             // TODO: put error on context
             return false;
         }
@@ -164,7 +164,7 @@ public class PublicationWorkflowService implements ScriptService
         try {
             return this.publicationWorkflow.getDraftDocument(target, xcontext);
         } catch (XWikiException e) {
-            logger.warn("Could not query for workflow draft for target " + stringSerializer.serialize(target));
+            logger.warn("Could not query for workflow draft for target {}", stringSerializer.serialize(target));
             // TODO: put error on context
             return null;
         }
@@ -176,8 +176,8 @@ public class PublicationWorkflowService implements ScriptService
         try {
             return this.publicationWorkflow.getDraftDocument(target, wiki, xcontext);
         } catch (XWikiException e) {
-            logger.warn("Could not query for workflow draft for target " + stringSerializer.serialize(target)
-                + " on wiki " + wiki);
+            logger.warn("Could not query for workflow draft for target {} on wiki {}",
+                stringSerializer.serialize(target), wiki);
             // TODO: put error on context
             return null;
         }
@@ -194,7 +194,7 @@ public class PublicationWorkflowService implements ScriptService
                 return null;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not create draft for target " + stringSerializer.serialize(target));
+            logger.warn("Could not create draft for target {}", stringSerializer.serialize(target));
             // TODO: put error on context
             return null;
         }
@@ -211,7 +211,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not submit document " + stringSerializer.serialize(document) + " to moderation");
+            logger.warn("Could not submit document {} to moderation", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -228,7 +228,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not refuse moderation for document " + stringSerializer.serialize(document));
+            logger.warn("Could not refuse moderation for document {}", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -245,7 +245,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not submit document " + stringSerializer.serialize(document) + " to validation");
+            logger.warn("Could not submit document {} to validation", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -262,7 +262,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not refuse validation for document " + stringSerializer.serialize(document));
+            logger.warn("Could not refuse validation for document {}", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -279,7 +279,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not mark document " + stringSerializer.serialize(document) + " as valid.");
+            logger.warn("Could not mark document {} as valid.", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -296,7 +296,7 @@ public class PublicationWorkflowService implements ScriptService
                 return null;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not publish document " + stringSerializer.serialize(document));
+            logger.warn("Could not publish document {}", stringSerializer.serialize(document));
             // TODO: put error on context
             return null;
         }
@@ -313,7 +313,7 @@ public class PublicationWorkflowService implements ScriptService
                 return null;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not unpublish document " + stringSerializer.serialize(document));
+            logger.warn("Could not unpublish document {}", stringSerializer.serialize(document));
             // TODO: put error on context
             return null;
         }
@@ -330,7 +330,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not change " + stringSerializer.serialize(document) + " status to draft");
+            logger.warn("Could not change {} status to draft", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -347,7 +347,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not archive document " + stringSerializer.serialize(document));
+            logger.warn("Could not archive document {}", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
@@ -364,7 +364,7 @@ public class PublicationWorkflowService implements ScriptService
                 return null;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not unpublish document " + stringSerializer.serialize(document));
+            logger.warn("Could not unpublish document {}", stringSerializer.serialize(document));
             // TODO: put error on context
             return null;
         }
@@ -381,7 +381,7 @@ public class PublicationWorkflowService implements ScriptService
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not publish document " + stringSerializer.serialize(document) + " from archive");
+            logger.warn("Could not publish document {} from archive", stringSerializer.serialize(document));
             // TODO: put error on context
             return false;
         }
