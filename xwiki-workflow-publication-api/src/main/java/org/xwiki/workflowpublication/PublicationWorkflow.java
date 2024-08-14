@@ -63,11 +63,11 @@ public interface PublicationWorkflow
      */
     boolean isModified(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext context) throws XWikiException;
 
-    public boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target,
+    boolean startWorkflow(DocumentReference doc, String workflowConfig, DocumentReference target,
         XWikiContext xcontext) throws XWikiException;
 
     @Unstable
-    public boolean startWorkflow(DocumentReference doc, boolean includeChildren, String workflowConfig,
+    boolean startWorkflow(DocumentReference doc, boolean includeChildren, String workflowConfig,
         DocumentReference target, XWikiContext xcontext) throws XWikiException;
 
     /**
@@ -83,7 +83,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean startWorkflowAsTarget(DocumentReference target, String workflowConfig, XWikiContext xcontext)
+    boolean startWorkflowAsTarget(DocumentReference target, String workflowConfig, XWikiContext xcontext)
         throws XWikiException;
 
     /**
@@ -96,7 +96,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException;
+    DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException;
 
     /**
      * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
@@ -113,7 +113,7 @@ public interface PublicationWorkflow
      * @throws XWikiException
      * @since 1.1
      */
-    public DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext)
+    DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext)
         throws XWikiException;
 
     /**
@@ -127,7 +127,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public DocumentReference createDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
+    DocumentReference createDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
         throws XWikiException;
 
     /**
@@ -140,7 +140,7 @@ public interface PublicationWorkflow
      * @param xcontext the context of the modification
      * @throws XWikiException in case something goes wrong
      */
-    public void setupDraftAccess(XWikiDocument document, XWikiContext xcontext) throws XWikiException;
+    void setupDraftAccess(XWikiDocument document, XWikiContext xcontext) throws XWikiException;
 
     /* Functions to be used from the scripts */
 
@@ -151,7 +151,7 @@ public interface PublicationWorkflow
      * @param document is the draft document which needs to pass in moderating state
      * @throws XWikiException
      */
-    public boolean submitForModeration(DocumentReference document) throws XWikiException;
+    boolean submitForModeration(DocumentReference document) throws XWikiException;
 
     /**
      * moderating -&gt; draft + contributor gets edit rights back
@@ -161,7 +161,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean refuseModeration(DocumentReference document, String reason) throws XWikiException;
+    boolean refuseModeration(DocumentReference document, String reason) throws XWikiException;
 
     /**
      * moderating -&gt; validating. + moderator looses edit rights
@@ -170,7 +170,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean submitForValidation(DocumentReference document) throws XWikiException;
+    boolean submitForValidation(DocumentReference document) throws XWikiException;
 
     /**
      * validating -&gt; draft. + contributor and moderator get back rights
@@ -180,7 +180,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean refuseValidation(DocumentReference documnet, String reason) throws XWikiException;
+    boolean refuseValidation(DocumentReference documnet, String reason) throws XWikiException;
 
     /**
      * validating -&gt; validated. Rights stay the same as in validating state. This extra state is needed in order to be
@@ -190,7 +190,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean validate(DocumentReference document) throws XWikiException;
+    boolean validate(DocumentReference document) throws XWikiException;
 
     /**
      * validated or validating -&gt; published + document gets copied in its final place where it will be readonly anyway
@@ -199,7 +199,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public DocumentReference publish(DocumentReference document) throws XWikiException;
+    DocumentReference publish(DocumentReference document) throws XWikiException;
 
     /**
      * published -&gt; draft. Published document gets deleted. Content from the published document can be copied to the
@@ -210,7 +210,7 @@ public interface PublicationWorkflow
      * @return the draft document
      * @throws XWikiException
      */
-    public DocumentReference unpublish(DocumentReference document, boolean forceToDraft) throws XWikiException;
+    DocumentReference unpublish(DocumentReference document, boolean forceToDraft) throws XWikiException;
 
     /**
      * To edit back a draft whose status is published
@@ -219,7 +219,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean editDraft(DocumentReference document) throws XWikiException;
+    boolean editDraft(DocumentReference document) throws XWikiException;
 
     /**
      * published -&gt; archived. Not yet sure how it would work.
@@ -228,7 +228,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean archive(DocumentReference document) throws XWikiException;
+    boolean archive(DocumentReference document) throws XWikiException;
 
     /**
      * archived -&gt; draft. Archived document gets deleted. Content from the archived document can be copied to the draft
@@ -238,7 +238,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public DocumentReference unarchive(DocumentReference document, boolean forceToDraft) throws XWikiException;
+    DocumentReference unarchive(DocumentReference document, boolean forceToDraft) throws XWikiException;
 
     /**
      * archived -&gt; published. Not yet sure how it would work.
@@ -247,7 +247,7 @@ public interface PublicationWorkflow
      * @return
      * @throws XWikiException
      */
-    public boolean publishFromArchive(DocumentReference document) throws XWikiException;
+    boolean publishFromArchive(DocumentReference document) throws XWikiException;
 
     /**
      * Returns a reference to the first document containing a workflow object in the given reference's ancestors

@@ -37,12 +37,12 @@ public interface WorkflowConfigManager
     /**
      * The reference to the workflow config class, relative to the current wiki.
      */
-    public static final EntityReference PUBLICATION_WORKFLOW_CONFIG_CLASS = new EntityReference(
+    EntityReference PUBLICATION_WORKFLOW_CONFIG_CLASS = new EntityReference(
         "PublicationWorkflowConfigClass", EntityType.DOCUMENT, new EntityReference("PublicationWorkflow",
             EntityType.SPACE));
 
-    public BaseObject getWorkflowConfigForWorkflowDoc(XWikiDocument document, XWikiContext context)
+    BaseObject getWorkflowConfigForWorkflowDoc(XWikiDocument document, XWikiContext context)
         throws XWikiException;
 
-    public BaseObject getWorkflowConfig(String workflowConfigName, XWikiContext context) throws XWikiException;    
+    BaseObject getWorkflowConfig(String workflowConfigName, XWikiContext context) throws XWikiException;
 }
