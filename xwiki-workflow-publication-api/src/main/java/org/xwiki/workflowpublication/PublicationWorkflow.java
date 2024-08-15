@@ -74,7 +74,7 @@ public interface PublicationWorkflow
      * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
      * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
      * will be called on this published document. Roughly this function is only setting up the marker on {@code target}
-     * as a published documemt. It does, however, all verifications (that there is no other worflow on that document,
+     * as a published documemt. It does, however, all verifications (that there is no other workflow on that document,
      * etc.).
      *
      * @param target the document reference on which the workflow will be started
@@ -92,7 +92,7 @@ public interface PublicationWorkflow
      * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
      * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
      * will be called on this published document. Roughly this function is only setting up the marker on {@code target}
-     * as a published documemt. It does, however, all verifications (that there is no other worflow on that document,
+     * as a published documemt. It does, however, all verifications (that there is no other workflow on that document,
      * etc.).
      *
      * @param target the document reference on which the workflow will be started

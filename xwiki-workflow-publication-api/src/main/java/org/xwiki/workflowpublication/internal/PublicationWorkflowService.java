@@ -141,44 +141,51 @@ public class PublicationWorkflowService implements ScriptService
     }
 
     /**
+     * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
+     * can be created the first time when the function {@link #createDraftDocument(DocumentReference)} will be called on
+     * this published document. Roughly this function is only setting up the marker on {@code target} as a published
+     * documemt. It does, however, all verifications (that there is no other workflow on that document, etc.).
      *
-     * @param doc the document reference on which the workflow will be started
+     * @param docRef the document reference on which the workflow will be started
      * @param workflowConfig the configuration information for the workflow
      * @return {@code true} if the workflow was successfully started on the specified target {@code false} otherwise
-     *
      * @deprecated use {@link #startWorkflowAsTarget(DocumentReference, boolean, String)}
      */
-    public boolean startWorkflowAsTarget(DocumentReference doc, String workflowConfig)
+    public boolean startWorkflowAsTarget(DocumentReference docRef, String workflowConfig)
     {
-        return startWorkflowAsTarget(doc, true, workflowConfig);
+        return startWorkflowAsTarget(docRef, true, workflowConfig);
     }
 
     /**
+     * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
+     * can be created the first time when the function {@link #createDraftDocument(DocumentReference)} will be called on
+     * this published document. Roughly this function is only setting up the marker on {@code target} as a published
+     * documemt. It does, however, all verifications (that there is no other workflow on that document, etc.).
      *
-     * @param doc the document reference on which the workflow will be started
+     * @param docRef the document reference on which the workflow will be started
      * @param includeChildren {@code true} if the workflow should include child documents {@code false} otherwise
      * @param workflowConfig the configuration information for the workflow
      * @return {@code true} if the workflow was successfully started on the specified target {@code false} otherwise
-     *
      * @since 2.4
      */
-    public boolean startWorkflowAsTarget(DocumentReference doc, boolean includeChildren, String workflowConfig)
+    public boolean startWorkflowAsTarget(DocumentReference docRef, boolean includeChildren, String workflowConfig)
     {
         XWikiContext xcontext = getXContext();
         try {
-            if (authManager.hasAccess(Right.EDIT, xcontext.getUserReference(), doc)) {
-                return this.publicationWorkflow.startWorkflowAsTarget(doc, includeChildren, workflowConfig, xcontext);
+            if (authManager.hasAccess(Right.EDIT, xcontext.getUserReference(), docRef)) {
+                return this.publicationWorkflow.startWorkflowAsTarget(docRef, includeChildren, workflowConfig,
+                    xcontext);
             } else {
                 // TODO: put error on context
                 return false;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not start workflow for document {} and config {}", stringSerializer.serialize(doc),
+            logger.warn("Could not start workflow for document {} and config {}.", stringSerializer.serialize(docRef),
                 workflowConfig);
             // TODO: put error on context
             return false;
         }
-    }    
+    }
 
     public DocumentReference getDraftDocument(DocumentReference target)
     {
@@ -205,18 +212,28 @@ public class PublicationWorkflowService implements ScriptService
         }
     }
 
-    public DocumentReference createDraftDocument(DocumentReference target)
+    /**
+     * Creates a draft document corresponding to the passed target reference, which will have as a target the passed
+     * reference. The draft document is created in the same wiki, the space where the document is created is taken from
+     * the defaultDraftsSpace property of the workflow config of the target and the name of the draft document is a
+     * unique name generated starting from the target document.
+     *
+     * @param targetRef the reference to the target document for which a draft is being created
+     * @return {@code true} if the draft document was successfully created {@code false} otherwise
+     */
+    public DocumentReference createDraftDocument(DocumentReference targetRef)
     {
         XWikiContext xcontext = getXContext();
         try {
             if (this.publicationRoles.canContribute(xcontext.getUserReference(),
-                xcontext.getWiki().getDocument(target, xcontext), xcontext)) {
-                return this.publicationWorkflow.createDraftDocument(target, xcontext);
+                xcontext.getWiki().getDocument(targetRef, xcontext), xcontext))
+            {
+                return this.publicationWorkflow.createDraftDocument(targetRef, xcontext);
             } else {
                 return null;
             }
         } catch (XWikiException e) {
-            logger.warn("Could not create draft for target {}", stringSerializer.serialize(target));
+            logger.warn("Could not create draft for target {}", stringSerializer.serialize(targetRef));
             // TODO: put error on context
             return null;
         }

@@ -436,7 +436,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
-        // we can only create a draft for a published document, from the published or archived state.
+        // We can only create a draft for a published document, from the published or archived state.
         BaseObject workflow =
             validateWorkflow(targetDocument, Arrays.asList(STATUS_PUBLISHED, STATUS_ARCHIVED), PUBLISHED, xcontext);
         if (workflow == null) {
@@ -464,21 +464,20 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: put error on the context
             return null;
         }
-        String defaultDraftsSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME);
+        String defaultDraftsSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME).trim();
         if (StringUtils.isEmpty(defaultDraftsSpace)) {
             // TODO: put exception on the context
             return null;
         }
-        defaultDraftsSpace = defaultDraftsSpace.trim();
         SpaceReference defaultDraftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
         if (isNonTerminalPage) {
             defaultDraftSpaceRef = new SpaceReference(targetRef.getParent().getName(), defaultDraftSpaceRef);
         }
 
-        // get a new document in the drafts space, starting with the name of the target document
-        String draftDocName = xcontext.getWiki().getUniquePageName(stringSerializer.serialize(defaultDraftSpaceRef), targetRef.getName(), xcontext);
-        DocumentReference draftDocRef =
-            new DocumentReference(draftDocName, defaultDraftSpaceRef);
+        // Get a new document in the drafts space, starting with the name of the target document.
+        String draftDocName = xcontext.getWiki()
+            .getUniquePageName(stringSerializer.serialize(defaultDraftSpaceRef), targetRef.getName(), xcontext);
+        DocumentReference draftDocRef = new DocumentReference(draftDocName, defaultDraftSpaceRef);
         XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
 
         final Locale origLocale = xcontext.getLocale();
@@ -494,22 +493,22 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         for (Locale locale : locales) {
             translatedDraftDoc = copyTranslatedDocument(targetDocument, draftDoc, locale, xcontext);
 
-            // workflow object: only needs to be set up for default locale
+            // Workflow object: only needs to be set up for default locale.
             if (locale.equals(targetDocument.getDefaultLocale())) {
-                BaseObject draftWfObject =
-                        draftDoc.newXObject(
-                            explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
-                            xcontext);
+                BaseObject draftWfObject = draftDoc.newXObject(
+                    explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,
+                        draftDocRef), xcontext);
                 draftWfObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
                 draftWfObject.set(WF_CONFIG_REF_FIELDNAME,
                     compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
-                draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef), xcontext);
+                draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef),
+                    xcontext);
                 this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
             }
 
-            // set up the creator to the current user
+            // Set up the creator to the current user.
             translatedDraftDoc.setCreatorReference(xcontext.getUserReference());
-            // and save the document
+            // And save the document.
 
             try {
                 xcontext.setLocale(translatedDraftDoc.getRealLocale());
@@ -529,7 +528,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             List<DocumentReference> obsoleteDraftChildren = getChildren(draftDocRef);
             for (DocumentReference child : children) {
                 DocumentReference childTarget = getChildTarget(child, targetRef, draftDocRef);
-                copyDocument(child, childTarget, targetRef, xcontext.getUserReference(),true, message);
+                copyDocument(child, childTarget, targetRef, xcontext.getUserReference(), true, message);
                 obsoleteDraftChildren.remove(childTarget);
             }
             // Delete draft's children without a counterpart in the target.
@@ -638,34 +637,33 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     @Override
-    public boolean startWorkflowAsTarget(DocumentReference docName, String workflowConfig, XWikiContext xcontext)
+    public boolean startWorkflowAsTarget(DocumentReference targetRef, String workflowConfig, XWikiContext xcontext)
         throws XWikiException
     {
-        return startWorkflowAsTarget(docName, true, workflowConfig, xcontext);
+        return startWorkflowAsTarget(targetRef, true, workflowConfig, xcontext);
     }
 
     @Override
-    public boolean startWorkflowAsTarget(DocumentReference docName, boolean includeChildren, String workflowConfig,
+    public boolean startWorkflowAsTarget(DocumentReference targetRef, boolean includeChildren, String workflowConfig,
         XWikiContext xcontext) throws XWikiException
     {
-        XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
+        XWikiDocument targetDoc = xcontext.getWiki().getDocument(targetRef, xcontext);
 
-        // check that the document is no already under workflow
-        if (this.isWorkflowDocument(doc, xcontext)) {
+        // Check that the document is no already under workflow.
+        if (this.isWorkflowDocument(targetDoc, xcontext)) {
             // TODO: put this error on the context
             return false;
         }
 
-        // Check that the target is free. i.e. no other workflow document targets this target
-        if (this.getDraftDocument(docName, xcontext) != null) {
+        // Check that the target is free. i.e. no other workflow document targets this target.
+        if (this.getDraftDocument(targetRef, xcontext) != null) {
             // TODO: put this error on the context
             return false;
         }
 
-        BaseObject workflowObject =
-            doc.newXObject(
-                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, docName),
-                xcontext);
+        BaseObject workflowObject = targetDoc.newXObject(
+            explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, targetRef),
+            xcontext);
         BaseObject wfConfig = configManager.getWorkflowConfig(workflowConfig, xcontext);
         if (wfConfig == null) {
             // TODO: put error on the context
@@ -674,20 +672,20 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         workflowObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
         workflowObject.set(WF_CONFIG_REF_FIELDNAME, workflowConfig, xcontext);
-        workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(docName, docName), xcontext);
-        // mark document as target
+        workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, targetRef), xcontext);
+        // Mark document as target.
         workflowObject.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
         workflowObject.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-        
-        //there are no rights settings on published documents, as per the rule of workflow 
 
-        // save the document prepared like this
+        // There are no rights settings on published documents, as per the rule of workflow.
+
+        // Save the document prepared like this.
         String defaultMessage = String.format("Started workflow %s on document %s as target", workflowConfig,
-            stringSerializer.serialize(docName));
+            stringSerializer.serialize(targetRef));
         String message =
             this.getMessage("workflow.save.startAsTarget", defaultMessage,
-                Arrays.asList(workflowConfig, stringSerializer.serialize(docName)));
-        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
+                Arrays.asList(workflowConfig, stringSerializer.serialize(targetRef)));
+        saveDocumentWithoutRightsCheck(targetDoc, message, true, xcontext);
 
         LOGGER.info(defaultMessage);
 
