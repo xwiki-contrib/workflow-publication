@@ -82,37 +82,38 @@
   ## Action : $action
   #if($action == "start")
     #set ($includeChildren = "$!request.includeChildren" != '')
-    #set ($targetSpaceReferencePath = "$!request.targetSpace")
-    #set ($targetName = "$!request.targetName")
-    #set ($defaultSpaceHomePageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
-    #set ($targetSpaceReference = $services.model.resolveSpace($targetSpaceReferencePath))
-    #if (!$request.targetIsTerminal &amp;&amp; $targetName != $defaultSpaceHomePageName)
-      #set ($targetSpaceReference = $services.model.createSpaceReference($targetName, $targetSpaceReference))
-      #set ($targetReference = $services.model.createDocumentReference($defaultSpaceHomePageName, $targetSpaceReference))
+    #set ($workflowConfig = "$!request.workflow")
+    #if ("$!request.startAsTarget" != '')
+      #if ($workflowConfig == '')
+        $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=missingparams'))
+      #elseif(!$xwiki.exists($workflowDocRef))
+        $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=targetdoesnotexist'))
+      #else
+        #set($result = $services.publicationworkflow.startWorkflowAsTarget($workflowDocRef, $includeChildren, $workflowConfig))
+        #if (!$result)
+          $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=invalidpage'))
+        #end
+      #end
     #else
+      #set ($targetSpaceReferencePath = "$!request.targetSpace")
+      #set ($targetName = "$!request.targetName")
+      #set ($defaultSpaceHomePageName = $xwiki.getXWikiPreference('xwiki.defaultpage','WebHome'))
       #set ($targetSpaceReference = $services.model.resolveSpace($targetSpaceReferencePath))
-      #set ($targetReference = $services.model.createDocumentReference($targetName, $targetSpaceReference))
-    #end
-    #set($workflowConfig = "$request.workflow")
-    ## Check that the target and the existing doc are different
-    #if($targetReference.equals($workflowDocRef))
-      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
-    ## Check that the target does not exist
-    #elseif($xwiki.exists($targetReference))
-      $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'targetexists=true'))
-    #else
-      #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $includeChildren, $workflowConfig, $targetReference))
-    #end
-  #elseif($action == 'startastarget')
-    #set($workflowConfig = "$!request.workflow")
-    #if ($workflowConfig == '')
-      $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=missingparams'))
-    #elseif(!$xwiki.exists($workflowDocRef))
-      $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=targetdoesnotexist'))
-    #else
-      #set($result = $services.publicationworkflow.startWorkflowAsTarget($workflowDocRef, $workflowConfig))
-      #if (!$result)
-        $response.sendRedirect($xwiki.getURL($redirectdoc, 'view', 'error=invalidpage'))
+      #if (!$request.targetIsTerminal &amp;&amp; $targetName != $defaultSpaceHomePageName)
+        #set ($targetSpaceReference = $services.model.createSpaceReference($targetName, $targetSpaceReference))
+        #set ($targetReference = $services.model.createDocumentReference($defaultSpaceHomePageName, $targetSpaceReference))
+      #else
+        #set ($targetSpaceReference = $services.model.resolveSpace($targetSpaceReferencePath))
+        #set ($targetReference = $services.model.createDocumentReference($targetName, $targetSpaceReference))
+      #end
+      ## Check that the target and the existing doc are different
+      #if($targetReference.equals($workflowDocRef))
+        $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'same=true'))
+      ## Check that the target does not exist
+      #elseif($xwiki.exists($targetReference))
+        $response.sendRedirect($xwiki.getURL($workflowDocRef, 'view', 'targetexists=true'))
+      #else
+        #set($result = $services.publicationworkflow.startWorkflow($workflowDocRef, $includeChildren, $workflowConfig, $targetReference))
       #end
     #end
   #elseif ($action == "submitformoderation")

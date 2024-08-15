@@ -54,6 +54,8 @@ workflow.start.name.placeholder=TargetPage
 workflow.start.advancedoptions.text=Use the advanced options to select the location of the published page and the workflow configuration associated to this page.
 workflow.start.advancedoptions.button=Advanced options
 workflow.start.targetExists=Published page already exists.
+workflow.start.startAsTarget=Start as target
+workflow.start.startAsTarget.hint=Start workflow from the current page considering it the target
 
 workflow.title = Workflow
 workflow.currentStatus = Current status
@@ -143,6 +145,7 @@ workflow.overview.failValidate = A problem occurred during the validation of doc
 workflow.overview.failPublish = A problem occurred during the publication of document [[{0}]]
 
 workflow.save.start = Start workflow {0} on document {1}.
+workflow.save.startAsTarget = Start workflow {0} on document {1} as target.
 workflow.save.submitForModeration = Submit document {0} to moderation.
 workflow.save.refuseModeration = Moderation refused : {0}
 workflow.save.submitForValidation = Submit document {0} to validation.

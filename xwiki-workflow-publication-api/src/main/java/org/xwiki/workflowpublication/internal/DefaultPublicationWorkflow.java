@@ -486,6 +486,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         List<Locale> locales = targetDocument.getTranslationLocales(xcontext);
         locales.add(0, targetDocument.getDefaultLocale());
 
+        boolean includeChildren = targetDocument.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1;
+        String defaultMessage = String.format("Created draft for %s.",stringSerializer.serialize(targetRef));
+        String message = getMessage("workflow.save.createDraft", defaultMessage,
+            Collections.singletonList(stringSerializer.serialize(targetRef)));
+
         for (Locale locale : locales) {
             translatedDraftDoc = copyTranslatedDocument(targetDocument, draftDoc, locale, xcontext);
 
@@ -493,10 +498,11 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             if (locale.equals(targetDocument.getDefaultLocale())) {
                 BaseObject draftWfObject =
                         draftDoc.newXObject(
-                                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
-                                xcontext);
+                            explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
+                            xcontext);
+                draftWfObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
                 draftWfObject.set(WF_CONFIG_REF_FIELDNAME,
-                        compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
+                    compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
                 draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef), xcontext);
                 this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
             }
@@ -504,17 +510,33 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // set up the creator to the current user
             translatedDraftDoc.setCreatorReference(xcontext.getUserReference());
             // and save the document
-            String defaultMessage = "Created draft for " + stringSerializer.serialize(targetRef) + ".";
 
             try {
                 xcontext.setLocale(translatedDraftDoc.getRealLocale());
-                String message =
-                    getMessage("workflow.save.createDraft", defaultMessage,
-                        Collections.singletonList(stringSerializer.serialize(targetRef)));
+
                 saveDocumentWithoutRightsCheck(translatedDraftDoc, message, false, xcontext);
                 LOGGER.debug(defaultMessage);
             } finally {
                 xcontext.setLocale(origLocale);
+            }
+        }
+
+        // Copy the page children if the "includeChildren" argument is true, and remove the obsolete ones.
+        if (includeChildren) {
+            List<DocumentReference> children = getChildren(targetRef);
+            // Retrieve all draft's children and keep only the ones that do not have a counterpart in the target.
+            // Delete the obsolete ones.
+            List<DocumentReference> obsoleteDraftChildren = getChildren(draftDocRef);
+            for (DocumentReference child : children) {
+                DocumentReference childTarget = getChildTarget(child, targetRef, draftDocRef);
+                copyDocument(child, childTarget, targetRef, xcontext.getUserReference(),true, message);
+                obsoleteDraftChildren.remove(childTarget);
+            }
+            // Delete draft's children without a counterpart in the target.
+            for (DocumentReference obsoletePublishedChild : obsoleteDraftChildren) {
+                XWikiDocument obsoletePublishedChildDocument =
+                    xcontext.getWiki().getDocument(obsoletePublishedChild, xcontext);
+                xcontext.getWiki().deleteDocument(obsoletePublishedChildDocument, xcontext);
             }
         }
 
@@ -614,10 +636,17 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         return true;
     }
-    
+
     @Override
     public boolean startWorkflowAsTarget(DocumentReference docName, String workflowConfig, XWikiContext xcontext)
         throws XWikiException
+    {
+        return startWorkflowAsTarget(docName, true, workflowConfig, xcontext);
+    }
+
+    @Override
+    public boolean startWorkflowAsTarget(DocumentReference docName, boolean includeChildren, String workflowConfig,
+        XWikiContext xcontext) throws XWikiException
     {
         XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
 
@@ -643,6 +672,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             return false;
         }
 
+        workflowObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
         workflowObject.set(WF_CONFIG_REF_FIELDNAME, workflowConfig, xcontext);
         workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(docName, docName), xcontext);
         // mark document as target
@@ -652,10 +682,10 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         //there are no rights settings on published documents, as per the rule of workflow 
 
         // save the document prepared like this
-        String defaultMessage =
-            "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName) + " as target";
+        String defaultMessage = String.format("Started workflow %s on document %s as target", workflowConfig,
+            stringSerializer.serialize(docName));
         String message =
-            this.getMessage("workflow.save.startastarget", defaultMessage,
+            this.getMessage("workflow.save.startAsTarget", defaultMessage,
                 Arrays.asList(workflowConfig, stringSerializer.serialize(docName)));
         saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
 

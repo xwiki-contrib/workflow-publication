@@ -139,13 +139,35 @@ public class PublicationWorkflowService implements ScriptService
             return false;
         }
     }
-    
+
+    /**
+     *
+     * @param doc the document reference on which the workflow will be started
+     * @param workflowConfig the configuration information for the workflow
+     * @return {@code true} if the workflow was successfully started on the specified target {@code false} otherwise
+     *
+     * @deprecated use {@link #startWorkflowAsTarget(DocumentReference, boolean, String)}
+     */
     public boolean startWorkflowAsTarget(DocumentReference doc, String workflowConfig)
+    {
+        return startWorkflowAsTarget(doc, true, workflowConfig);
+    }
+
+    /**
+     *
+     * @param doc the document reference on which the workflow will be started
+     * @param includeChildren {@code true} if the workflow should include child documents {@code false} otherwise
+     * @param workflowConfig the configuration information for the workflow
+     * @return {@code true} if the workflow was successfully started on the specified target {@code false} otherwise
+     *
+     * @since 2.4
+     */
+    public boolean startWorkflowAsTarget(DocumentReference doc, boolean includeChildren, String workflowConfig)
     {
         XWikiContext xcontext = getXContext();
         try {
             if (authManager.hasAccess(Right.EDIT, xcontext.getUserReference(), doc)) {
-                return this.publicationWorkflow.startWorkflowAsTarget(doc, workflowConfig, xcontext);
+                return this.publicationWorkflow.startWorkflowAsTarget(doc, includeChildren, workflowConfig, xcontext);
             } else {
                 // TODO: put error on context
                 return false;
