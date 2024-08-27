@@ -450,8 +450,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         throws XWikiException
     {
         DocumentReference targetRef = targetDocument.getDocumentReference();
-        boolean isNonTerminalPage = targetRef.getName().equals(
-            xcontext.getWiki().getXWikiPreference("xwiki.defaultpage","WebHome", xcontext));
 
         // if this document is not a workflow document, return nothing
         if (!this.isWorkflowDocument(targetDocument, xcontext)) {
@@ -464,20 +462,19 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: put error on the context
             return null;
         }
-        String defaultDraftsSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME).trim();
-        if (StringUtils.isEmpty(defaultDraftsSpace)) {
+        String defaultDraftSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME).trim();
+        String defaultTargetSpace = wfConfig.getStringValue("defaultTargetSpace").trim();
+        if (StringUtils.isEmpty(defaultDraftSpace) || StringUtils.isEmpty(defaultTargetSpace)) {
             // TODO: put exception on the context
             return null;
         }
-        SpaceReference defaultDraftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
-        if (isNonTerminalPage) {
-            defaultDraftSpaceRef = new SpaceReference(targetRef.getParent().getName(), defaultDraftSpaceRef);
-        }
+        SpaceReference draftSpaceRef =
+            getDraftSpaceReference(xcontext, defaultDraftSpace, targetRef, defaultTargetSpace);
 
         // Get a new document in the drafts space, starting with the name of the target document.
         String draftDocName = xcontext.getWiki()
-            .getUniquePageName(stringSerializer.serialize(defaultDraftSpaceRef), targetRef.getName(), xcontext);
-        DocumentReference draftDocRef = new DocumentReference(draftDocName, defaultDraftSpaceRef);
+            .getUniquePageName(stringSerializer.serialize(draftSpaceRef), targetRef.getName(), xcontext);
+        DocumentReference draftDocRef = new DocumentReference(draftDocName, draftSpaceRef);
         XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
 
         final Locale origLocale = xcontext.getLocale();
@@ -540,6 +537,38 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         }
 
         return draftDocRef;
+    }
+
+    private SpaceReference getDraftSpaceReference(XWikiContext xcontext, String defaultDraftsSpace,
+        DocumentReference targetRef, String defaultTargetSpace)
+    {
+        boolean isNonTerminalPage = targetRef.getName().equals(
+            xcontext.getWiki().getXWikiPreference("xwiki.defaultpage", "WebHome", xcontext));
+        SpaceReference draftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
+        if (isNonTerminalPage) {
+            List<String> draftSpacesHierarchy = getDraftSpacesHierarchy(targetRef, defaultTargetSpace, defaultDraftsSpace);
+            draftSpaceRef = new SpaceReference(xcontext.getWikiId(), draftSpacesHierarchy);
+        }
+        return draftSpaceRef;
+    }
+
+    /**
+     * Get the draft spaces hierarchy by replacing the default target space with the default draft space.
+     */
+    private static List<String> getDraftSpacesHierarchy(DocumentReference targetRef, String defaultTargetSpace,
+        String defaultDraftsSpace)
+    {
+        List<String> spaces = new ArrayList<>();
+        for (EntityReference reference : targetRef.getReversedReferenceChain()) {
+            if (EntityType.SPACE.equals(reference.getType())) {
+                if (reference.getName().equals(defaultTargetSpace)) {
+                    spaces.add(defaultDraftsSpace);
+                } else {
+                    spaces.add(reference.getName());
+                }
+            }
+        }
+        return spaces;
     }
 
     @Override
