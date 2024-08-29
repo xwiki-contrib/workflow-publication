@@ -769,6 +769,11 @@ document.observe('xwiki:dom:loading', function() {
               &lt;input type="checkbox" id="targetIsTerminal" name="targetIsTerminal" #if($currentDocRef.name != $defaultPageName)checked="checked" #end/&gt;
               &lt;label for="terminal"&gt;$services.localization.render('core.create.terminal.label')&lt;/label&gt;
             &lt;/dt&gt;
+            &lt;dt&gt;
+              &lt;input type="checkbox" id="startAsTarget" name="startAsTarget"/&gt;
+              &lt;label for="startAsTarget"&gt;$escapetool.xml($services.localization.render('workflow.start.startAsTarget'))&lt;/label&gt;
+              &lt;span class="xHint"&gt;$escapetool.xml($services.localization.render('workflow.start.startAsTarget.hint'))&lt;/span&gt;
+            &lt;/dt&gt;
           &lt;/dl&gt;
           &lt;input type="hidden" name="action" value="start" /&gt;
           &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($currentDocRef, 'default'))" /&gt;
@@ -1069,7 +1074,7 @@ document.observe('xwiki:dom:loading', function() {
       <defaultValue>true</defaultValue>
     </property>
     <property>
-      <description></description>
+      <description/>
     </property>
     <property>
       <mandatory>0</mandatory>

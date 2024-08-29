@@ -74,17 +74,38 @@ public interface PublicationWorkflow
      * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
      * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
      * will be called on this published document. Roughly this function is only setting up the marker on {@code target}
-     * as a published documemt. It does, however, all verifications (that there is no other worflow on that document,
+     * as a published documemt. It does, however, all verifications (that there is no other workflow on that document,
      * etc.).
-     * 
-     * @param target
-     * @param workflowConfig
-     * @param xcontext
-     * @return
-     * @throws XWikiException
+     *
+     * @param target the document reference on which the workflow will be started
+     * @param workflowConfig the configuration information for the workflow
+     * @param xcontext the context information
+     * @return {@code true} if the workflow was successfully started on the specified target {@code false} otherwise
+     * @throws XWikiException if an exception occurs during the workflow process
+     * @deprecated use {@link #startWorkflowAsTarget(DocumentReference, boolean, String, XWikiContext)}
      */
+    @Deprecated
     boolean startWorkflowAsTarget(DocumentReference target, String workflowConfig, XWikiContext xcontext)
         throws XWikiException;
+
+    /**
+     * Starts the workflow on {@code target} as the published document, without creating the draft document. The draft
+     * can be created the first time when the function {@link #createDraftDocument(DocumentReference, XWikiContext)}
+     * will be called on this published document. Roughly this function is only setting up the marker on {@code target}
+     * as a published documemt. It does, however, all verifications (that there is no other workflow on that document,
+     * etc.).
+     *
+     * @param target the document reference on which the workflow will be started
+     * @param includeChildren {@code true} if the workflow should include child documents {@code false} otherwise
+     * @param workflowConfig the configuration information for the workflow
+     * @param xcontext the context information
+     * @return {@code true} if the workflow was successfully started on the specified target {@code false} otherwise
+     * @throws XWikiException if an exception occurs during the workflow process
+     *
+     * @since 2.4
+     */
+    boolean startWorkflowAsTarget(DocumentReference target, boolean includeChildren, String workflowConfig,
+        XWikiContext xcontext) throws XWikiException;
 
     /**
      * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
@@ -122,10 +143,10 @@ public interface PublicationWorkflow
      * the defaultDraftsSpace property of the workflow config of the target and the name of the draft document is a
      * unique name generated starting from the target document.
      * 
-     * @param targetRef
-     * @param xcontext
-     * @return
-     * @throws XWikiException
+     * @param targetRef the reference to the target document for which a draft is being created
+     * @param xcontext the context information
+     * @return {@code true} if the draft document was successfully created {@code false} otherwise
+     * @throws XWikiException if an exceptions occurs during the workflow process
      */
     DocumentReference createDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
         throws XWikiException;

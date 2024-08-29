@@ -436,7 +436,7 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         XWikiDocument targetDocument = xcontext.getWiki().getDocument(targetRef, xcontext);
 
-        // we can only create a draft for a published document, from the published or archived state.
+        // We can only create a draft for a published document, from the published or archived state.
         BaseObject workflow =
             validateWorkflow(targetDocument, Arrays.asList(STATUS_PUBLISHED, STATUS_ARCHIVED), PUBLISHED, xcontext);
         if (workflow == null) {
@@ -450,8 +450,6 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         throws XWikiException
     {
         DocumentReference targetRef = targetDocument.getDocumentReference();
-        boolean isNonTerminalPage = targetRef.getName().equals(
-            xcontext.getWiki().getXWikiPreference("xwiki.defaultpage","WebHome", xcontext));
 
         // if this document is not a workflow document, return nothing
         if (!this.isWorkflowDocument(targetDocument, xcontext)) {
@@ -464,21 +462,19 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             // TODO: put error on the context
             return null;
         }
-        String defaultDraftsSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME);
-        if (StringUtils.isEmpty(defaultDraftsSpace)) {
+        String defaultDraftSpace = wfConfig.getStringValue(WF_IS_DRAFTSPACE_FIELDNAME).trim();
+        String defaultTargetSpace = wfConfig.getStringValue("defaultTargetSpace").trim();
+        if (StringUtils.isEmpty(defaultDraftSpace) || StringUtils.isEmpty(defaultTargetSpace)) {
             // TODO: put exception on the context
             return null;
         }
-        defaultDraftsSpace = defaultDraftsSpace.trim();
-        SpaceReference defaultDraftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
-        if (isNonTerminalPage) {
-            defaultDraftSpaceRef = new SpaceReference(targetRef.getParent().getName(), defaultDraftSpaceRef);
-        }
+        SpaceReference draftSpaceRef =
+            getDraftSpaceReference(xcontext, defaultDraftSpace, targetRef, defaultTargetSpace);
 
-        // get a new document in the drafts space, starting with the name of the target document
-        String draftDocName = xcontext.getWiki().getUniquePageName(stringSerializer.serialize(defaultDraftSpaceRef), targetRef.getName(), xcontext);
-        DocumentReference draftDocRef =
-            new DocumentReference(draftDocName, defaultDraftSpaceRef);
+        // Get a new document in the drafts space, starting with the name of the target document.
+        String draftDocName = xcontext.getWiki()
+            .getUniquePageName(stringSerializer.serialize(draftSpaceRef), targetRef.getName(), xcontext);
+        DocumentReference draftDocRef = new DocumentReference(draftDocName, draftSpaceRef);
         XWikiDocument draftDoc = xcontext.getWiki().getDocument(draftDocRef, xcontext);
 
         final Locale origLocale = xcontext.getLocale();
@@ -486,31 +482,34 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
         List<Locale> locales = targetDocument.getTranslationLocales(xcontext);
         locales.add(0, targetDocument.getDefaultLocale());
 
+        boolean includeChildren = targetDocument.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1;
+        String defaultMessage = String.format("Created draft for %s.",stringSerializer.serialize(targetRef));
+        String message = getMessage("workflow.save.createDraft", defaultMessage,
+            Collections.singletonList(stringSerializer.serialize(targetRef)));
+
         for (Locale locale : locales) {
             translatedDraftDoc = copyTranslatedDocument(targetDocument, draftDoc, locale, xcontext);
 
-            // workflow object: only needs to be set up for default locale
+            // Workflow object: only needs to be set up for default locale.
             if (locale.equals(targetDocument.getDefaultLocale())) {
-                BaseObject draftWfObject =
-                        draftDoc.newXObject(
-                                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, draftDocRef),
-                                xcontext);
+                BaseObject draftWfObject = draftDoc.newXObject(
+                    explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS,
+                        draftDocRef), xcontext);
+                draftWfObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
                 draftWfObject.set(WF_CONFIG_REF_FIELDNAME,
-                        compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
-                draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef), xcontext);
+                    compactWikiSerializer.serialize(wfConfig.getDocumentReference(), draftDocRef), xcontext);
+                draftWfObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, draftDocRef),
+                    xcontext);
                 this.makeDocumentDraft(draftDoc, draftWfObject, xcontext);
             }
 
-            // set up the creator to the current user
+            // Set up the creator to the current user.
             translatedDraftDoc.setCreatorReference(xcontext.getUserReference());
-            // and save the document
-            String defaultMessage = "Created draft for " + stringSerializer.serialize(targetRef) + ".";
+            // And save the document.
 
             try {
                 xcontext.setLocale(translatedDraftDoc.getRealLocale());
-                String message =
-                    getMessage("workflow.save.createDraft", defaultMessage,
-                        Collections.singletonList(stringSerializer.serialize(targetRef)));
+
                 saveDocumentWithoutRightsCheck(translatedDraftDoc, message, false, xcontext);
                 LOGGER.debug(defaultMessage);
             } finally {
@@ -518,7 +517,58 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
             }
         }
 
+        // Copy the page children if the "includeChildren" argument is true, and remove the obsolete ones.
+        if (includeChildren) {
+            List<DocumentReference> children = getChildren(targetRef);
+            // Retrieve all draft's children and keep only the ones that do not have a counterpart in the target.
+            // Delete the obsolete ones.
+            List<DocumentReference> obsoleteDraftChildren = getChildren(draftDocRef);
+            for (DocumentReference child : children) {
+                DocumentReference childTarget = getChildTarget(child, targetRef, draftDocRef);
+                copyDocument(child, childTarget, targetRef, xcontext.getUserReference(), true, message);
+                obsoleteDraftChildren.remove(childTarget);
+            }
+            // Delete draft's children without a counterpart in the target.
+            for (DocumentReference obsoletePublishedChild : obsoleteDraftChildren) {
+                XWikiDocument obsoletePublishedChildDocument =
+                    xcontext.getWiki().getDocument(obsoletePublishedChild, xcontext);
+                xcontext.getWiki().deleteDocument(obsoletePublishedChildDocument, xcontext);
+            }
+        }
+
         return draftDocRef;
+    }
+
+    private SpaceReference getDraftSpaceReference(XWikiContext xcontext, String defaultDraftsSpace,
+        DocumentReference targetRef, String defaultTargetSpace)
+    {
+        boolean isNonTerminalPage = targetRef.getName().equals(
+            xcontext.getWiki().getXWikiPreference("xwiki.defaultpage", "WebHome", xcontext));
+        SpaceReference draftSpaceRef = explicitStringSpaceRefResolver.resolve(defaultDraftsSpace);
+        if (isNonTerminalPage) {
+            List<String> draftSpacesHierarchy = getDraftSpacesHierarchy(targetRef, defaultTargetSpace, defaultDraftsSpace);
+            draftSpaceRef = new SpaceReference(xcontext.getWikiId(), draftSpacesHierarchy);
+        }
+        return draftSpaceRef;
+    }
+
+    /**
+     * Get the draft spaces hierarchy by replacing the default target space with the default draft space.
+     */
+    private static List<String> getDraftSpacesHierarchy(DocumentReference targetRef, String defaultTargetSpace,
+        String defaultDraftsSpace)
+    {
+        List<String> spaces = new ArrayList<>();
+        for (EntityReference reference : targetRef.getReversedReferenceChain()) {
+            if (EntityType.SPACE.equals(reference.getType())) {
+                if (reference.getName().equals(defaultTargetSpace)) {
+                    spaces.add(defaultDraftsSpace);
+                } else {
+                    spaces.add(reference.getName());
+                }
+            }
+        }
+        return spaces;
     }
 
     @Override
@@ -614,50 +664,57 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
         return true;
     }
-    
+
     @Override
-    public boolean startWorkflowAsTarget(DocumentReference docName, String workflowConfig, XWikiContext xcontext)
+    public boolean startWorkflowAsTarget(DocumentReference targetRef, String workflowConfig, XWikiContext xcontext)
         throws XWikiException
     {
-        XWikiDocument doc = xcontext.getWiki().getDocument(docName, xcontext);
+        return startWorkflowAsTarget(targetRef, true, workflowConfig, xcontext);
+    }
 
-        // check that the document is no already under workflow
-        if (this.isWorkflowDocument(doc, xcontext)) {
+    @Override
+    public boolean startWorkflowAsTarget(DocumentReference targetRef, boolean includeChildren, String workflowConfig,
+        XWikiContext xcontext) throws XWikiException
+    {
+        XWikiDocument targetDoc = xcontext.getWiki().getDocument(targetRef, xcontext);
+
+        // Check that the document is no already under workflow.
+        if (this.isWorkflowDocument(targetDoc, xcontext)) {
             // TODO: put this error on the context
             return false;
         }
 
-        // Check that the target is free. i.e. no other workflow document targets this target
-        if (this.getDraftDocument(docName, xcontext) != null) {
+        // Check that the target is free. i.e. no other workflow document targets this target.
+        if (this.getDraftDocument(targetRef, xcontext) != null) {
             // TODO: put this error on the context
             return false;
         }
 
-        BaseObject workflowObject =
-            doc.newXObject(
-                explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, docName),
-                xcontext);
+        BaseObject workflowObject = targetDoc.newXObject(
+            explicitReferenceDocRefResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS, targetRef),
+            xcontext);
         BaseObject wfConfig = configManager.getWorkflowConfig(workflowConfig, xcontext);
         if (wfConfig == null) {
             // TODO: put error on the context
             return false;
         }
 
+        workflowObject.set(WF_INCLUDE_CHILDREN_FIELDNAME, includeChildren ? 1 : 0, xcontext);
         workflowObject.set(WF_CONFIG_REF_FIELDNAME, workflowConfig, xcontext);
-        workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(docName, docName), xcontext);
-        // mark document as target
+        workflowObject.set(WF_TARGET_FIELDNAME, compactWikiSerializer.serialize(targetRef, targetRef), xcontext);
+        // Mark document as target.
         workflowObject.set(WF_IS_TARGET_FIELDNAME, 1, xcontext);
         workflowObject.set(WF_STATUS_FIELDNAME, STATUS_PUBLISHED, xcontext);
-        
-        //there are no rights settings on published documents, as per the rule of workflow 
 
-        // save the document prepared like this
-        String defaultMessage =
-            "Started workflow " + workflowConfig + " on document " + stringSerializer.serialize(docName) + " as target";
+        // There are no rights settings on published documents, as per the rule of workflow.
+
+        // Save the document prepared like this.
+        String defaultMessage = String.format("Started workflow %s on document %s as target", workflowConfig,
+            stringSerializer.serialize(targetRef));
         String message =
-            this.getMessage("workflow.save.startastarget", defaultMessage,
-                Arrays.asList(workflowConfig, stringSerializer.serialize(docName)));
-        saveDocumentWithoutRightsCheck(doc, message, true, xcontext);
+            this.getMessage("workflow.save.startAsTarget", defaultMessage,
+                Arrays.asList(workflowConfig, stringSerializer.serialize(targetRef)));
+        saveDocumentWithoutRightsCheck(targetDoc, message, true, xcontext);
 
         LOGGER.info(defaultMessage);
 
