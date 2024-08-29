@@ -24,9 +24,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -56,6 +58,9 @@ import org.xwiki.model.reference.SpaceReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.properties.converter.Converter;
+import org.xwiki.query.Query;
+import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryManager;
 import org.xwiki.security.authorization.ReadableSecurityRule;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.security.authorization.RuleState;
@@ -237,6 +242,9 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     @Named("entityTreeNodeId")
     private Converter<EntityReference> entityTreeNodeIdConverter;
 
+    @Inject
+    private QueryManager queryManager;
+
     /**
      * {@inheritDoc}
      * 
@@ -388,42 +396,43 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
     }
 
     @Override
-    public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException
+    public DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext)
     {
         return this.getDraftDocument(targetRef, targetRef.getWikiReference().getName(), xcontext);
     }
 
     @Override
     public DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext)
-        throws XWikiException
     {
-        String workflowsQuery =
-            "select obj.name from BaseObject obj, StringProperty target, IntegerProperty istarget where "
-                + "obj.className = ? and obj.id = target.id.id and target.id.name = ? and target.value = ? and "
-                + "obj.id = istarget.id.id and istarget.id.name = ? and istarget.value = 0";
-        // serialize the target WRT the passed wiki parameter
+        String statement =
+            "select obj.name from BaseObject obj, StringProperty target, IntegerProperty istarget "
+                + "where obj.className = :className and obj.id = target.id.id and target.id.name = 'target' and "
+                + "target.value = :target and obj.id = istarget.id.id and istarget.id.name = 'istarget' and "
+                + "istarget.value = 0";
+
+        // Serialize the target WRT the passed wiki parameter.
         String serializedTargetName = compactWikiSerializer.serialize(targetRef, new WikiReference(wiki));
-        // the class needs to be serialized compact anyway, and it's a wikiless entity reference, so we don't need to
-        // worry about on which wiki it gets serialized
-        List<String> params =
-            Arrays.asList(compactWikiSerializer.serialize(PUBLICATION_WORKFLOW_CLASS), WF_TARGET_FIELDNAME,
-                serializedTargetName, WF_IS_TARGET_FIELDNAME);
-        List<String> results;
-        // query on the passed database
-        String originalDatabase = xcontext.getWikiId();
+        // The class needs to be serialized compact anyway, and it's a wiki-less entity reference, so we don't need to
+        // worry about on which wiki it gets serialized.
+        Map<String, Object> queryParams = new HashMap<>();
+        queryParams.put("className", compactWikiSerializer.serialize(PUBLICATION_WORKFLOW_CLASS));
+        queryParams.put(WF_TARGET_FIELDNAME, serializedTargetName);
+
         try {
-            xcontext.setWikiId(wiki);
-            results = xcontext.getWiki().getStore().search(workflowsQuery, 0, 0, params, xcontext);
-        } finally {
-            xcontext.setWikiId(originalDatabase);
+            Query query = queryManager.createQuery(statement, Query.HQL);
+            query.bindValues(queryParams);
+            // Query on the passed database.
+            query.setWiki(wiki);
+            List<String> results = query.execute();
+            if (results == null || results.isEmpty()) {
+                return null;
+            }
+            // If there are more results, use the first one, resolve it relative to passed wiki reference.
+            return explicitStringDocRefResolver.resolve(results.get(0), new WikiReference(wiki));
+        } catch (QueryException e) {
+            LOGGER.warn("Could not get the draft document for the target [{}]", serializedTargetName);
         }
-
-        if (results == null || results.isEmpty()) {
-            return null;
-        }
-
-        // if there are more results, use the first one, resolve it relative to passed wiki reference
-        return explicitStringDocRefResolver.resolve(results.get(0), new WikiReference(wiki));
+        return null;
     }
 
     @Override

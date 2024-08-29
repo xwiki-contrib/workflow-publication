@@ -115,9 +115,8 @@ public interface PublicationWorkflow
      * @param targetRef
      * @param xcontext
      * @return
-     * @throws XWikiException
      */
-    DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext) throws XWikiException;
+    DocumentReference getDraftDocument(DocumentReference targetRef, XWikiContext xcontext);
 
     /**
      * Gets the draft document corresponding to the passed target: meaning the workflow document which is not a target
@@ -131,11 +130,9 @@ public interface PublicationWorkflow
      * @param wiki
      * @param xcontext
      * @return
-     * @throws XWikiException
      * @since 1.1
      */
-    DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext)
-        throws XWikiException;
+    DocumentReference getDraftDocument(DocumentReference targetRef, String wiki, XWikiContext xcontext);
 
     /**
      * Creates a draft document corresponding to the passed target reference, which will have as a target the passed
