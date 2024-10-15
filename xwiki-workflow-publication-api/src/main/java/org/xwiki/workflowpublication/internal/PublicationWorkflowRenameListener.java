@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -132,9 +133,11 @@ public class PublicationWorkflowRenameListener implements EventListener
     private Logger logger;
 
     @Inject
-    private DocumentReferenceResolver<EntityReference> entityResolver;
+    @Named("current")
+    private DocumentReferenceResolver<EntityReference> currentReferenceEntityResolver;
 
     @Inject
+    @Named("current")
     private DocumentReferenceResolver<String> stringResolver;
 
     @Inject
@@ -194,6 +197,9 @@ public class PublicationWorkflowRenameListener implements EventListener
                 (DocumentReference) moveRequest.getEntityReferences().stream().findFirst().orElse(null);
             DocumentReference workflowDestinationRef = (DocumentReference) moveRequest.getDestination();
 
+            // Set the context wiki to current wiki as the DocumentRenamedEvent is executed with the main wiki context.
+            context.setWikiId(Objects.requireNonNull(workflowSourceRef).getWikiReference().getName());
+
             XWikiDocument workflowDoc = getWorkflowDocument(workflowSourceRef, workflowDestinationRef, context);
 
             if (publicationWorkflow.isWorkflowDocument(workflowDoc, context)) {
@@ -242,7 +248,7 @@ public class PublicationWorkflowRenameListener implements EventListener
         throws XWikiException
     {
         BaseObject workflowObj =
-            workflowDoc.getXObject(entityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
+            workflowDoc.getXObject(currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
         String workflowEquivalent = workflowObj.getStringValue(TARGET);
         DocumentReference workflowEquivalentRef = stringResolver.resolve(workflowEquivalent);
 
@@ -267,8 +273,9 @@ public class PublicationWorkflowRenameListener implements EventListener
         throws XWikiException
     {
         BaseObject workflowObj =
-            workflowDoc.getXObject(entityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
-        String workflowEquivalent = getOrSetWorkflowEquivalent(workflowObj, isEquivalentTarget, context);
+            workflowDoc.getXObject(currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
+        String workflowEquivalent = getOrSetWorkflowEquivalent(workflowObj, workflowSourceRef, isEquivalentTarget,
+            context);
         DocumentReference workflowEquivalentRef = stringResolver.resolve(workflowEquivalent);
 
         DocumentReference oldEquivalentRef =
@@ -313,18 +320,20 @@ public class PublicationWorkflowRenameListener implements EventListener
      * stored in the context and returned.
      *
      * @param workflowObj the workflow object containing workflow metadata
+     * @param workflowSourceRef the reference to the source document of the workflow
      * @param isTarget {@code true} if the document is a target, {@code false} if it's a draft
      * @param context the current XWiki context, which may hold the workflow equivalent
      * @return the workflow equivalent, either fetched from the context or computed and stored in the context
      */
-    private String getOrSetWorkflowEquivalent(BaseObject workflowObj, boolean isTarget, XWikiContext context)
+    private String getOrSetWorkflowEquivalent(BaseObject workflowObj, DocumentReference workflowSourceRef,
+        boolean isTarget, XWikiContext context)
     {
         if (StringUtils.isEmpty((String) context.get(WORKFLOW_EQUIVALENT))) {
             String workflowEquivalent;
             if (isTarget) {
                 workflowEquivalent = workflowObj.getStringValue(TARGET);
             } else {
-                workflowEquivalent = getEquivalentDraft(workflowObj.getOwnerDocument().getDocumentReference());
+                workflowEquivalent = getEquivalentDraft(workflowSourceRef);
             }
             context.put(WORKFLOW_EQUIVALENT, workflowEquivalent);
             return workflowEquivalent;

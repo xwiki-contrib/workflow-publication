@@ -50,7 +50,7 @@ public class DefaultWorkflowConfigManager implements WorkflowConfigManager
      * The current entity reference resolver, to resolve the notions class reference.
      */
     @Inject
-    @Named("current/reference")
+    @Named("current")
     protected DocumentReferenceResolver<EntityReference> currentReferenceEntityResolver;
 
     @Override
