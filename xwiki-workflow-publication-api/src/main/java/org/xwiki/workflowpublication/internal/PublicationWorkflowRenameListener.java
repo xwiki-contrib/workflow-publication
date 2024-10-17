@@ -190,6 +190,7 @@ public class PublicationWorkflowRenameListener implements EventListener
     public void onEvent(Event event, Object source, Object data)
     {
         XWikiContext context = contextProvider.get();
+        String wikiId = context.getWikiId();
 
         try {
             MoveRequest moveRequest = (MoveRequest) data;
@@ -240,6 +241,9 @@ public class PublicationWorkflowRenameListener implements EventListener
             }
         } catch (XWikiException e) {
             throw new RuntimeException(e);
+        } finally {
+            // Set back the context wiki to original (main).
+            context.setWikiId(wikiId);
         }
     }
 
