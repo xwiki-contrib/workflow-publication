@@ -121,7 +121,7 @@ public class PublicationWorkflowRenameListener implements EventListener
 
     private static final String WF_MOVE_STRATEGY_FIELD_NAME = "moveStrategy";
 
-    private final List<Event> eventsList = Collections.singletonList(new DocumentRenamedEvent());
+    private static final List<Event> EVENTS = Collections.singletonList(new DocumentRenamedEvent());
 
     @Inject
     private WorkflowConfigManager configManager;
@@ -169,7 +169,7 @@ public class PublicationWorkflowRenameListener implements EventListener
      */
     public List<Event> getEvents()
     {
-        return eventsList;
+        return EVENTS;
     }
 
     /**
