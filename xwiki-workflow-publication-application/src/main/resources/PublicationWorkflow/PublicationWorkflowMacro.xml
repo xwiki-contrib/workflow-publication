@@ -911,15 +911,17 @@ document.observe('xwiki:dom:loading', function() {
             &lt;input type='submit' class="button" value="$escapetool.xml($services.localization.render('workflow.archive'))"/&gt;
           &lt;/div&gt;
         &lt;/form&gt;
-        &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xform xformInline'&gt;
-          &lt;div&gt;
-            &lt;input type="hidden" name="action" value="unpublish" /&gt;
-            &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
-          &lt;/div&gt;
-          &lt;div class="buttonwrapper"&gt;
-            &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.unpublish'))" class="button" /&gt;
-          &lt;/div&gt;
-        &lt;/form&gt;
+        #if ($services.publicationroles.canValidate($xcontext.user, $doc.prefixedFullName))
+          &lt;form action="$xwiki.getURL('PublicationWorkflow.Unpublish')" method='post' class='xform xformInline'&gt;
+            &lt;div&gt;
+              &lt;input type="hidden" name="action" value="unpublish" /&gt;
+              &lt;input type="hidden" name="workflowdoc" value="$escapetool.xml($services.model.serialize($doc.documentReference, 'default'))" /&gt;
+            &lt;/div&gt;
+            &lt;div class="buttonwrapper"&gt;
+              &lt;input type='submit' value="$escapetool.xml($services.localization.render('workflow.unpublish'))" class="button" /&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        #end
         ## display actions related to the draft document
         #set($draft = $services.publicationworkflow.getDraftDocument($doc.getDocumentReference()))
         &lt;p&gt;

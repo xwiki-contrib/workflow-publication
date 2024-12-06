@@ -332,7 +332,7 @@ public class PublicationWorkflowService implements ScriptService
     {
         XWikiContext xcontext = getXContext();
         try {
-            if (this.publicationRoles.canContribute(xcontext.getUserReference(),
+            if (this.publicationRoles.canValidate(xcontext.getUserReference(),
                 xcontext.getWiki().getDocument(document, xcontext), xcontext)) {
                 return this.publicationWorkflow.unpublish(document, forceToDraft);
             } else {
