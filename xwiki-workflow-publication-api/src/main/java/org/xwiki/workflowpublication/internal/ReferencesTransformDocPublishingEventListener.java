@@ -177,7 +177,7 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
         for (Block image : xDom.getBlocks(new ClassBlockMatcher(ImageBlock.class), Block.Axes.DESCENDANT_OR_SELF)) {
             ImageBlock imageBlock = (ImageBlock) image;
 
-            if (imageBlock.isFreeStandingURI()) {
+            if (imageBlock.isFreeStandingURI() || imageBlock.getReference().getType().equals(ResourceType.URL)) {
                 continue;
             }
 
