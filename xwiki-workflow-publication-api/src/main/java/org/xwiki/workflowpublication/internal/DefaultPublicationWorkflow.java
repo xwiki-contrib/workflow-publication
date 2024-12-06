@@ -604,13 +604,19 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
                 // give the view and edit right to contributors, moderators and validators
                 List<ReadableSecurityRule> rules = new ArrayList<>();
-                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors, moderators,
-                    validators), document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT,
-                    Right.EDIT), RuleState.ALLOW));
-                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers),
-                    document.getDocumentReference()), null, Collections.singletonList(Right.VIEW), RuleState.ALLOW));
-                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters),
-                    document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+                if (!contributors.isEmpty() || !moderators.isEmpty() || !validators.isEmpty()) {
+                    rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(contributors, moderators,
+                        validators), document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT,
+                        Right.EDIT), RuleState.ALLOW));
+                }
+                if (!viewers.isEmpty()) {
+                    rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers),
+                        document.getDocumentReference()), null, Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+                }
+                if (!commenters.isEmpty()) {
+                    rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters),
+                        document.getDocumentReference()), null, Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+                }
                 persistAndMaybeSaveRules(document, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
             }
 
@@ -762,15 +768,23 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
             // give the view and edit right to moderators and validators ...
             List<ReadableSecurityRule> rules = new ArrayList<>();
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, validators), document),
-                null, Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
+            if (!moderators.isEmpty() || !validators.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, validators), document),
+                    null, Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
+            }
             // ... and only view for contributors
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(contributors), document), null,
-                Collections.singletonList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers), document), null,
-                Collections.singletonList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters), document), null,
-                Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            if (!contributors.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(contributors), document), null,
+                    Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            }
+            if (!viewers.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers), document), null,
+                    Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            }
+            if (!commenters.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters), document), null,
+                    Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            }
             persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
         }
 
@@ -844,16 +858,24 @@ public class DefaultPublicationWorkflow implements PublicationWorkflow
 
             // give the view and edit right to validators ...
             List<ReadableSecurityRule> rules = new ArrayList<>();
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(validators), document), null,
-                Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
+            if (!validators.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(validators), document), null,
+                    Arrays.asList(Right.VIEW, Right.COMMENT, Right.EDIT), RuleState.ALLOW));
+            }
             // ... and only view for contributors and moderators
-            rules.add(
-                rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, contributors), document),
-                    null, Collections.singletonList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers), document), null,
-                Collections.singletonList(Right.VIEW), RuleState.ALLOW));
-            rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters), document), null,
-                Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            if (!moderators.isEmpty() || !contributors.isEmpty()) {
+                rules.add(
+                    rightsWriter.createRule(toDocumentReferenceList(Arrays.asList(moderators, contributors), document),
+                        null, Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            }
+            if (!viewers.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(viewers), document), null,
+                    Collections.singletonList(Right.VIEW), RuleState.ALLOW));
+            }
+            if (!commenters.isEmpty()) {
+                rules.add(rightsWriter.createRule(toDocumentReferenceList(Collections.singletonList(commenters), document), null,
+                    Arrays.asList(Right.VIEW, Right.COMMENT), RuleState.ALLOW));
+            }
             persistAndMaybeSaveRules(doc, rules, workflow.getIntValue(WF_INCLUDE_CHILDREN_FIELDNAME) == 1);
         }
 
