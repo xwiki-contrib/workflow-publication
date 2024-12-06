@@ -39,32 +39,34 @@
   <content>{{include reference="XWiki.LiveTableResultsMacros" /}}
 
 {{velocity}}
-#set ($map = {})
-#gridresult_buildJSON("$!request.classname" $request.collist.split(',') $map)
-#set ($rows = $map.get('rows'))
+#if ($xcontext.action == 'get')
+  #set ($map = {})
+  #gridresult_buildJSON("$!request.classname" $request.collist.split(',') $map)
+  #set ($rows = $map.get('rows'))
 
-#foreach ($row in $rows)
-  #set ($discard = $row.put('contributor', "#displayGroup($row.contributor)"))
-  #set ($discard = $row.put('moderator', "#displayGroup($row.moderator)"))
-  #set ($discard = $row.put('validator', "#displayGroup($row.validator)"))
+  #foreach ($row in $rows)
+    #set ($discard = $row.put('contributor', "#displayGroup($row.contributor)"))
+    #set ($discard = $row.put('moderator', "#displayGroup($row.moderator)"))
+    #set ($discard = $row.put('validator', "#displayGroup($row.validator)"))
+  #end
+
+  #set ($results = {
+    "totalrows": $rows.size(),
+    "returnedrows": $rows.size(),
+    "offset": $mathtool.add($offset, 1),
+    "reqNo": $numbertool.toNumber($request.reqNo).intValue(),
+    "rows": $rows
+  })
+
+  ## jsonResponse macro is available from 10.8-rc-1
+  #set ($json = $jsontool.serialize($results))
+  #set ($discard = $response.setContentType('application/json'))
+  #set ($characterEncoding = 'utf-8')
+  #set ($discard = $response.setCharacterEncoding($characterEncoding))
+  #set ($discard = $response.writer.write($json))
+  #set ($discard = $response.setContentLength($json.getBytes($characterEncoding).size()))
+  #set ($discard = $response.flushBuffer())
+  #set ($discard = $xcontext.setFinished(true))
 #end
-
-#set ($results = {
-  "totalrows": $rows.size(),
-  "returnedrows": $rows.size(),
-  "offset": $mathtool.add($offset, 1),
-  "reqNo": $numbertool.toNumber($request.reqNo).intValue(),
-  "rows": $rows
-})
-
-## jsonResponse macro is available from 10.8-rc-1
-#set ($json = $jsontool.serialize($results))
-#set ($discard = $response.setContentType('application/json'))
-#set ($characterEncoding = 'utf-8')
-#set ($discard = $response.setCharacterEncoding($characterEncoding))
-#set ($discard = $response.writer.write($json))
-#set ($discard = $response.setContentLength($json.getBytes($characterEncoding).size()))
-#set ($discard = $response.flushBuffer())
-#set ($discard = $xcontext.setFinished(true))
 {{/velocity}}</content>
 </xwikidoc>
