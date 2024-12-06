@@ -589,18 +589,6 @@ document.observe('xwiki:dom:loading', function() {
     &lt;p class="xHint"&gt;$services.localization.render('workflow.panel.publish.hintLanguages')&lt;/p&gt;
   #end
 #end
-## ---------------------------------------------------------------------------------------------------------
-## Macro used to extract a wiki's homepage reference.
-## ---------------------------------------------------------------------------------------------------------
-#macro (getWikiHomePageReference $wiki $return)
-  #set ($_wikiHomePageReference = $services.wiki.getById($wiki).mainPageReference)
-  #if (!$_wikiHomePageReference)
-    #set ($wikiReference = $services.model.createWikiReference($wiki))
-    #set ($_wikiHomePageReference = $services.model.resolveDocument('', 'default', $wikiReference))
-  #end
-  #set ($return = $NULL)
-  #setVariable("$return" $_wikiHomePageReference)
-#end
 #if($doc.equals($xwiki.getDocument("PublicationWorkflow.Refusal")) || $doc.equals($xwiki.getDocument("PublicationWorkflow.Unpublish")))
   #if($request.workflowdoc)
     #set($workflowDoc = $xwiki.getDocument($request.workflowdoc))
@@ -678,7 +666,6 @@ document.observe('xwiki:dom:loading', function() {
           &lt;div class="xHint"&gt;$services.localization.render('workflow.start.advancedoptions.text')&lt;/div&gt;
           &lt;a id="workflow-options" href="#workflow-options-container" data-toggle="collapse"&gt;$services.localization.render('workflow.start.advancedoptions.button')&lt;/a&gt;
         #end
-        #getWikiHomePageReference($doc.wiki $homeReference)
         #if($currentDocRef.name == $defaultPageName)
           #set($targetDocName = $currentDocRef.lastSpaceReference.name)
         #else
@@ -689,8 +676,7 @@ document.observe('xwiki:dom:loading', function() {
         ## It is used for setting a default space where to publish the current draft document.
         #if($workflowStartPublishedParentReference)
           #set ($parentReference = $workflowStartPublishedParentReference)
-        #elseif ($currentDocRef.equals($homeReference))
-          ## Encourage the user to create top level documents from the home page.
+        #elseif ($currentDocRef.parent.parent.type == 'WIKI')
           #set ($parentReference = $currentDocRef.wikiReference)
         #else
           ## Encourage the user to create a sibling of the current document.
