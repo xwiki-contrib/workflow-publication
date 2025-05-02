@@ -180,6 +180,17 @@ public class ReferencesTransformDocPublishingEventListener implements EventListe
             if (imageBlock.isFreeStandingURI() || imageBlock.getReference().getType().equals(ResourceType.URL)) {
                 continue;
             }
+            /**
+             * imageBlock.isFreeStandingURI results with the following cases :
+             * - image:myImage.ext -> true
+             * - [[image:myImage.ext]] -> false
+             * The test bellow is to handle this second case that should not trigger any reference update.
+             * It's based on the logic that a specified reference ( [[image:PublishedDocument@myImage.ext]] ) contains '@'
+            */
+            else if (imageBlock.getReference().getType().equals(ResourceType.ATTACHMENT) && !imageBlock.getReference().getReference().contains("@") ) {
+                continue;
+            }
+
 
             ResourceReference imageRef = imageBlock.getReference();
             logger.debug("found image reference {}", imageRef);
