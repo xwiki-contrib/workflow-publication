@@ -269,6 +269,9 @@ public class PublicationWorkflowRenameListener implements EventListener
                     newEquivalentRef, currentTargetRef, false, true, context);
             }
         }
+        else {
+            workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(currentTargetRef));
+        }
     }
 
     private void handlePublished(XWikiDocument workflowDoc, DocumentReference workflowSourceRef,
@@ -280,6 +283,15 @@ public class PublicationWorkflowRenameListener implements EventListener
             workflowDoc.getXObject(currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
         String workflowEquivalent = getOrSetWorkflowEquivalent(workflowObj, workflowSourceRef, isEquivalentTarget,
             context);
+        /* 
+        * Published document with no associated draft is a document started as target.
+        * Meaning the document is a published document without existing draft (this one is created using the button 'Go to Draft').
+        * This specific case should be handled by updating the target only. Otherwise proceed with renaming draft document (main method).
+        */
+        if(workflowEquivalent == null) {
+            workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(currentTargetRef));
+            return;
+        }
         DocumentReference workflowEquivalentRef = stringResolver.resolve(workflowEquivalent);
 
         DocumentReference oldEquivalentRef =
@@ -306,7 +318,9 @@ public class PublicationWorkflowRenameListener implements EventListener
             workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(newWorkFlowTargetRef));
             BaseObject equivalentWorkflowObj =
                 oldEquivalentDoc.getXObject(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS);
-            equivalentWorkflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(newWorkFlowTargetRef));
+            if(equivalentWorkflowObj != null) {
+                equivalentWorkflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(newWorkFlowTargetRef));
+            }
         }
 
         if (isPublished) {
@@ -502,6 +516,7 @@ public class PublicationWorkflowRenameListener implements EventListener
      *
      * @param targetRef the serialized target document name
      * @return a list of documentReferences (as strings); should usually contain at most one element
+     *     return null if no draft was found.
      */
     private String getEquivalentDraft(DocumentReference targetRef)
     {
@@ -519,7 +534,13 @@ public class PublicationWorkflowRenameListener implements EventListener
         try {
             Query query = queryManager.createQuery(workflowsQuery, Query.HQL);
             query.bindValues(queryParams);
-            return (String) query.execute().get(0);
+            List<String> results = query.execute();
+            if(results.size() > 0) {
+                return (String) results.get(0);
+            }
+            else {
+                return null;
+            }
         } catch (QueryException e) {
             throw new RuntimeException(e);
         }
