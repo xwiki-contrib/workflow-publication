@@ -33,10 +33,6 @@
   <properties>
     <xwiki.extension.name>Publication Workflow Application</xwiki.extension.name>
     <xwiki.extension.category>application</xwiki.extension.category>
-    <xwiki.release.jira.skip>true</xwiki.release.jira.skip>
-    <xwiki.issueManagement.system>jira</xwiki.issueManagement.system>
-    <xwiki.issueManagement.url>https://jira.xwiki.org/projects/XAWORKFLOW/</xwiki.issueManagement.url>
-    <platform.version>12.10.4</platform.version>
   </properties>
   <dependencies>
     <!-- Adding publication workflow api as dependencies since these pages need the 

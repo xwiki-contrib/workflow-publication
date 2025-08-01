@@ -34,6 +34,9 @@
   <packaging>pom</packaging>
   <version>2.4.4-SNAPSHOT</version>
   <properties>
+    <xwiki.release.jira.skip>false</xwiki.release.jira.skip>
+    <xwiki.issueManagement.jira.id>XAWORKFLOW</xwiki.issueManagement.jira.id>
+
     <!-- The Spoon version inherited from this XWiki version has a broken dependency -->
     <spoon.version>8.1.0</spoon.version>
   </properties>
