@@ -256,21 +256,21 @@ public class PublicationWorkflowRenameListener implements EventListener
         String workflowEquivalent = workflowObj.getStringValue(TARGET);
         DocumentReference workflowEquivalentRef = stringResolver.resolve(workflowEquivalent);
 
-        if (!context.getWiki().exists(workflowEquivalentRef, context)) {
-            DocumentReference oldEquivalentRef =
-                computeEquivalentDocRef(workflowSourceRef, workflowEquivalentRef,
-                    currentSourceRef, context);
-            if (oldEquivalentRef.equals(workflowEquivalentRef)) {
-                DocumentReference newEquivalentRef =
-                    computeEquivalentDocRef(currentSourceRef, currentTargetRef,
-                        oldEquivalentRef,
-                        context);
-                maybeRenameEquivalentDocument(workflowDoc, null, workflowEquivalentRef, oldEquivalentRef,
-                    newEquivalentRef, currentTargetRef, false, true, context);
-            }
-        }
-        else {
+        if (context.getWiki().exists(workflowEquivalentRef, context)) {
             updateWorkflowTarget(workflowDoc, currentTargetRef, context);
+            return;
+        }
+
+        DocumentReference oldEquivalentRef =
+            computeEquivalentDocRef(workflowSourceRef, workflowEquivalentRef, currentSourceRef, context);
+
+        boolean isSameAsWorkflowEquivalent = oldEquivalentRef.equals(workflowEquivalentRef);
+
+        if (isSameAsWorkflowEquivalent) {
+            DocumentReference newEquivalentRef =
+                computeEquivalentDocRef(currentSourceRef, currentTargetRef, oldEquivalentRef, context);
+            maybeRenameEquivalentDocument(workflowDoc, oldEquivalentRef, newEquivalentRef, currentTargetRef, false,
+                true, true, context);
         }
     }
 
@@ -299,18 +299,17 @@ public class PublicationWorkflowRenameListener implements EventListener
         DocumentReference newEquivalentRef =
             computeEquivalentDocRef(currentSourceRef, currentTargetRef, oldEquivalentRef, context);
 
-        maybeRenameEquivalentDocument(workflowDoc, workflowDoc.getTitle(), workflowEquivalentRef, oldEquivalentRef,
-            newEquivalentRef, currentTargetRef, true, isEquivalentTarget, context);
+        maybeRenameEquivalentDocument(workflowDoc, oldEquivalentRef, newEquivalentRef, currentTargetRef, true,
+            isEquivalentTarget, oldEquivalentRef.equals(workflowEquivalentRef), context);
     }
 
-    private void maybeRenameEquivalentDocument(XWikiDocument workflowDoc, String workflowDocTitle,
-        DocumentReference workflowEquivalentRef, DocumentReference oldEquivalentRef, DocumentReference newEquivalentRef,
-        DocumentReference currentTargetRef, boolean isPublished, boolean isEquivalentTarget, XWikiContext context)
-        throws XWikiException
+    private void maybeRenameEquivalentDocument(XWikiDocument workflowDoc, DocumentReference oldEquivalentRef,
+        DocumentReference newEquivalentRef, DocumentReference currentTargetRef, boolean isPublished,
+        boolean isEquivalentTarget, boolean isSameAsWorkflowEquivalent, XWikiContext context) throws XWikiException
     {
-        if (oldEquivalentRef.equals(workflowEquivalentRef)) {
+        if (isSameAsWorkflowEquivalent) {
             XWikiDocument oldEquivalentDoc = context.getWiki().getDocument(oldEquivalentRef, context);
-            oldEquivalentDoc.setTitle(workflowDocTitle);
+            oldEquivalentDoc.setTitle(workflowDoc.getTitle());
             DocumentReference newWorkFlowTargetRef = currentTargetRef;
             if (isEquivalentTarget) {
                 newWorkFlowTargetRef = newEquivalentRef;
