@@ -265,12 +265,12 @@ public class PublicationWorkflowRenameListener implements EventListener
                     computeEquivalentDocRef(currentSourceRef, currentTargetRef,
                         oldEquivalentRef,
                         context);
-                maybeRenameEquivalentDocument(workflowObj, null, workflowEquivalentRef, oldEquivalentRef,
+                maybeRenameEquivalentDocument(workflowDoc, null, workflowEquivalentRef, oldEquivalentRef,
                     newEquivalentRef, currentTargetRef, false, true, context);
             }
         }
         else {
-            workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(currentTargetRef));
+            updateWorkflowTarget(workflowDoc, currentTargetRef, context);
         }
     }
 
@@ -286,10 +286,10 @@ public class PublicationWorkflowRenameListener implements EventListener
         /* 
         * Published document with no associated draft is a document started as target.
         * Meaning the document is a published document without existing draft (this one is created using the button 'Go to Draft').
-        * This specific case should be handled by updating the target only. Otherwise proceed with renaming draft document (main method).
+        * This specific case should be handled by updating the target only. Otherwise, proceed with renaming draft document (main method).
         */
-        if(workflowEquivalent == null) {
-            workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(currentTargetRef));
+        if (workflowEquivalent == null) {
+            updateWorkflowTarget(workflowDoc, currentTargetRef, context);
             return;
         }
         DocumentReference workflowEquivalentRef = stringResolver.resolve(workflowEquivalent);
@@ -299,11 +299,11 @@ public class PublicationWorkflowRenameListener implements EventListener
         DocumentReference newEquivalentRef =
             computeEquivalentDocRef(currentSourceRef, currentTargetRef, oldEquivalentRef, context);
 
-        maybeRenameEquivalentDocument(workflowObj, workflowDoc.getTitle(), workflowEquivalentRef, oldEquivalentRef,
+        maybeRenameEquivalentDocument(workflowDoc, workflowDoc.getTitle(), workflowEquivalentRef, oldEquivalentRef,
             newEquivalentRef, currentTargetRef, true, isEquivalentTarget, context);
     }
 
-    private void maybeRenameEquivalentDocument(BaseObject workflowObj, String workflowDocTitle,
+    private void maybeRenameEquivalentDocument(XWikiDocument workflowDoc, String workflowDocTitle,
         DocumentReference workflowEquivalentRef, DocumentReference oldEquivalentRef, DocumentReference newEquivalentRef,
         DocumentReference currentTargetRef, boolean isPublished, boolean isEquivalentTarget, XWikiContext context)
         throws XWikiException
@@ -315,16 +315,24 @@ public class PublicationWorkflowRenameListener implements EventListener
             if (isEquivalentTarget) {
                 newWorkFlowTargetRef = newEquivalentRef;
             }
-            workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(newWorkFlowTargetRef));
-            BaseObject equivalentWorkflowObj =
-                oldEquivalentDoc.getXObject(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS);
-            if(equivalentWorkflowObj != null) {
-                equivalentWorkflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(newWorkFlowTargetRef));
-            }
+            updateWorkflowTarget(workflowDoc, newWorkFlowTargetRef, context);
+            updateWorkflowTarget(oldEquivalentDoc, newWorkFlowTargetRef, context);
         }
 
         if (isPublished) {
             renameEquivalentDocument(oldEquivalentRef, newEquivalentRef, context);
+        }
+    }
+
+    private void updateWorkflowTarget(XWikiDocument workflowDoc, DocumentReference targetRef, XWikiContext context)
+        throws XWikiException
+    {
+        BaseObject workflowObj =
+            workflowDoc.getXObject(
+                currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
+        if (workflowObj != null) {
+            workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(targetRef));
+            context.getWiki().saveDocument(workflowDoc, context);
         }
     }
 
