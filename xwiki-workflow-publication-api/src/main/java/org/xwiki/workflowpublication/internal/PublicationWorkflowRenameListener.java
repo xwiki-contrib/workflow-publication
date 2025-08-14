@@ -331,6 +331,7 @@ public class PublicationWorkflowRenameListener implements EventListener
                 currentReferenceEntityResolver.resolve(PublicationWorkflow.PUBLICATION_WORKFLOW_CLASS));
         if (workflowObj != null) {
             workflowObj.setStringValue(TARGET, compactWikiSerializer.serialize(targetRef));
+            workflowDoc.setMetaDataDirty(false);
             context.getWiki().saveDocument(workflowDoc, context);
         }
     }
