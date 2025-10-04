@@ -429,14 +429,6 @@ public class PublicationWorkflowRenameListener implements EventListener
             return;
         }
 
-        // Check if the user performing the move has edit rights on the new document reference.
-        if (!authorizationManager.hasAccess(Right.EDIT, context.getUserReference(), newDocRef)) {
-            logger.warn("Cannot move [{}] to destination [{}] as the current user [{}] has no edit rights on the "
-                    + "destination document", oldDocRef, newDocRef,
-                context.getUserReference());
-            return;
-        }
-
         xwiki.renameDocument(oldDocRef, newDocRef, true, Collections.emptyList(), Collections.emptyList(), context);
     }
 
