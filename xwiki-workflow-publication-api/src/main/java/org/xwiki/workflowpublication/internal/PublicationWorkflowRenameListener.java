@@ -47,8 +47,6 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 import org.xwiki.refactoring.event.DocumentRenamedEvent;
 import org.xwiki.refactoring.job.MoveRequest;
-import org.xwiki.security.authorization.AuthorizationManager;
-import org.xwiki.security.authorization.Right;
 import org.xwiki.workflowpublication.PublicationWorkflow;
 import org.xwiki.workflowpublication.WorkflowConfigManager;
 
@@ -149,12 +147,6 @@ public class PublicationWorkflowRenameListener implements EventListener
     @Inject
     @Named("compactwiki")
     private EntityReferenceSerializer<String> compactWikiSerializer;
-
-    /**
-     * Used to check access rights when moving automatically equivalent documents.
-     */
-    @Inject
-    private AuthorizationManager authorizationManager;
 
     @Inject
     private PublicationWorkflow publicationWorkflow;
