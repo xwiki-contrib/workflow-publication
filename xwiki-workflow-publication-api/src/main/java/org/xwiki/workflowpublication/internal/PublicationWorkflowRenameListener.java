@@ -451,7 +451,8 @@ public class PublicationWorkflowRenameListener implements EventListener
      * @return the new equivalent document reference if successfully computed; otherwise, the old equivalent document
      *     reference
      */
-    private DocumentReference computeEquivalentDocRef(DocumentReference oldCurrentDocRef,
+    // not private for tests only
+    DocumentReference computeEquivalentDocRef(DocumentReference oldCurrentDocRef,
         DocumentReference newCurrentDocRef, DocumentReference oldEquivalentDocRef, XWikiContext context)
     {
         // Compare the differences between the original draft and target references
@@ -473,19 +474,74 @@ public class PublicationWorkflowRenameListener implements EventListener
         // Create the patch and try to apply it.
         Patch<String> patch = DiffUtils.diff(oldCurrentSplittedReference, newCurrentSplittedReference);
         List<String> newEquivalentSplittedReference;
+
         try {
             newEquivalentSplittedReference = DiffUtils.patch(oldEquivalentSplittedReference, patch);
         } catch (PatchFailedException e) {
-            logger.warn("Unable to compute new location for the document [{}]", oldEquivalentDocRef);
-            logger.debug("Error when applying patch : [{}]", ExceptionUtils.getRootCause(e), e);
-            return oldEquivalentDocRef;
+            newEquivalentSplittedReference = manuallyConstructEquivalentDocumentPath(oldCurrentSplittedReference,
+                newCurrentSplittedReference, oldEquivalentSplittedReference);
+            if (newEquivalentSplittedReference.size() <= 1) {
+                // this can happen if moving pages up the tree too much
+                logger.warn("Unable to compute new location for the document [{}]", oldEquivalentDocRef);
+                logger.debug("Error when applying patch : [{}]", ExceptionUtils.getRootCause(e), e);
+                return oldEquivalentDocRef;
+            }
         }
 
         // Reconstruct the new equivalent reference.
-        String newEquivalentName = newEquivalentSplittedReference.get(newEquivalentSplittedReference.size() - 1);
-        newEquivalentSplittedReference.remove(newEquivalentSplittedReference.size() - 1);
+        String newEquivalentName = newEquivalentSplittedReference.remove(newEquivalentSplittedReference.size() - 1);
 
         return new DocumentReference(context.getWikiId(), newEquivalentSplittedReference, newEquivalentName);
+    }
+
+    /**
+     * Fallback: sometimes the difflib patch fails; make a simple "longest match" in this case.
+     *
+     * @param oldCurrentSplittedReference the reference to the document at the old location
+     * @param newCurrentSplittedReference the reference to the document at the new location
+     * @param oldEquivalentSplittedReference the reference to the equivalent target/draft document at the old location
+     * @return a proposed reference to equivalent document at the new location
+     */
+    private List<String> manuallyConstructEquivalentDocumentPath(
+        List<String> oldCurrentSplittedReference, List<String> newCurrentSplittedReference,
+        List<String> oldEquivalentSplittedReference)
+    {
+        List<String> newEquivalentSplittedReference;
+
+        final int oldCurrSize = oldCurrentSplittedReference.size();
+        final int newCurrSize = newCurrentSplittedReference.size();
+        final int oldEquivSize = oldEquivalentSplittedReference.size();
+
+        // first find the common prefix between old and new location
+        final int N = Math.min(oldCurrentSplittedReference.size(), newCurrSize);
+        int commonPrefixIndex = 0;
+        for (; commonPrefixIndex < N &&
+            Objects.equals(oldCurrentSplittedReference.get(commonPrefixIndex), newCurrentSplittedReference.get(commonPrefixIndex));
+            commonPrefixIndex++) {
+            // loop body intentional empty
+        }
+
+        // then we take the rest of the old location
+        // to be cut off from the old equivalent location to construct the new one
+        // FIXME: we should prevent moving the new equiv location outside of the "draft" of "published" space
+        // but how do we do that?
+        int cutoffSuffixIndex = oldCurrSize - commonPrefixIndex;
+
+        // if the lists are "too short", do not chew up more than is possible
+        if (oldEquivSize < cutoffSuffixIndex) {
+            cutoffSuffixIndex = oldEquivSize;
+        }
+        if (commonPrefixIndex > newCurrSize) {
+            commonPrefixIndex = newCurrSize;
+        }
+
+        // now stitch together the new equivalent from that info:
+        //  - first the oldEquivalent, except for the cut off suffix from the oldCurrent
+        //  - followed by all of the newCurrent, except for the common prefix with the oldCurrent
+        newEquivalentSplittedReference = new ArrayList<>(oldEquivalentSplittedReference.subList(0, (oldEquivSize-cutoffSuffixIndex)));
+        newEquivalentSplittedReference.addAll(newCurrentSplittedReference.subList(commonPrefixIndex, newCurrSize));
+
+        return newEquivalentSplittedReference;
     }
 
     /**

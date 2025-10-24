@@ -52,10 +52,22 @@
       <groupId>com.googlecode.java-diff-utils</groupId>
       <artifactId>diffutils</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-tool-test-component</artifactId>
+      <version>${commons.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <properties>
     <xwiki.revapi.skip>true</xwiki.revapi.skip>
     <xwiki.checkstyle.skip>true</xwiki.checkstyle.skip>
     <xwiki.spoon.skip>true</xwiki.spoon.skip>
+    <xwiki.jacoco.instructionRatio>0.01</xwiki.jacoco.instructionRatio>
   </properties>
 </project>
