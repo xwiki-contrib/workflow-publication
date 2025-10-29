@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.xwiki.contrib.api-rights</groupId>
       <artifactId>api-rights-bridge</artifactId>
-      <version>1.1.1</version>
+      <version>2.3</version>
     </dependency>
     <!-- TODO: Remove dependency and refactor the code to use the platform diff library. See XAWORKFLOW-85. -->
     <dependency>
