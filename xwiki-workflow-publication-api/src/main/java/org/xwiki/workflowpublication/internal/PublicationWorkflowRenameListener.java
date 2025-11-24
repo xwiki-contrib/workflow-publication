@@ -31,9 +31,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
+import org.apache.commons.lang3.StringUtils;import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -55,10 +53,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import difflib.DiffUtils;
-import difflib.Patch;
-import difflib.PatchFailedException;
 
 /**
  * Event listener to listen to document rename events and update the target of the draft according to the new location.
@@ -463,21 +457,14 @@ public class PublicationWorkflowRenameListener implements EventListener
         List<String> newCurrentSplittedReference = createSplitReference(newCurrentDocRef);
         List<String> oldEquivalentSplittedReference = createSplitReference(oldEquivalentDocRef);
 
-        // Create the patch and try to apply it.
-        Patch<String> patch = DiffUtils.diff(oldCurrentSplittedReference, newCurrentSplittedReference);
         List<String> newEquivalentSplittedReference;
 
-        try {
-            newEquivalentSplittedReference = DiffUtils.patch(oldEquivalentSplittedReference, patch);
-        } catch (PatchFailedException e) {
-            newEquivalentSplittedReference = manuallyConstructEquivalentDocumentPath(oldCurrentSplittedReference,
-                newCurrentSplittedReference, oldEquivalentSplittedReference);
-            if (newEquivalentSplittedReference.size() <= 1) {
-                // this can happen if moving pages up the tree too much
-                logger.warn("Unable to compute new location for the document [{}]", oldEquivalentDocRef);
-                logger.debug("Error when applying patch : [{}]", ExceptionUtils.getRootCause(e), e);
-                return oldEquivalentDocRef;
-            }
+        newEquivalentSplittedReference = manuallyConstructEquivalentDocumentPath(oldCurrentSplittedReference,
+            newCurrentSplittedReference, oldEquivalentSplittedReference);
+        if (newEquivalentSplittedReference.size() <= 1) {
+            // this can happen if moving pages up the tree too much
+            logger.warn("Unable to compute new location for the document [{}]", oldEquivalentDocRef);
+            return oldEquivalentDocRef;
         }
 
         // Reconstruct the new equivalent reference.

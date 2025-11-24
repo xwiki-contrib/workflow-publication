@@ -112,11 +112,35 @@ class PublicationWorkflowRenameListenerTest
     @Test
     void testMoveUpThePath()
     {
+        oldReference = toRef(Arrays.asList("Sandbox", "Page1", "Subpage1"), "WebHome");
+        newReference = toRef(Arrays.asList("Sandbox", "Page1", "Subpage2", "Subpage1"), "WebHome");
+        oldEquivalentReference = toRef(Arrays.asList("Main", "Page1", "Subpage1"), "WebHome");
+        expectedEquivReference = toRef(Arrays.asList("Main", "Page1", "Subpage2", "Subpage1"), "WebHome");
+        check("move up another sub tree");
+    }
+
+    @Test
+    void testMoveUpThePath2()
+    {
         oldReference = toRef(Arrays.asList("Sandbox", "TopicDrafts", "SubpageA", "SubSubPageA-B", "SubSubPageA-B-C"), "WebHome");
         newReference = toRef(Arrays.asList("Sandbox", "TopicDrafts", "SubpageA", "SubSubPageD", "SubSubPageA-B-C"), "WebHome");
         oldEquivalentReference = toRef(Arrays.asList("Main", "Public", "Topic", "SubpageA", "SubSubPageA-B", "SubSubPageA-B-C"), "WebHome");
         expectedEquivReference = toRef(Arrays.asList("Main", "Public", "Topic", "SubpageA", "SubSubPageD", "SubSubPageA-B-C"), "WebHome");
-        check("move up another sub tree");
+        check("move up another sub-sub tree");
+    }
+
+    @Test
+    void testMoveUpThePath3()
+    {
+        final String newParent = "SubpageB";
+        final String pageToMoveUp = "MovePageUp";
+        final String sectionRoot = "PageA";
+        final String draftRoot = "PublicationWorkflowDraftSection";
+        oldReference = toRef(Arrays.asList("Sandbox", draftRoot, sectionRoot, pageToMoveUp), "WebHome");
+        newReference = toRef(Arrays.asList("Sandbox", draftRoot, sectionRoot, newParent, pageToMoveUp), "WebHome");
+        oldEquivalentReference = toRef(Arrays.asList("Main", sectionRoot, pageToMoveUp), "WebHome");
+        expectedEquivReference = toRef(Arrays.asList("Main", sectionRoot, newParent, pageToMoveUp), "WebHome");
+        check("move up from draft root");
     }
 
     @Test
@@ -127,6 +151,40 @@ class PublicationWorkflowRenameListenerTest
         oldEquivalentReference = toRef(Arrays.asList("Main", "Public", "Topic", "SubpageA", "SubSubPageA-B", "SubSubPageA-B-C"), "WebHome");
         expectedEquivReference = toRef(Arrays.asList("Main", "Public", "Topic", "SubpageA", "SubSubPageA-D", "SubSubPageA-D-C"), "WebHome");
         check("move up another sub tree and rename");
+    }
+
+    @Test
+    void testMoveDownThePath2()
+    {
+        final String newParent = "SubpageB";
+        final String pageToMoveUp = "MovePageUp";
+        final String sectionRoot = "PageA";
+        final String draftRoot = "PublicationWorkflowDraftSection";
+        oldReference = toRef(Arrays.asList("Sandbox", draftRoot, sectionRoot, newParent, pageToMoveUp), "WebHome");
+        newReference = toRef(Arrays.asList("Sandbox", draftRoot, sectionRoot, pageToMoveUp), "WebHome");
+        oldEquivalentReference = toRef(Arrays.asList("Main", sectionRoot, newParent, pageToMoveUp), "WebHome");
+        expectedEquivReference = toRef(Arrays.asList("Main", sectionRoot, pageToMoveUp), "WebHome");
+        check("move up from draft root");
+    }
+
+    @Test
+    void testMoveLocation23()
+    {
+        oldReference = toRef(Arrays.asList("Sandbox", "TopicDrafts", "BasePage", "SubPageA1", "SubSubPageB1"), "WebHome");
+        newReference = toRef(Arrays.asList("Sandbox", "TopicDrafts", "BasePage", "SubSubPageB1"), "WebHome");
+        oldEquivalentReference = toRef(Arrays.asList("Public", "BasePage", "SubPageA1", "SubSubPageB1"), "WebHome");
+        expectedEquivReference = toRef(Arrays.asList("Public", "BasePage", "SubSubPageB1"), "WebHome");
+        check("move around in the tree");
+    }
+
+    @Test
+    void testMoveLocation23B()
+    {
+        oldReference = toRef(Arrays.asList("Sandbox", "Drafts", "BasePage", "PageA", "Page_to_move"), "WebHome");
+        newReference = toRef(Arrays.asList("Sandbox", "Drafts", "BasePage", "Page_to_move"), "WebHome");
+        oldEquivalentReference = toRef(Arrays.asList("Public", "BasePage", "PageA", "Page_to_move"), "WebHome");
+        expectedEquivReference = toRef(Arrays.asList("Public", "BasePage", "Page_to_move"), "WebHome");
+        check("move around in the tree");
     }
 
     @Test

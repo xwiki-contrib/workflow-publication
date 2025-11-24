@@ -40,17 +40,12 @@
     <dependency>
       <groupId>org.xwiki.contrib.api-rights</groupId>
       <artifactId>api-rights-api</artifactId>
-      <version>1.1.1</version>
+      <version>${xwiki.rights.api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.contrib.api-rights</groupId>
       <artifactId>api-rights-bridge</artifactId>
-      <version>1.1.1</version>
-    </dependency>
-    <!-- TODO: Remove dependency and refactor the code to use the platform diff library. See XAWORKFLOW-85. -->
-    <dependency>
-      <groupId>com.googlecode.java-diff-utils</groupId>
-      <artifactId>diffutils</artifactId>
+      <version>${xwiki.rights.api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
@@ -68,6 +63,7 @@
     <xwiki.revapi.skip>true</xwiki.revapi.skip>
     <xwiki.checkstyle.skip>true</xwiki.checkstyle.skip>
     <xwiki.spoon.skip>true</xwiki.spoon.skip>
-    <xwiki.jacoco.instructionRatio>0.01</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.02</xwiki.jacoco.instructionRatio>
+    <xwiki.rights.api.version>1.1.1</xwiki.rights.api.version>
   </properties>
 </project>
