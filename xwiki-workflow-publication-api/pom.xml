@@ -64,6 +64,6 @@
     <xwiki.checkstyle.skip>true</xwiki.checkstyle.skip>
     <xwiki.spoon.skip>true</xwiki.spoon.skip>
     <xwiki.jacoco.instructionRatio>0.02</xwiki.jacoco.instructionRatio>
-    <xwiki.rights.api.version>1.1.1</xwiki.rights.api.version>
+    <xwiki.rights.api.version>2.3</xwiki.rights.api.version>
   </properties>
 </project>
